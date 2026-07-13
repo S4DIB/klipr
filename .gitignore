@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local file store
+.data/
+
+# brand source + business docs (kept out of the code repo; app assets live in public/brand/)
+/Klipr/
+/*.pdf
+/*.docx
