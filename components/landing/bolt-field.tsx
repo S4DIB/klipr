@@ -20,8 +20,9 @@ const BOLTS: Bolt[] = [
   // hero
   { top: "2.5%", left: "3%", h: 36, rot: -18, op: 1, dur: 7, delay: 0 },
   { top: "5%", right: "5%", h: 24, rot: 20, op: 0.9, dur: 8, delay: -1 },
-  // the big hero bolt — fills the open gap between the subhead and the phone
-  { top: "7%", left: "47%", h: 150, rot: -12, op: 1, dur: 9, delay: -1 },
+  // the big hero bolt — sits in the open gap between the headline and the
+  // phone, ABOVE the subheadline so it never lands on the body copy
+  { top: "3%", left: "49%", h: 150, rot: -12, op: 1, dur: 9, delay: -1 },
   { top: "14%", right: "11%", h: 58, rot: 14, op: 1, dur: 9, delay: -0.5 },
   { top: "18%", left: "8%", h: 28, rot: -26, op: 0.92, dur: 7.5, delay: -1.5 },
   // watch
