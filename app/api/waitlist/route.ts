@@ -1,35 +1,15 @@
 import { NextResponse } from "next/server";
-import fs from "node:fs";
-import path from "node:path";
+import { saveLead, type Lead, type LeadHandle } from "@/lib/leads";
 
-const DATA_DIR = path.join(process.cwd(), ".data");
-const FILE = path.join(DATA_DIR, "waitlist.json");
+/* Node runtime + always-dynamic: this writes to Postgres/disk, never cache it. */
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_RE = /^\+?[\d\s()-]{6,20}$/;
 const PLATFORMS = new Set(["tiktok", "facebook", "instagram", "youtube"]);
 const KINDS = new Set(["page", "profile"]);
 const MAX_HANDLES = 8;
-
-type Handle = {
-  platform: string;
-  handle: string;
-  followers: number;
-  kind: string;
-};
-
-type Entry =
-  | { role: "brand"; email: string; at: string }
-  | {
-      role: "clipper";
-      name: string;
-      email: string;
-      phone: string;
-      category: string;
-      handles: Handle[];
-      at: string;
-    };
-
-const PHONE_RE = /^\+?[\d\s()-]{6,20}$/;
 
 function bad(error: string) {
   return NextResponse.json({ error }, { status: 400 });
@@ -49,21 +29,30 @@ export async function POST(req: Request) {
     return bad("Invalid request.");
   }
 
-  const email = String(body.email ?? "").trim().toLowerCase();
+  // Honeypot: a hidden form field real users never fill. If a bot fills it,
+  // pretend success and drop it — no lead stored, no signal to the bot.
+  if (typeof body.website === "string" && body.website.trim() !== "") {
+    return NextResponse.json({ ok: true });
+  }
+
+  const email = String(body.email ?? "").trim().toLowerCase().normalize("NFC");
   if (!EMAIL_RE.test(email) || email.length > 254) {
     return bad("Enter a valid email.");
   }
 
-  let entry: Entry;
+  // optional ad/campaign attribution — helps you see which ads convert
+  const source = typeof body.source === "string" ? body.source.slice(0, 200) : undefined;
+
+  let lead: Lead;
 
   if (body.role === "brand") {
-    entry = { role: "brand", email, at: new Date().toISOString() };
+    lead = { role: "brand", email, source, at: new Date().toISOString() };
   } else {
     const name = str(body.name, 100);
     if (!name) return bad("Enter your name.");
 
     const phone = str(body.phone, 20);
-    if (!phone || !PHONE_RE.test(phone)) {
+    if (!phone || !PHONE_RE.test(phone) || (phone.match(/\d/g)?.length ?? 0) < 7) {
       return bad("Enter a valid phone number.");
     }
 
@@ -78,7 +67,7 @@ export async function POST(req: Request) {
       return bad(`No more than ${MAX_HANDLES} handles.`);
     }
 
-    const handles: Handle[] = [];
+    const handles: LeadHandle[] = [];
     for (const h of raw as Record<string, unknown>[]) {
       const platform = String(h.platform ?? "");
       const kind = String(h.kind ?? "");
@@ -93,25 +82,23 @@ export async function POST(req: Request) {
       handles.push({ platform, handle, followers: Math.round(followers), kind });
     }
 
-    entry = {
+    lead = {
       role: "clipper",
       name,
       email,
       phone,
       category,
       handles,
+      source,
       at: new Date().toISOString(),
     };
   }
 
-  const entries: Entry[] = fs.existsSync(FILE)
-    ? (JSON.parse(fs.readFileSync(FILE, "utf8")) as Entry[])
-    : [];
-
-  if (!entries.some((e) => e.email === email)) {
-    entries.push(entry);
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(FILE, JSON.stringify(entries, null, 2));
+  const result = await saveLead(lead);
+  if (!result.ok) {
+    // Extremely rare (disk + DB both unavailable). The lead is in the logs;
+    // ask the visitor to retry rather than pretend it worked.
+    return NextResponse.json({ error: "Something went wrong — try again." }, { status: 500 });
   }
 
   // Duplicate signups get the same success response — no email enumeration.

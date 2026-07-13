@@ -123,6 +123,27 @@ const THEMES = {
 
 type Variant = keyof typeof THEMES;
 
+/** Ad/campaign attribution: the UTM params on the landing URL (set by your ad
+ *  links), or the referring host as a fallback. Shows up in the leads export. */
+function readSource(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const p = new URLSearchParams(window.location.search);
+    const utm = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
+      .map((k) => {
+        const v = p.get(k);
+        return v ? `${k}=${v}` : null;
+      })
+      .filter(Boolean)
+      .join("&");
+    if (utm) return utm.slice(0, 200);
+    if (document.referrer) return `ref=${new URL(document.referrer).host}`.slice(0, 200);
+  } catch {
+    /* ignore */
+  }
+  return undefined;
+}
+
 /** Pre-launch capture — brands leave an email; clippers walk a 3-step wizard
  *  (about you → niche → pages & reach). Stored via /api/waitlist. */
 export function WaitlistForm({
@@ -140,6 +161,7 @@ export function WaitlistForm({
   const [phone, setPhone] = useState("");
   const [category, setCategory] = useState("");
   const [handles, setHandles] = useState<Handle[]>([emptyHandle()]);
+  const [website, setWebsite] = useState(""); // honeypot — real users leave this empty
   const [state, setState] = useState<"idle" | "busy" | "done" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -177,10 +199,11 @@ export function WaitlistForm({
     if (state === "busy") return;
     setState("busy");
     setError(null);
+    const source = readSource(); // which ad/campaign this signup came from
     const payload =
       role === "brand"
-        ? { role, email }
-        : { role, email, name, phone, category, handles };
+        ? { role, email, website, source }
+        : { role, email, name, phone, category, handles, website, source };
     try {
       const res = await fetch("/api/waitlist", {
         method: "POST",
@@ -217,6 +240,18 @@ export function WaitlistForm({
 
   return (
     <form ref={formRef} onSubmit={submit} className="mx-auto w-full max-w-md text-left">
+      {/* honeypot — off-screen, not tabbable, hidden from AT; bots fill it, humans don't */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
+      />
+
       {/* who are you — clipper or brand */}
       <div className="mb-5 flex justify-center">
         <div className={`inline-flex rounded-full p-1 ${t.toggleWrap}`}>

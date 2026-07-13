@@ -47,8 +47,16 @@ NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
 SUPABASE_SERVICE_ROLE_KEY=<service role key>
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+# Waitlist leads (see LEADS.md): token to download the CSV export; webhook optional
+WAITLIST_EXPORT_TOKEN=<long random string>
+# LEADS_WEBHOOK_URL=<optional: forward each lead to Zapier/Make/Loops/…>
 ```
 Restart `npm run dev` — the app is now on real Supabase + Google.
+
+> **Waitlist / marketing leads:** the signup form persists to the
+> `waitlist_leads` table (migration `0002_waitlist_leads.sql`, service-role
+> only, RLS-locked). Download the list at `/api/waitlist/export?token=…` or from
+> the Supabase Table Editor. Full pre-launch/ads guide: **[LEADS.md](./LEADS.md)**.
 
 **5. Make yourself admin** (after first sign-in), in the SQL editor:
 ```sql
