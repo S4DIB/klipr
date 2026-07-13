@@ -78,6 +78,10 @@ html {
   background: var(--ink-900);
   color-scheme: light;
   -webkit-text-size-adjust: 100%;
+  /* Clip decorative glows/bolts that bleed past the right edge. `clip`
+     (not `hidden`) doesn't create a scroll container, so it can't fight
+     the Lenis smooth-scroll — this is what kills mobile horizontal-scroll. */
+  overflow-x: clip;
 }
 
 body {
@@ -87,7 +91,7 @@ body {
   font-feature-settings: "ss01";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Tabular figures everywhere mono is used — live counters never jitter */
