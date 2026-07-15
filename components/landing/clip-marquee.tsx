@@ -6,7 +6,7 @@ import { PixelDissolve } from "@/components/ui/pixel-dissolve";
 
 const CLAIMS = [
   "Get paid per view",
-  "No follower minimum",
+  "Active pages, not big ones",
   "Every view counts",
   "Verified views only",
   "Fast, easy payouts",

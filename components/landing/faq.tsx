@@ -9,28 +9,28 @@ import { BoltMark } from "@/components/ui/logo";
  * "can I?" → "is it real?" → "when's the money?" → "what's the catch?" */
 const ITEMS = [
   {
-    q: "Do I need a big following to earn?",
-    a: "No. You get paid on verified views, not followers. A page that posts consistently and gets real engagement is all you need.",
+    q: "Do I need a big following?",
+    a: "No. There is no follower target. But your page has to be active — you post often and real people watch. A page that sits idle will not earn, because nobody sees the clip.",
   },
   {
     q: "How are views verified?",
-    a: "We track each submitted post and verify its views before they count toward a payout. Suspicious spikes and bot traffic are flagged and held for review.",
+    a: "We check views directly with the platform. Only real views count. Bots and bought views are flagged.",
   },
   {
     q: "When do I get paid?",
-    a: "Earnings accrue as your clip pulls views. Once a campaign closes and views are locked, payouts are sent fast. No invoicing, no chasing brands.",
+    a: "When the campaign closes and views are verified. Money goes straight to your bKash.",
   },
   {
-    q: "What can go wrong with a submission?",
-    a: "Submissions are rejected if the link doesn't match the platform you selected, the post is deleted before the campaign closes, or the views don't pass fraud checks.",
+    q: "Is this a scam?",
+    a: "Fair question. You pay nothing to join, and nothing to post. If your clip gets no views you earn nothing — but you lose nothing either. Once campaigns start paying out, we'll show the real receipts right here.",
   },
   {
-    q: "I'm a brand. How does it work for me?",
-    a: "Fund a campaign with a budget, write a short brief, and dozens of creators post your content. You pay only for verified views and get the top-performing clips back.",
+    q: "Do I have to edit the video?",
+    a: "No. We give you the clip. You post it.",
   },
   {
-    q: "When does Klipr launch?",
-    a: "Soon — the first campaigns are being lined up now. Waitlist members get in first and see the first funded campaigns before anyone else.",
+    q: "I'm a brand. How does it work?",
+    a: "You fund a campaign and pay only for verified views — ৳60 per 1,000.",
   },
 ];
 

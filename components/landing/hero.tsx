@@ -66,10 +66,9 @@ export function Hero() {
 
           <Reveal delay={0.15}>
             <p className="mt-6 max-w-[46ch] text-lg leading-relaxed text-white/70">
-              You post clips every day anyway. Now they pay. Pick a funded
-              campaign, post to your own pages, and earn on every{" "}
-              <span className="font-semibold text-yellow">view</span>{" "}
-              you pull.
+              You already post clips every day. Now they pay. Pick a campaign,
+              post to your page, earn on every{" "}
+              <span className="font-semibold text-yellow">view</span>.
             </p>
           </Reveal>
 

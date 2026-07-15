@@ -26,11 +26,9 @@ function csvCell(v: unknown): string {
   return `"${s.replace(/"/g, '""')}"`;
 }
 
-function handlesText(handles?: Lead["handles"]): string {
-  if (!handles || handles.length === 0) return "";
-  return handles
-    .map((h) => `${h.platform}:${h.handle} (${h.kind}, ${h.followers} followers)`)
-    .join(" | ");
+function pagesText(pages?: Lead["pages"]): string {
+  if (!pages || pages.length === 0) return "";
+  return pages.map((p) => `${p.link} (${p.niche})`).join(" | ");
 }
 
 export async function GET(req: Request) {
@@ -47,7 +45,10 @@ export async function GET(req: Request) {
 
   const leads = await listLeads();
 
-  const header = ["created_at", "role", "email", "name", "phone", "category", "handles", "source"];
+  const header = [
+    "created_at", "role", "email", "name", "phone",
+    "company", "designation", "pages", "post_frequency", "source",
+  ];
   const lines = [header.map(csvCell).join(",")];
   for (const l of leads) {
     lines.push(
@@ -57,8 +58,10 @@ export async function GET(req: Request) {
         l.email,
         l.name ?? "",
         l.phone ?? "",
-        l.category ?? "",
-        handlesText(l.handles),
+        l.company ?? "",
+        l.designation ?? "",
+        pagesText(l.pages),
+        l.postFrequency ?? "",
         l.source ?? "",
       ]
         .map(csvCell)

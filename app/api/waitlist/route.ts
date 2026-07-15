@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
-import { saveLead, type Lead, type LeadHandle } from "@/lib/leads";
+import { saveLead, type Lead, type LeadPage } from "@/lib/leads";
 
-/* Node runtime + always-dynamic: this writes to Postgres/disk, never cache it. */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^\+?[\d\s()-]{6,20}$/;
-const PLATFORMS = new Set(["tiktok", "facebook", "instagram", "youtube"]);
-const KINDS = new Set(["page", "profile"]);
-const MAX_HANDLES = 8;
+const MAX_PAGES = 8;
 
 function bad(error: string) {
   return NextResponse.json({ error }, { status: 400 });
@@ -21,6 +18,10 @@ function str(v: unknown, max: number): string | null {
   return t.length >= 1 && t.length <= max ? t : null;
 }
 
+function validPhone(phone: string | null): phone is string {
+  return !!phone && PHONE_RE.test(phone) && (phone.match(/\d/g)?.length ?? 0) >= 7;
+}
+
 export async function POST(req: Request) {
   let body: Record<string, unknown>;
   try {
@@ -29,9 +30,8 @@ export async function POST(req: Request) {
     return bad("Invalid request.");
   }
 
-  // Honeypot: a hidden form field real users never fill. If a bot fills it,
-  // pretend success and drop it — no lead stored, no signal to the bot.
-  if (typeof body.website === "string" && body.website.trim() !== "") {
+  // Honeypot: a hidden field real users never fill. Bot → pretend success, drop it.
+  if (typeof body.contact_time === "string" && body.contact_time.trim() !== "") {
     return NextResponse.json({ ok: true });
   }
 
@@ -40,67 +40,48 @@ export async function POST(req: Request) {
     return bad("Enter a valid email.");
   }
 
-  // optional ad/campaign attribution — helps you see which ads convert
+  const name = str(body.name, 100);
+  if (!name) return bad("Enter your name.");
+
+  const phone = str(body.phone, 20);
+  if (!validPhone(phone)) return bad("Enter a valid phone number.");
+
   const source = typeof body.source === "string" ? body.source.slice(0, 200) : undefined;
+  const at = new Date().toISOString();
 
   let lead: Lead;
 
   if (body.role === "brand") {
-    lead = { role: "brand", email, source, at: new Date().toISOString() };
+    const company = str(body.company, 100);
+    if (!company) return bad("Enter your company name.");
+    const designation = str(body.designation, 80);
+    if (!designation) return bad("Enter your role.");
+    lead = { role: "brand", name, email, phone, company, designation, source, at };
   } else {
-    const name = str(body.name, 100);
-    if (!name) return bad("Enter your name.");
-
-    const phone = str(body.phone, 20);
-    if (!phone || !PHONE_RE.test(phone) || (phone.match(/\d/g)?.length ?? 0) < 7) {
-      return bad("Enter a valid phone number.");
-    }
-
-    const category = str(body.category, 40);
-    if (!category) return bad("Pick the category you clip in.");
-
-    const raw = body.handles;
+    const raw = body.pages;
     if (!Array.isArray(raw) || raw.length < 1) {
-      return bad("Add at least one social media handle.");
+      return bad("Add at least one page.");
     }
-    if (raw.length > MAX_HANDLES) {
-      return bad(`No more than ${MAX_HANDLES} handles.`);
+    if (raw.length > MAX_PAGES) {
+      return bad(`No more than ${MAX_PAGES} pages.`);
     }
-
-    const handles: LeadHandle[] = [];
-    for (const h of raw as Record<string, unknown>[]) {
-      const platform = String(h.platform ?? "");
-      const kind = String(h.kind ?? "");
-      const handle = str(h.handle, 100);
-      const followers = Number(h.followers);
-      if (!PLATFORMS.has(platform)) return bad("Pick a platform for each handle.");
-      if (!KINDS.has(kind)) return bad("Mark each handle as a page or a profile.");
-      if (!handle) return bad("Fill in each handle you add.");
-      if (!Number.isFinite(followers) || followers < 0 || followers > 1e9) {
-        return bad("Enter a follower count for each handle.");
-      }
-      handles.push({ platform, handle, followers: Math.round(followers), kind });
+    const pages: LeadPage[] = [];
+    for (const p of raw as Record<string, unknown>[]) {
+      const link = str(p.link, 200);
+      const niche = str(p.niche, 40);
+      if (!link) return bad("Paste a link for each page.");
+      if (!niche) return bad("Pick a niche for each page.");
+      pages.push({ link, niche });
     }
-
-    lead = {
-      role: "clipper",
-      name,
-      email,
-      phone,
-      category,
-      handles,
-      source,
-      at: new Date().toISOString(),
-    };
+    const postFrequency = str(body.postFrequency, 40);
+    if (!postFrequency) return bad("Tell us how often you post.");
+    lead = { role: "clipper", name, email, phone, pages, postFrequency, source, at };
   }
 
   const result = await saveLead(lead);
   if (!result.ok) {
-    // Extremely rare (disk + DB both unavailable). The lead is in the logs;
-    // ask the visitor to retry rather than pretend it worked.
     return NextResponse.json({ error: "Something went wrong — try again." }, { status: 500 });
   }
-
   // Duplicate signups get the same success response — no email enumeration.
   return NextResponse.json({ ok: true });
 }

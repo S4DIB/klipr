@@ -10,7 +10,7 @@ import {
 import { ClipCard } from "@/components/ui/clip-card";
 import { BoltMark } from "@/components/ui/logo";
 
-const CPM = 60; // Taka per 1,000 views
+const CPM = 50; // Taka per 1,000 verified views (clipper rate)
 const BASE = 84200;
 
 const NAV_TABS = [
@@ -177,14 +177,14 @@ export function HeroShowcase() {
                   {/* bottom: title + meta + CTA */}
                   <div className="relative space-y-2 p-3">
                     <div className="flex items-center gap-2">
-                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-white/90 text-[10px] font-bold text-[#e5322d]">
-                        FZ
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-yellow text-[10px] font-bold text-volt-600">
+                        <BoltMark className="h-3" />
                       </span>
                       <div className="min-w-0 leading-tight">
                         <p className="truncate text-[12px] font-semibold text-white">
-                          Fizz Up — Summer Clip Drop
+                          Klipr · Meme Drop
                         </p>
-                        <p className="text-[9px] text-white/60">by Fizz Beverages</p>
+                        <p className="text-[9px] text-white/60">by Klipr</p>
                       </div>
                     </div>
                     <div className="flex gap-1.5">

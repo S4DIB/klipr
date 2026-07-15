@@ -38,15 +38,15 @@ const SCENES = [
   },
   {
     label: "Money lands",
-    still: "The campaign closes, views lock, and your payout goes out. No invoices.",
+    still: "The campaign closes, views lock, and your payout goes straight to your bKash.",
   },
 ];
 
 /* ── Scene 1 — two live campaign cards, the second one gets picked ── */
 function SceneBrowse() {
   const rows = [
-    { tag: "FZ", name: "Fizz Up — Summer Clip Drop", niche: "Entertainment", rate: "৳55 / 1K", picked: false },
-    { tag: "OR", name: "Orbit App — Launch Wave", niche: "Tech", rate: "৳60 / 1K", picked: true },
+    { tag: "KL", name: "Klipr · Meme Drop", niche: "Memes", rate: "৳50 / 1K", picked: false },
+    { tag: "KL", name: "Klipr · Sports Reels", niche: "Sports", rate: "৳50 / 1K", picked: true },
   ];
   return (
     <div className="w-[min(400px,86%)] space-y-3">
@@ -184,7 +184,7 @@ function SceneVerify() {
   );
 }
 
-/* ── Scene 4 — the payout receipt (48,200 views × ৳60/1K = ৳2,892) ── */
+/* ── Scene 4 — the payout receipt (48,200 views × ৳50/1K = ৳2,410) ── */
 function ScenePaid() {
   return (
     <motion.div
@@ -206,14 +206,14 @@ function ScenePaid() {
         </motion.span>
         <div>
           <p className="text-sm font-semibold text-text-hi">Payout sent</p>
-          <p className="text-xs text-text-low">Orbit App · campaign closed</p>
+          <p className="text-xs text-text-low">Klipr · campaign closed</p>
         </div>
       </div>
       <p className="mt-4 font-mono text-4xl font-semibold tracking-tight text-volt-600">
-        ৳2,892
+        ৳2,410
       </p>
       <p className="mt-2 text-xs text-text-mid">
-        48,200 verified views × ৳60 per 1K. No invoice, no chasing.
+        48,200 verified views × ৳50 per 1K, straight to bKash.
       </p>
     </motion.div>
   );
@@ -244,21 +244,21 @@ function Poster({ onPlay }: { onPlay: () => void }) {
         <div className="absolute left-1/2 top-[13%] w-[80%] -translate-x-1/2 -rotate-3 rounded-2xl border border-white/12 bg-white/[0.07] p-4">
           <div className="flex items-center gap-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/90 text-[11px] font-bold text-volt-600">
-              FZ
+              KL
             </span>
             <div className="min-w-0 flex-1 leading-tight">
               <p className="truncate text-[13px] font-semibold text-white">
-                Fizz Up — Summer Clip Drop
+                Klipr · Meme Drop
               </p>
-              <p className="text-[11px] text-white/55">Entertainment</p>
+              <p className="text-[11px] text-white/55">Memes</p>
             </div>
-            <span className="font-mono text-[12px] font-semibold text-yellow">৳55 / 1K</span>
+            <span className="font-mono text-[12px] font-semibold text-yellow">৳50 / 1K</span>
           </div>
         </div>
         <div className="absolute bottom-[14%] left-1/2 w-[64%] -translate-x-1/2 rotate-2 rounded-2xl bg-ink-900/90 p-4">
           <div className="flex items-center justify-between">
             <span className="text-[12px] font-semibold text-text-hi">Payout sent</span>
-            <span className="font-mono text-[13px] font-semibold text-volt-600">৳2,892</span>
+            <span className="font-mono text-[13px] font-semibold text-volt-600">৳2,410</span>
           </div>
         </div>
       </div>

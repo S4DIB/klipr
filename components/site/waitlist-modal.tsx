@@ -7,17 +7,22 @@ import { BoltMark } from "@/components/ui/logo";
 import { WaitlistForm } from "@/components/landing/waitlist-form";
 
 /** Apple-style frosted-glass waitlist dialog.
- *  Opens from ANY `<a href="#waitlist">` on the page (event delegation),
- *  so triggers in server components need no wiring. */
+ *  Opens from ANY `<a href="#waitlist">` (clipper) or `<a href="#waitlist-brand">`
+ *  (brand, pre-selects the brand form) on the page via event delegation, so
+ *  triggers in server components need no wiring. */
 export function WaitlistModal() {
   const [open, setOpen] = useState(false);
+  const [role, setRole] = useState<"clipper" | "brand">("clipper");
   const reduce = useReducedMotion();
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      const a = (e.target as HTMLElement).closest?.('a[href="#waitlist"]');
+      const a = (e.target as HTMLElement).closest?.(
+        'a[href="#waitlist"], a[href="#waitlist-brand"]',
+      );
       if (a) {
         e.preventDefault();
+        setRole(a.getAttribute("href") === "#waitlist-brand" ? "brand" : "clipper");
         setOpen(true);
       }
     };
@@ -96,7 +101,7 @@ export function WaitlistModal() {
             </h2>
 
             <div className="relative mt-7">
-              <WaitlistForm autoFocusFirst variant="glass" />
+              <WaitlistForm autoFocusFirst variant="glass" initialRole={role} />
             </div>
           </motion.div>
         </div>

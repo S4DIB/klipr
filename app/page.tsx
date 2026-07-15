@@ -5,7 +5,7 @@ import { Backdrop } from "@/components/landing/backdrop";
 import { BoltField } from "@/components/landing/bolt-field";
 import { Hero } from "@/components/landing/hero";
 import { DemoVideo } from "@/components/landing/demo-video";
-import { HowItWorks, Features, FinalCta } from "@/components/landing/sections";
+import { HowItWorks, Features, ForBrands, FinalCta } from "@/components/landing/sections";
 import { Faq } from "@/components/landing/faq";
 
 /* One straight funnel, one goal (the waitlist):
@@ -29,6 +29,7 @@ export default function Home() {
             <DemoVideo />
             <HowItWorks />
             <Features />
+            <ForBrands />
             <Faq />
             <FinalCta />
           </main>

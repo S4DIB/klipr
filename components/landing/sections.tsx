@@ -49,7 +49,7 @@ export function HowItWorks() {
     {
       n: "01",
       t: "Find a campaign",
-      d: "Browse live campaigns from brands and creators. Filter by niche, platform and pay rate.",
+      d: "Browse live campaigns. Filter by niche, platform and rate.",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
           <circle cx="11" cy="11" r="7" />
@@ -60,7 +60,7 @@ export function HowItWorks() {
     {
       n: "02",
       t: "Post the clip",
-      d: "Post the content to your page following the brief, then drop the link back in to start tracking.",
+      d: "Post it to your page. Then paste the link back into Klipr.",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
           <path d="M12 15V4m0 0L8 8m4-4 4 4" />
@@ -71,7 +71,7 @@ export function HowItWorks() {
     {
       n: "03",
       t: "Get paid per view",
-      d: "Views are verified automatically. The more your clip pulls, the more you earn. Paid out fast.",
+      d: "Views are verified automatically. ৳50 per 1,000 verified views, paid to your bKash.",
       icon: <span className="text-lg font-bold leading-none">৳</span>,
     },
   ];
@@ -81,7 +81,7 @@ export function HowItWorks() {
         <Header
           kicker="02 · How it works"
           title="Three steps to your first payout."
-          sub="No follower minimums. No watch hours. If you can post, you can earn."
+          sub="No media kit. No brand deals. If your page is active, you can earn."
         />
 
         {/* journey line — numbered nodes on a flowing energy conveyor */}
@@ -156,19 +156,8 @@ export function Features() {
     icon: React.ReactNode;
   }[] = [
     {
-      t: "Verified views only",
-      d: "Every view is checked before it counts toward a payout. Bots and bought spikes are flagged and never paid.",
-      accent: "mint",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <path d="M12 2 4 5.5v5.2c0 5 3.4 9.2 8 10.3 4.6-1.1 8-5.3 8-10.3V5.5L12 2Z" />
-          <path d="m8.5 12 2.4 2.4L15.5 9.5" />
-        </svg>
-      ),
-    },
-    {
-      t: "No follower minimum",
-      d: "A page with 900 followers earns by the exact same rule as one with 900K: per verified view. Clout is optional.",
+      t: "Active pages, not big ones",
+      d: "You don't need a blue tick. You don't need a media kit. You need a page that posts and people who watch.",
       accent: "pink",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
@@ -178,14 +167,25 @@ export function Features() {
       ),
     },
     {
-      t: "Fast, clean payouts",
-      d: "Campaign closes, views lock, money goes out — proportional to the views you pulled. No invoices, no net-30.",
+      t: "Verified views only",
+      d: "Every view is checked before it counts. Bots and bought views are flagged and never paid.",
+      accent: "mint",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+          <path d="M12 2 4 5.5v5.2c0 5 3.4 9.2 8 10.3 4.6-1.1 8-5.3 8-10.3V5.5L12 2Z" />
+          <path d="m8.5 12 2.4 2.4L15.5 9.5" />
+        </svg>
+      ),
+    },
+    {
+      t: "Fast payouts",
+      d: "Campaign closes. Views lock. Money goes to your bKash. No invoices, no waiting.",
       accent: "yellow",
       icon: <BoltMark className="h-5" />,
     },
     {
-      t: "Briefs that fit your niche",
-      d: "Campaigns are tagged by niche, platform and rate. Pick the ones you'd post anyway — memes to tech to sports.",
+      t: "Campaigns that fit your page",
+      d: "Filter by niche, platform and rate. Post the ones you'd post anyway.",
       accent: "aqua",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
@@ -195,7 +195,7 @@ export function Features() {
     },
     {
       t: "Four platforms, one place",
-      d: "Run the same campaign across every page you own — and agencies roll all their pages into a single payout.",
+      d: "Facebook, TikTok, Instagram Reels, YouTube Shorts. Run every page you own from one account.",
       accent: "pink",
       icon: (
         <span className="grid grid-cols-2 gap-[3px]">
@@ -208,7 +208,7 @@ export function Features() {
     },
     {
       t: "One honest dashboard",
-      d: "Every clip, every verified view, every taka — tracked from submission to payout. What you see is what you get paid.",
+      d: "Every clip. Every verified view. Every taka. You see exactly what you earned.",
       accent: "mint",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
@@ -223,7 +223,7 @@ export function Features() {
       <Header
         kicker="03 · What you get"
         title="Built so every view pays."
-        sub="Not a gig board, not a brand-deal broker — a marketplace with verification and payouts built into the rails."
+        sub="No media kit, no gatekeepers — just the things that turn a view into money in your account."
       />
 
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -247,22 +247,84 @@ export function Features() {
         })}
       </div>
 
-      {/* the other side of the marketplace — Pink Carnation colorway
-          (brand guideline p14) so the one brand-facing line pops */}
+      <NextCue href="#brands" label="Running a brand? This next part's for you." />
+    </section>
+  );
+}
+
+/* Chapter 04 — for brands (spec §6). Clients are half the waitlist, so they get
+ * a real section, not a strip. Pink Carnation accents; CTA opens the BRAND form. */
+export function ForBrands() {
+  const steps = [
+    {
+      n: "01",
+      t: "Fund a campaign",
+      d: "Set your budget. Write a short brief. Upload your content.",
+    },
+    {
+      n: "02",
+      t: "The network posts",
+      d: "Real pages post your clip to their own audiences.",
+    },
+    {
+      n: "03",
+      t: "Pay per verified view",
+      d: "৳60 per 1,000 verified views. No agency fee. No creative fee.",
+    },
+  ];
+  return (
+    <section id="brands" className="shell py-24 md:py-32">
+      <Header
+        kicker="04 · For brands"
+        title="Pay for views. Not for hope."
+        sub="Ads charge you when your video appears. We charge you when someone watches. Dozens of real pages post your content at once — you pay for the views they bring."
+      />
+
+      <div className="mt-14 grid gap-5 md:grid-cols-3">
+        {steps.map((s, i) => (
+          <Reveal key={s.n} delay={i * 0.1}>
+            <div className="group h-full rounded-[var(--radius)] border border-white/12 bg-white/[0.06] p-7 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink/40 hover:bg-white/[0.09]">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-pink/10 font-mono text-sm font-semibold text-pink">
+                {s.n}
+              </span>
+              <h3 className="display mt-5 text-lg text-ink-900">{s.t}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-white/65">{s.d}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+
+      {/* cost model — placeholder until the first real campaign-results card exists */}
       <Reveal delay={0.15}>
-        <div className="mt-10 flex flex-col items-center justify-between gap-5 rounded-[var(--radius)] bg-pink px-8 py-7 text-center shadow-[0_28px_64px_-32px_rgba(255,123,192,0.4)] sm:flex-row sm:text-left">
-          <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-volt-600/70">
-              Running a brand?
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-[var(--radius)] border border-white/12 bg-white/[0.05] p-6">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/45">
+              Ads
             </p>
-            <p className="mt-1.5 max-w-[44ch] font-medium text-volt-600">
-              Fund a budget, write a brief, and pay only for verified views.
-              Dozens of pages posting your content at once.
+            <p className="mt-2 text-lg text-white/70">
+              You pay when your video <span className="text-white">appears</span>.
             </p>
           </div>
+          <div className="rounded-[var(--radius)] border border-pink/40 bg-pink/10 p-6">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-pink">
+              Klipr
+            </p>
+            <p className="mt-2 text-lg text-ink-900">
+              You pay when someone <span className="text-pink">watches</span>.
+            </p>
+          </div>
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.2}>
+        <div className="mt-10 flex flex-col items-center gap-5 text-center">
+          <p className="max-w-[42ch] text-lg text-white/70">
+            Your campaign ends with two things. Real views. And the clip that
+            worked best.
+          </p>
           <a
-            href="#waitlist"
-            className="group inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-volt-600 px-6 text-[14px] font-semibold tracking-tight text-pink transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+            href="#waitlist-brand"
+            className="group inline-flex h-12 items-center gap-2 rounded-full bg-pink px-6 text-[14px] font-semibold tracking-tight text-volt-600 transition-all duration-200 hover:brightness-105 active:scale-[0.98]"
           >
             Get early access
             <ArrowEast />
@@ -295,8 +357,7 @@ export function FinalCta() {
         </Reveal>
         <Reveal delay={0.1}>
           <p className="mx-auto mt-5 max-w-[44ch] text-lg text-white/65">
-            Klipr is launching soon. Waitlist members get in first — and see
-            the first funded campaigns before anyone else.
+            Klipr is launching soon. Waitlist members get in first.
           </p>
         </Reveal>
         <Reveal delay={0.15}>
