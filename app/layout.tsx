@@ -3,27 +3,18 @@ import {
   Stack_Sans_Headline,
   Stack_Sans_Text,
   Martian_Mono,
-  Google_Sans_Flex,
 } from "next/font/google";
 import "./globals.css";
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
 
 /* Display — Stack Sans Headline: the official Klipr branding font
- * (brand guideline p17, "Stack Sans — Headline · Notch · Text"; OFL-licensed). */
+ * (brand guideline p17, "Stack Sans — Headline · Notch · Text"; OFL-licensed).
+ * The logo wordmark uses the real logotype (Google Sans Flex) baked into the
+ * Logo component's SVG vectors — see components/ui/logo.tsx. */
 const display = Stack_Sans_Headline({
   variable: "--font-stack-headline",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
-  display: "swap",
-});
-
-/* Logotype — Google Sans Flex: the font the logo/wordmark is set in
- * (brand guideline p16, "Typography / Logotype"). Used ONLY for the klipr
- * wordmark, not body/headlines. */
-const logotype = Google_Sans_Flex({
-  variable: "--font-google-sans-flex",
-  subsets: ["latin"],
-  weight: ["500", "700"],
   display: "swap",
 });
 
@@ -92,7 +83,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${display.variable} ${sans.variable} ${mono.variable} ${logotype.variable}`}
+      className={`${display.variable} ${sans.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
       <body>

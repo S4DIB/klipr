@@ -8,7 +8,7 @@ import {
   YouTubeIcon,
 } from "@/components/ui/platform-icons";
 import { ClipCard } from "@/components/ui/clip-card";
-import { BoltMark } from "@/components/ui/logo";
+import { BoltMark, Logo } from "@/components/ui/logo";
 
 const CPM = 50; // Taka per 1,000 verified views (clipper rate)
 const BASE = 84200;
@@ -136,10 +136,7 @@ export function HeroShowcase() {
 
                 {/* app bar */}
                 <div className="flex items-center justify-between px-5 pb-2.5 pt-3">
-                  <span className="inline-flex items-center gap-1.5 font-logotype text-sm font-bold lowercase tracking-tight text-yellow">
-                    <BoltMark className="h-[0.9em]" />
-                    klipr
-                  </span>
+                  <Logo className="text-[12px] text-yellow" />
                   <span className="relative grid h-7 w-7 place-items-center rounded-full bg-white/[0.07]">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-white/80">
                       <path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M10.3 21a1.9 1.9 0 0 0 3.4 0" />
