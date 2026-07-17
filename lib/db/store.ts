@@ -60,7 +60,7 @@ function seed(): DB {
       id: "cmp_pulse", name: "Top story recaps", brand: "Pulse Daily", niche: "News",
       brief: "Recap the day's top story in a 20s vertical clip.",
       guidelines: "Factual only. No editorialising. Use the supplied footage.",
-      allowedPlatforms: ["Instagram", "Facebook"], sourceUrl: "https://example.com/pulse.mp4",
+      allowedPlatforms: ["Instagram", "YouTube"], sourceUrl: "https://example.com/pulse.mp4",
       budget: 25000, minViewThreshold: 2000, startDate: now(), endDate: daysFromNow(10),
       status: "active", createdAt: now(),
     },

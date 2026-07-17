@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { completeOnboarding, type OnboardingState } from "@/app/onboarding/actions";
 import { Button, ArrowEast } from "@/components/ui/button";
 
-const PLATFORMS = ["TikTok", "Instagram", "YouTube", "Facebook"] as const;
+const PLATFORMS = ["TikTok", "Instagram", "YouTube"] as const;
 
 export function OnboardingForm({ defaultName }: { defaultName: string }) {
   const [state, action, pending] = useActionState<OnboardingState, FormData>(

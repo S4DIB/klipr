@@ -15,7 +15,7 @@ import type { Platform } from "@/lib/db/types";
 const schema = z.object({
   campaignId: z.string(),
   postUrl: z.string().trim().url("Enter a valid post URL"),
-  platform: z.enum(["TikTok", "Instagram", "YouTube", "Facebook"]),
+  platform: z.enum(["TikTok", "Instagram", "YouTube"]),
   postingHandle: z.string().trim().min(2, "Add the handle you posted from").max(40),
 });
 

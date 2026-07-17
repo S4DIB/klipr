@@ -256,6 +256,15 @@ body {
   animation: cue-down 1.8s ease-in-out infinite;
 }
 
+/* Currency swap on the hero "paid" chip — brief fade + rise */
+@keyframes chip-swap {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.chip-swap {
+  animation: chip-swap 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Slow radar pulse for step nodes */
 @keyframes pulse-ring {
   0% { transform: scale(1); opacity: 0.55; }

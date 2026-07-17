@@ -8,7 +8,6 @@ import {
   TikTokIcon,
   InstagramIcon,
   YouTubeIcon,
-  FacebookIcon,
 } from "@/components/ui/platform-icons";
 
 /* The official 3D bolt, isolated from brand Pattern 02 (Klipr/Patterns/02).
@@ -40,7 +39,7 @@ function PatternBolt({
  * to convert is sent DOWN the page (to the demo), never away from it. */
 export function Hero() {
   return (
-    <section className="relative pt-36 pb-24">
+    <section className="relative pt-36 pb-16">
       {/* background lives in the page-wide <Backdrop/>; scattered yellow bolts
           live in <BoltField/> — the hero's world continues through every
           section below */}
@@ -102,7 +101,6 @@ export function Hero() {
               <TikTokIcon className="h-4 w-4" />
               <InstagramIcon className="h-4 w-4" />
               <YouTubeIcon className="h-4 w-4" />
-              <FacebookIcon className="h-4 w-4" />
             </div>
           </Reveal>
         </div>

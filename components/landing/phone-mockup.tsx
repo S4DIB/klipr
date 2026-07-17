@@ -13,6 +13,30 @@ import { BoltMark, Logo } from "@/components/ui/logo";
 const CPM = 50; // Taka per 1,000 verified views (clipper rate)
 const BASE = 84200;
 
+/* Klipr is Bangladesh-first (৳/bKash), but we clip globally — the hero's
+ * "paid" chip cycles the same real amount through each market's currency so
+ * an international visitor sees their own. Rates are approx BDT→currency,
+ * illustrative only. First entry (৳) is the static fallback for
+ * reduced-motion users. */
+const CURRENCIES = [
+  { symbol: "৳", rate: 1 },       // BDT
+  { symbol: "$", rate: 0.0083 },  // USD
+  { symbol: "€", rate: 0.0077 },  // EUR
+  { symbol: "£", rate: 0.0067 },  // GBP
+  { symbol: "₹", rate: 0.71 },    // INR
+  { symbol: "₦", rate: 12.5 },    // NGN
+  { symbol: "₱", rate: 0.48 },    // PHP
+  { symbol: "R$", rate: 0.045 },  // BRL
+];
+
+/** k-format for large amounts, grouped integer for small — so weak and
+ *  strong currencies both read naturally (৳7.9k, $65, ₹5.6k). */
+function formatMoney(amount: number, symbol: string) {
+  return amount >= 1000
+    ? `${symbol}${(amount / 1000).toFixed(1)}k`
+    : `${symbol}${Math.round(amount).toLocaleString("en-US")}`;
+}
+
 const NAV_TABS = [
   { label: "Home", active: false, icon: <path d="M3 11l9-7 9 7M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9" /> },
   { label: "Browse", active: false, icon: <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" /> },
@@ -66,6 +90,7 @@ function DynamicIsland() {
 export function HeroShowcase() {
   const reduce = useReducedMotion();
   const [views, setViews] = useState(BASE);
+  const [currencyIx, setCurrencyIx] = useState(0);
 
   useEffect(() => {
     if (reduce) return;
@@ -75,7 +100,17 @@ export function HeroShowcase() {
     return () => clearInterval(id);
   }, [reduce]);
 
-  const earned = (views / 1000) * CPM;
+  // Rotate the hero "paid" chip through world currencies, forever.
+  useEffect(() => {
+    if (reduce) return;
+    const id = setInterval(() => {
+      setCurrencyIx((i) => (i + 1) % CURRENCIES.length);
+    }, 2600);
+    return () => clearInterval(id);
+  }, [reduce]);
+
+  const currency = CURRENCIES[currencyIx];
+  const earned = ((views / 1000) * CPM) * currency.rate;
   const bob = (d: number, delay = 0) =>
     reduce ? undefined : { animation: `bob ${d}s ease-in-out ${delay}s infinite` };
 
@@ -191,8 +226,10 @@ export function HeroShowcase() {
                       <span className="rounded-md bg-white/12 px-1.5 py-0.5 text-[8.5px] text-white/85 backdrop-blur-sm">
                         312 clippers in
                       </span>
-                      <span className="rounded-md bg-white/12 px-1.5 py-0.5 font-mono text-[8.5px] text-yellow backdrop-blur-sm tabular-nums">
-                        ৳{(earned / 1000).toFixed(1)}k paid
+                      <span className="inline-flex rounded-md bg-white/12 px-1.5 py-0.5 font-mono text-[8.5px] text-yellow backdrop-blur-sm tabular-nums">
+                        <span key={currency.symbol} className={reduce ? undefined : "chip-swap"}>
+                          {formatMoney(earned, currency.symbol)}&nbsp;paid
+                        </span>
                       </span>
                     </div>
                     <div className="grid h-9 place-items-center rounded-lg bg-yellow text-[12px] font-semibold tracking-tight text-volt-600">

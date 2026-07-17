@@ -451,7 +451,7 @@ export function DemoVideo() {
     reduce ? undefined : { animation: `bob ${d}s ease-in-out ${delay}s infinite` };
 
   return (
-    <section id="demo" className="relative py-24 md:py-28">
+    <section id="demo" className="relative py-16 md:py-20">
       <div className="shell">
         <div className="mx-auto max-w-2xl text-center">
           <Reveal>
@@ -494,7 +494,7 @@ export function DemoVideo() {
           </div>
         </Reveal>
 
-        <NextCue href="#how" label="Want the play-by-play?" />
+        <NextCue href="#how" label="See how it works" />
       </div>
     </section>
   );

@@ -78,7 +78,7 @@ function Row({ q, a }: { q: string; a: string }) {
 
 export function Faq() {
   return (
-    <section id="faq" className="shell relative isolate py-24 md:py-32">
+    <section id="faq" className="shell relative isolate py-16 md:py-24">
       {/* soft pink ambience so the quiet chapter still glows */}
       <div
         aria-hidden

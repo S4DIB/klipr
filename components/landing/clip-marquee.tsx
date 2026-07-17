@@ -81,7 +81,7 @@ function NichesRow() {
 
 export function ClipMarquee() {
   return (
-    <section aria-hidden className="relative overflow-hidden bg-yellow pt-14 pb-24">
+    <section aria-hidden className="relative overflow-hidden bg-yellow pt-14 pb-16">
       <div className="flex flex-col gap-7">
         <ClaimsRow />
         <NichesRow />

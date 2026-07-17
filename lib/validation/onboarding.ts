@@ -9,7 +9,7 @@ export const onboardingSchema = z.object({
     .regex(/^[0-9+\-\s]{6,20}$/, "Enter a valid payout (wallet) number"),
   pageUrl: z.string().trim().url("Enter a valid page URL"),
   handle: z.string().trim().min(2, "Add your handle").max(40),
-  platform: z.enum(["TikTok", "Instagram", "YouTube", "Facebook"]),
+  platform: z.enum(["TikTok", "Instagram", "YouTube"]),
   followerCount: z.coerce.number().int().min(0, "Followers can't be negative"),
 });
 

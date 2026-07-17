@@ -2,7 +2,7 @@
 
 export type Role = "individual" | "agency" | "admin";
 export type AccountStatus = "active" | "blocked";
-export type Platform = "TikTok" | "Instagram" | "YouTube" | "Facebook";
+export type Platform = "TikTok" | "Instagram" | "YouTube";
 export type CampaignStatus = "draft" | "active" | "closed";
 export type SubmissionStatus = "pending" | "verified" | "rejected";
 export type PayoutStatus = "pending" | "paid";

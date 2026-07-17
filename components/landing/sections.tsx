@@ -3,12 +3,6 @@ import { WaitlistForm } from "@/components/landing/waitlist-form";
 import { NextCue } from "@/components/landing/next-cue";
 import { ArrowEast } from "@/components/ui/button";
 import { BoltMark } from "@/components/ui/logo";
-import {
-  TikTokIcon,
-  InstagramIcon,
-  YouTubeIcon,
-  FacebookIcon,
-} from "@/components/ui/platform-icons";
 
 /* Shared section header — friendly eyebrow + display heading, centered. */
 function Header({
@@ -76,7 +70,7 @@ export function HowItWorks() {
     },
   ];
   return (
-    <section id="how" className="relative py-24 md:py-28">
+    <section id="how" className="relative py-16 md:py-20">
       <div className="shell">
         <Header
           kicker="02 · How it works"
@@ -194,16 +188,16 @@ export function Features() {
       ),
     },
     {
-      t: "Four platforms, one place",
-      d: "Facebook, TikTok, Instagram Reels, YouTube Shorts. Run every page you own from one account.",
+      t: "Three platforms, one place",
+      d: "TikTok, Instagram Reels, YouTube Shorts. Run every page you own from one account.",
       accent: "pink",
       icon: (
-        <span className="grid grid-cols-2 gap-[3px]">
-          <TikTokIcon className="h-3 w-3" />
-          <InstagramIcon className="h-3 w-3" />
-          <YouTubeIcon className="h-3 w-3" />
-          <FacebookIcon className="h-3 w-3" />
-        </span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <path d="M8.6 10.5 15.4 6.5M8.6 13.5l6.8 4" />
+        </svg>
       ),
     },
     {
@@ -219,7 +213,7 @@ export function Features() {
   ];
 
   return (
-    <section id="features" className="shell py-24 md:py-32">
+    <section id="features" className="shell py-16 md:py-24">
       <Header
         kicker="03 · What you get"
         title="Built so every view pays."
@@ -273,7 +267,7 @@ export function ForBrands() {
     },
   ];
   return (
-    <section id="brands" className="shell py-24 md:py-32">
+    <section id="brands" className="shell py-16 md:py-24">
       <Header
         kicker="04 · For brands"
         title="Pay for views. Not for hope."
@@ -341,7 +335,7 @@ export function ForBrands() {
  * is the hero. */
 export function FinalCta() {
   return (
-    <section id="waitlist" className="relative py-24 md:py-32">
+    <section id="waitlist" className="relative py-16 md:py-24">
       {/* scattered yellow bolts live in the page-wide <BoltField/> */}
       <div className="shell relative text-center">
         <Reveal>
