@@ -136,7 +136,7 @@ export function HeroShowcase() {
 
                 {/* app bar */}
                 <div className="flex items-center justify-between px-5 pb-2.5 pt-3">
-                  <span className="inline-flex items-center gap-1.5 font-display text-sm font-bold lowercase tracking-tight text-yellow">
+                  <span className="inline-flex items-center gap-1.5 font-logotype text-sm font-bold lowercase tracking-tight text-yellow">
                     <BoltMark className="h-[0.9em]" />
                     klipr
                   </span>

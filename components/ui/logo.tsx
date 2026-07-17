@@ -20,7 +20,7 @@ export function Logo({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 font-display text-[19px] font-bold lowercase tracking-tight text-text-hi",
+        "inline-flex items-center gap-1.5 font-logotype text-[19px] font-bold lowercase tracking-tight text-text-hi",
         className,
       )}
     >

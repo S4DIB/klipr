@@ -68,6 +68,7 @@
   --font-display: var(--font-stack-headline), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-martian-mono), ui-monospace, "SF Mono", monospace;
+  --font-logotype: var(--font-google-sans-flex), ui-sans-serif, system-ui, sans-serif;
 }
 
 * {
