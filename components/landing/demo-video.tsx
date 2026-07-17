@@ -314,7 +314,13 @@ function Player() {
   const ActiveScene = SCENE_VIEWS[scene];
 
   return (
-    <div className="relative mx-auto aspect-[9/16] w-full max-w-[400px] overflow-hidden rounded-[28px] border border-white/12 bg-[#1b0433] shadow-[0_44px_90px_-32px_rgba(0,0,0,0.65)]">
+    <div className="relative mx-auto w-full max-w-[400px] overflow-hidden rounded-[28px] border border-white/12 bg-[#1b0433] shadow-[0_44px_90px_-32px_rgba(0,0,0,0.65)]">
+      {/* In-flow 9:16 spacer (padding-top = 16/9). Every other child here is
+          absolute, so without this the box has no content height — and iOS
+          Safari collapses an aspect-ratio-only box to 0, hiding the phone.
+          The padding hack forces a real height on every browser. */}
+      <div aria-hidden className="pt-[177.78%]" />
+
       {/* electric texture + corner glows, same voice as the hero */}
       <div
         aria-hidden
