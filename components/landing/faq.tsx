@@ -25,10 +25,6 @@ const ITEMS = [
     a: "Fair question. You pay nothing to join, and nothing to post. If your clip gets no views you earn nothing — but you lose nothing either. Once campaigns start paying out, we'll show the real receipts right here.",
   },
   {
-    q: "Do I have to edit the video?",
-    a: "No. We give you the clip. You post it.",
-  },
-  {
     q: "I'm a brand. How does it work?",
     a: "You fund a campaign and pay only for verified views — ৳60 per 1,000.",
   },
