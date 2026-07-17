@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
-import { listLeads, type Lead } from "@/lib/leads";
+import { listLeads } from "@/lib/leads";
+import { leadsToCsv } from "@/lib/leads/csv";
 
 /* Node runtime + never cached: this returns the private lead list. */
 export const runtime = "nodejs";
@@ -16,21 +17,6 @@ function tokenOk(provided: string | null): boolean {
   return timingSafeEqual(a, b);
 }
 
-function csvCell(v: unknown): string {
-  let s = v == null ? "" : String(v);
-  // Neutralize CSV/formula injection: a lead-submitted value starting with
-  // = + - @ (or tab/CR) executes as a formula when opened in Excel/Sheets.
-  // Prefix with an apostrophe so it's treated as literal text.
-  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
-  // Always quote + escape embedded quotes; keep data otherwise intact.
-  return `"${s.replace(/"/g, '""')}"`;
-}
-
-function pagesText(pages?: Lead["pages"]): string {
-  if (!pages || pages.length === 0) return "";
-  return pages.map((p) => `${p.link} (${p.niche})`).join(" | ");
-}
-
 export async function GET(req: Request) {
   // If no token is configured, the export is simply off (not discoverable).
   if (!process.env.WAITLIST_EXPORT_TOKEN) {
@@ -44,32 +30,7 @@ export async function GET(req: Request) {
   }
 
   const leads = await listLeads();
-
-  const header = [
-    "created_at", "role", "email", "name", "phone",
-    "company", "designation", "pages", "post_frequency", "source",
-  ];
-  const lines = [header.map(csvCell).join(",")];
-  for (const l of leads) {
-    lines.push(
-      [
-        l.at,
-        l.role,
-        l.email,
-        l.name ?? "",
-        l.phone ?? "",
-        l.company ?? "",
-        l.designation ?? "",
-        pagesText(l.pages),
-        l.postFrequency ?? "",
-        l.source ?? "",
-      ]
-        .map(csvCell)
-        .join(","),
-    );
-  }
-  // Prepend a UTF-8 BOM so Excel opens accented names/emojis correctly.
-  const csv = "﻿" + lines.join("\r\n");
+  const csv = leadsToCsv(leads);
 
   const stamp = new Date().toISOString().slice(0, 10);
   return new NextResponse(csv, {

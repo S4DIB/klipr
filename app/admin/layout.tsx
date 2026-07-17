@@ -24,6 +24,12 @@ export default async function AdminLayout({
             </span>
           </Link>
           <div className="flex items-center gap-4">
+            <Link href="/admin" className="text-sm text-text-mid hover:text-text-hi">
+              Console
+            </Link>
+            <Link href="/admin/leads" className="text-sm text-text-mid hover:text-text-hi">
+              Leads
+            </Link>
             <Link href="/marketplace" className="text-sm text-text-mid hover:text-text-hi">
               Exit to app
             </Link>
