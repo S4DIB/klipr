@@ -258,7 +258,7 @@ export function ForBrands() {
     {
       n: "02",
       t: "The network posts",
-      d: "Real pages post your clip to their own audiences.",
+      d: "Real pages across our network post your clip to their own audiences — in their own voice, not as an ad.",
     },
     {
       n: "03",
@@ -270,8 +270,8 @@ export function ForBrands() {
     <section id="brands" className="shell py-16 md:py-24">
       <Header
         kicker="04 · For brands"
-        title="Pay for views. Not for hope."
-        sub="Ads charge you when your video appears. We charge you when someone watches. Dozens of real pages post your content at once — you pay for the views they bring."
+        title="Your content, distributed everywhere."
+        sub="You have content. We get it posted — by real pages, to their own audiences, all at once. One upload turns into dozens of posts, reaching people who've never heard of you."
       />
 
       <div className="mt-14 grid gap-5 md:grid-cols-3">
@@ -287,28 +287,6 @@ export function ForBrands() {
           </Reveal>
         ))}
       </div>
-
-      {/* cost model — placeholder until the first real campaign-results card exists */}
-      <Reveal delay={0.15}>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-[var(--radius)] border border-white/12 bg-white/[0.05] p-6">
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/45">
-              Ads
-            </p>
-            <p className="mt-2 text-lg text-white/70">
-              You pay when your video <span className="text-white">appears</span>.
-            </p>
-          </div>
-          <div className="rounded-[var(--radius)] border border-pink/40 bg-pink/10 p-6">
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-pink">
-              Klipr
-            </p>
-            <p className="mt-2 text-lg text-ink-900">
-              You pay when someone <span className="text-pink">watches</span>.
-            </p>
-          </div>
-        </div>
-      </Reveal>
 
       <Reveal delay={0.2}>
         <div className="mt-10 flex flex-col items-center gap-5 text-center">
