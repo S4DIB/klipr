@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Reveal } from "@/components/motion/reveal";
 import { CountUp } from "@/components/motion/count-up";
 import { NextCue } from "@/components/landing/next-cue";
 import { ArrowEast } from "@/components/ui/button";
@@ -271,18 +270,16 @@ function Poster({ onPlay }: { onPlay: () => void }) {
               aria-hidden
               className="pulse-ring absolute inset-0 rounded-full border-2 border-yellow/50"
             />
-            <motion.button
+            <button
               type="button"
               onClick={onPlay}
               aria-label="Play the 15-second demo"
-              whileHover={{ scale: 1.06 }}
-              whileTap={{ scale: 0.95 }}
-              className="grid h-20 w-20 place-items-center rounded-full bg-yellow shadow-[0_18px_56px_-12px_rgba(250,255,71,0.6)]"
+              className="grid h-20 w-20 place-items-center rounded-full bg-yellow shadow-[0_18px_56px_-12px_rgba(250,255,71,0.6)] transition-transform duration-200 hover:scale-105 active:scale-95"
             >
               <svg width="22" height="26" viewBox="0 0 12 14" fill="var(--volt-600)" aria-hidden="true" className="ml-1">
                 <path d="M0 0l12 7-12 7V0Z" />
               </svg>
-            </motion.button>
+            </button>
           </span>
           <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.24em] text-white/70">
             Press play · 15 seconds
@@ -459,46 +456,44 @@ export function DemoVideo() {
   return (
     <section id="demo" className="relative py-16 md:py-20">
       <div className="shell">
+        {/* Plain (no in-view Reveal) so the whole demo section is visible
+            from SSR with zero JS — this is the section reported blank on iOS. */}
         <div className="mx-auto max-w-2xl text-center">
-          <Reveal>
-            <p className="eyebrow mb-4" style={{ color: "var(--yellow)" }}>
-              01 · Watch
-            </p>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <h2 className="display text-[clamp(2rem,4.4vw,3.2rem)] text-ink-900">
-              Klipr in 15 seconds.
-            </h2>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <p className="mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed text-white/70">
-              No deck. No demo call. This is the whole product — from picking
-              a campaign to money landing.
-            </p>
-          </Reveal>
+          <p className="eyebrow mb-4" style={{ color: "var(--yellow)" }}>
+            01 · Watch
+          </p>
+          <h2 className="display text-[clamp(2rem,4.4vw,3.2rem)] text-ink-900">
+            Klipr in 15 seconds.
+          </h2>
+          <p className="mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed text-white/70">
+            No deck. No demo call. This is the whole product — from picking
+            a campaign to money landing.
+          </p>
         </div>
 
-        <Reveal delay={0.15}>
-          <div className="relative mt-14">
-            {/* clips floating around the phone, like the hero */}
-            <div aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
-              <div
-                className="absolute left-[10%] top-[16%] -rotate-[10deg] xl:left-[16%]"
-                style={bob(8, -1)}
-              >
-                <ClipCard clip={{ grad: "from-[#ff7bc0] to-[#7d04d7]", Icon: InstagramIcon, views: "1.2M", handle: "@meme.factory" }} />
-              </div>
-              <div
-                className="absolute right-[10%] bottom-[14%] rotate-[10deg] xl:right-[16%]"
-                style={bob(9, -2.5)}
-              >
-                <ClipCard clip={{ grad: "from-[#14f9c5] to-[#35055a]", Icon: YouTubeIcon, views: "486K", handle: "@hoopsdaily" }} />
-              </div>
+        {/* No in-view Reveal wrapper here on purpose: framer-motion SSRs the
+            initial opacity:0 state, and if the in-view trigger is flaky on a
+            device (seen on iOS Safari) the phone stays invisible forever. This
+            container is always visible; the phone animates on its own. */}
+        <div className="relative mt-14">
+          {/* clips floating around the phone, like the hero */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block">
+            <div
+              className="absolute left-[10%] top-[16%] -rotate-[10deg] xl:left-[16%]"
+              style={bob(8, -1)}
+            >
+              <ClipCard clip={{ grad: "from-[#ff7bc0] to-[#7d04d7]", Icon: InstagramIcon, views: "1.2M", handle: "@meme.factory" }} />
             </div>
-
-            {reduce ? <Storyboard /> : <Player />}
+            <div
+              className="absolute right-[10%] bottom-[14%] rotate-[10deg] xl:right-[16%]"
+              style={bob(9, -2.5)}
+            >
+              <ClipCard clip={{ grad: "from-[#14f9c5] to-[#35055a]", Icon: YouTubeIcon, views: "486K", handle: "@hoopsdaily" }} />
+            </div>
           </div>
-        </Reveal>
+
+          {reduce ? <Storyboard /> : <Player />}
+        </div>
 
         <NextCue href="#how" label="See how it works" />
       </div>
