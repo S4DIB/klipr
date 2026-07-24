@@ -1,37 +1,74 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { currentUser } from "@/lib/auth/session";
-import { upsertProfile } from "@/lib/db";
-import { onboardingSchema } from "@/lib/validation/onboarding";
-import type { Platform, Role } from "@/lib/db/types";
+import { revalidatePath } from "next/cache";
+import { requireActiveClipper } from "@/lib/auth/guards";
+import { bkashSchema } from "@/lib/validation/apply";
+import {
+  listConnectedAccounts,
+  listVettedPagesForProfile,
+  newId,
+  updateProfile,
+  upsertConnectedAccount,
+} from "@/lib/db";
 
-export type OnboardingState = { error?: string };
+/**
+ * Stub/simulated connect for a VETTED page. Live platforms replace this with
+ * OAuth (Phase 5's /api/connect/youtube); the account row shape is identical,
+ * so flipping a platform live never touches this flow's callers.
+ */
+export async function connectVettedPage(formData: FormData): Promise<void> {
+  const user = await requireActiveClipper();
+  const pageId = String(formData.get("pageId") ?? "");
 
-export async function completeOnboarding(
-  _prev: OnboardingState,
-  formData: FormData,
-): Promise<OnboardingState> {
-  const user = await currentUser();
-  if (!user) redirect("/login");
+  const vetted = await listVettedPagesForProfile(user.id);
+  const page = vetted.find((p) => p.id === pageId);
+  if (!page) return; // not theirs or not vetted. Silently no-op
 
-  const parsed = onboardingSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Please check the form." };
-  }
+  const existing = await listConnectedAccounts(user.id);
+  if (existing.some((a) => a.applicationPageId === pageId && a.status === "active")) return;
 
-  const d = parsed.data;
-  await upsertProfile({
-    ...user,
-    role: d.role as Role,
-    displayName: d.displayName,
-    payoutNumber: d.payoutNumber,
-    pageUrl: d.pageUrl,
-    handle: d.handle,
-    platform: d.platform as Platform,
-    followerCount: d.followerCount,
-    profileCompleted: true,
+  await upsertConnectedAccount({
+    id: newId("acc"),
+    profileId: user.id,
+    platform: page.platform,
+    applicationPageId: page.id,
+    externalId: `sim_${page.id}`,
+    handle: page.handle,
+    followerCount: page.selfReportedFollowers,
+    proof: "simulated",
+    status: "active",
+    createdAt: new Date().toISOString(),
   });
 
-  redirect("/marketplace");
+  revalidatePath("/onboarding");
+  revalidatePath("/connections");
+}
+
+/** Step 0 → 1. Connecting is skippable, but submissions require a linked page. */
+export async function continueToPayout(): Promise<void> {
+  const user = await requireActiveClipper();
+  await updateProfile(user.id, { onboardingStep: Math.max(user.onboardingStep, 1) });
+  revalidatePath("/onboarding");
+}
+
+export type BkashState = { error?: string };
+
+/** Step 1 → 2. */
+export async function saveBkash(_prev: BkashState, formData: FormData): Promise<BkashState> {
+  const user = await requireActiveClipper();
+  const parsed = bkashSchema.safeParse(formData.get("bkashNumber"));
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Enter a valid bKash number." };
+  }
+  await updateProfile(user.id, { bkashNumber: parsed.data, onboardingStep: 2 });
+  revalidatePath("/onboarding");
+  return {};
+}
+
+/** Step 2 → the app. */
+export async function completeOnboarding(): Promise<void> {
+  const user = await requireActiveClipper();
+  await updateProfile(user.id, { profileCompleted: true, onboardingStep: 99 });
+  redirect("/home");
 }

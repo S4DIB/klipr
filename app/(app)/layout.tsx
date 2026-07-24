@@ -1,9 +1,14 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { currentUser } from "@/lib/auth/session";
-import { signOut } from "@/lib/auth/actions";
-import { Logo } from "@/components/ui/logo";
+import { routeFor } from "@/lib/auth/guards";
+import { ledgerBalance, listPayoutBatches } from "@/lib/db";
+import { clipperAccount } from "@/lib/ledger";
+import { AppShell } from "@/components/app/app-shell";
 
+/**
+ * The clipper/agency shell. Gate order matters:
+ * signed in → correct role → ACTIVE access (the vetted gate) → onboarded.
+ */
 export default async function AppLayout({
   children,
 }: {
@@ -11,53 +16,30 @@ export default async function AppLayout({
 }) {
   const user = await currentUser();
   if (!user) redirect("/login");
+  if (user.role === "brand") redirect("/brand");
+  if (user.role === "admin") redirect("/admin");
+  if (user.access !== "active") redirect(routeFor(user));
   if (!user.profileCompleted) redirect("/onboarding");
 
+  // available balance for the header pill (real ledger, minus queued payouts)
+  const [balance, batches] = await Promise.all([
+    ledgerBalance(clipperAccount(user.id)),
+    listPayoutBatches({ profileId: user.id }),
+  ]);
+  const held = batches
+    .filter((b) => b.status === "queued" || b.status === "blocked_nid" || b.status === "processing")
+    .reduce((a, b) => a + b.amountPoisha, 0);
+  const availablePoisha = balance - held;
+
   return (
-    <div className="min-h-[100svh] bg-ink-900">
-      <header className="sticky top-0 z-40 border-b border-line bg-white/80 backdrop-blur-md">
-        <div className="shell flex h-16 items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/marketplace" aria-label="Klipr">
-              <Logo />
-            </Link>
-            <nav className="hidden items-center gap-6 sm:flex">
-              <Link href="/marketplace" className="text-sm text-text-mid hover:text-text-hi">
-                Campaigns
-              </Link>
-              <Link href="/dashboard" className="text-sm text-text-mid hover:text-text-hi">
-                Dashboard
-              </Link>
-              {user.role === "admin" && (
-                <Link href="/admin" className="text-sm text-volt-500 hover:text-volt-600">
-                  Admin
-                </Link>
-              )}
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="hidden text-right sm:block">
-              <span className="block text-sm font-medium text-text-hi">
-                {user.displayName}
-              </span>
-              <span className="block text-xs capitalize text-text-low">
-                {user.role}
-              </span>
-            </span>
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-volt-500/10 text-sm font-semibold text-volt-600">
-              {user.displayName.charAt(0).toUpperCase()}
-            </span>
-            <form action={signOut}>
-              <button className="text-sm text-text-mid hover:text-text-hi">
-                Sign out
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      <main className="shell py-10">{children}</main>
-    </div>
+    <AppShell
+      role={user.role === "agency" ? "agency" : "clipper"}
+      displayName={user.displayName}
+      tier={user.tier}
+      xpTotal={user.xpTotal}
+      availablePoisha={availablePoisha}
+    >
+      {children}
+    </AppShell>
   );
 }

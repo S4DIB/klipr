@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 import { hasSupabase } from "@/lib/env";
 import { getProfile, getProfileByEmail, upsertProfile, newId } from "@/lib/db";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { promoteIfPreapproved } from "@/lib/auth/preapproval";
 import type { Profile } from "@/lib/db/types";
 
 const COOKIE = "klipr_uid";
@@ -54,14 +55,22 @@ export async function ensureGoogleUser(
   displayName: string,
 ): Promise<Profile> {
   const existing = await getProfileByEmail(email);
-  if (existing) return existing;
-  return upsertProfile({
+  if (existing) return promoteIfPreapproved(existing);
+  const created = await upsertProfile({
     id: newId("usr"),
     email,
     displayName,
-    role: "individual",
+    role: "clipper",
+    access: "none", // no marketplace access until the application is vetted
+    tier: "beginner",
+    xpTotal: 0,
+    streakWeeks: 0,
+    nidStatus: "none",
+    leaderboardOptOut: false,
     accountStatus: "active",
     profileCompleted: false,
+    onboardingStep: 0,
     createdAt: new Date().toISOString(),
   });
+  return promoteIfPreapproved(created);
 }

@@ -24,9 +24,16 @@ if (!parsed.success) {
 
 export const env = parsed.success ? parsed.data : {};
 
-export const hasSupabase = Boolean(
-  env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-);
+/**
+ * Local-testing escape hatch: KLIPR_FORCE_STUB=1 runs the app in stub mode
+ * (file store + cookie auth + seeded demo identities) even when Supabase env
+ * vars are present. Server-only var — never set it in a deployed environment.
+ */
+const forceStub = process.env.KLIPR_FORCE_STUB === "1";
+
+export const hasSupabase =
+  !forceStub &&
+  Boolean(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 export const siteUrl =
   env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";

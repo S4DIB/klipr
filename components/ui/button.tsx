@@ -2,16 +2,23 @@ import { type ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "ghost";
+type Variant = "primary" | "ghost" | "secondary" | "highlight" | "inverse";
 
 const base =
-  "group relative inline-flex items-center justify-center gap-2 rounded-full px-6 h-12 text-[15px] font-medium tracking-tight transition-colors duration-200 focus-visible:outline-2";
+  "group relative inline-flex items-center justify-center gap-2 rounded-full px-6 h-12 text-[15px] font-medium tracking-tight transition-[color,background-color,border-color,box-shadow,transform] duration-200 focus-visible:outline-2 active:scale-[0.99]";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-volt-500 text-white hover:bg-volt-400 shadow-[0_8px_24px_-8px_rgba(125,4,215,0.5)] hover:shadow-[0_10px_30px_-8px_rgba(125,4,215,0.6)]",
+    "bg-volt-500 text-white hover:bg-violet-700 shadow-[0_8px_24px_-8px_rgba(125,4,215,0.5)] hover:shadow-[0_10px_30px_-8px_rgba(125,4,215,0.6)]",
   ghost:
     "text-text-hi border border-line hover:border-volt-400 hover:text-volt-600 bg-transparent",
+  /* white pill on the ivory field. The design's quiet second action */
+  secondary:
+    "bg-white text-ink-700 shadow-[var(--shadow-xs)] hover:bg-ink-50 hover:text-text-hi",
+  /* Vibrant Yellow. The one "spark" action on ink surfaces */
+  highlight: "bg-yellow text-violet-900 font-bold hover:bg-[#ecf230]",
+  /* ivory on .glass-ink decision bars */
+  inverse: "bg-ivory text-violet-900 font-bold hover:bg-white",
 };
 
 export function Button({
@@ -44,7 +51,7 @@ export function Button({
   );
 }
 
-/** Arrow that nudges on hover — a small repeated luxury detail. */
+/** Arrow that nudges on hover. A small repeated luxury detail. */
 export function ArrowEast() {
   return (
     <svg

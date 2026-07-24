@@ -406,3 +406,352 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #bcc6d6;
 }
+
+/* ============================================================
+   KLIPR GLASS — the V2 product app design system
+   Light glassmorphism: frosted ivory panels over soft brand-color
+   gradient fields · Dark Amethyst ink · Vibrant Yellow signal.
+   See KLIPR-BUILD-PLAN.md §1. Everything below EXTENDS the tokens
+   above — nothing earlier in this file changes.
+   ============================================================ */
+
+:root {
+  /* Radii rhythm — deliberately off the shadcn 6/8px grid */
+  --radius-panel: 28px;   /* hero panels, sheets, modals */
+  --radius-card: 22px;    /* standard glass cards */
+  --radius-control: 14px; /* inputs, selects, list rows (matches legacy --radius) */
+  --radius-chip: 999px;   /* pills, badges, buttons */
+
+  /* Glass surface alphas */
+  --glass-bg: color-mix(in srgb, #fffff4 62%, transparent);
+  --glass-bg-strong: color-mix(in srgb, #fffff4 78%, transparent);
+  --glass-edge: rgba(255, 255, 255, 0.65);
+  --glass-ink-bg: color-mix(in srgb, #35055a 88%, transparent);
+
+  /* Elevation shadows — amethyst-tinted, never gray */
+  --e1: 0 1px 2px rgba(53, 5, 90, 0.05), 0 16px 32px -20px rgba(53, 5, 90, 0.14);
+  --e2: 0 1px 2px rgba(53, 5, 90, 0.06), 0 24px 48px -24px rgba(53, 5, 90, 0.18);
+  --e3: 0 2px 4px rgba(53, 5, 90, 0.08), 0 40px 80px -32px rgba(53, 5, 90, 0.28);
+}
+
+@theme inline {
+  --radius-panel: 28px;
+  --radius-card: 22px;
+  --radius-control: 14px;
+}
+
+/* The gradient field — the ONLY page background inside the app shell.
+   Soft pink / violet / mint / yellow pools on ivory; glass panels scroll
+   over it. Exact stops from the Klipr Product design handoff. */
+.field-app {
+  background:
+    radial-gradient(52rem 34rem at 10% -8%,  rgba(255, 123, 192, 0.30), transparent 60%),
+    radial-gradient(46rem 30rem at 92% 2%,   rgba(152, 52, 226, 0.20), transparent 58%),
+    radial-gradient(44rem 32rem at 78% 104%, rgba(20, 249, 197, 0.26), transparent 56%),
+    radial-gradient(30rem 24rem at 2% 92%,   rgba(250, 255, 71, 0.24), transparent 52%),
+    #fffff4;
+}
+
+/* e1 — standard glass card */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(1.7);
+  backdrop-filter: blur(20px) saturate(1.7);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), var(--e1);
+  border-radius: var(--radius-card);
+}
+
+/* e2 — chrome: sticky header, bottom tab bar, drawers, popovers */
+.glass-strong {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), var(--e2);
+}
+
+/* Recessed well — inputs, URL fields, table zebra. NO blur (perf + hierarchy). */
+.glass-well {
+  background: rgba(53, 5, 90, 0.045);
+  border: 1px solid rgba(53, 5, 90, 0.08);
+  border-radius: var(--radius-control);
+}
+
+/* Amethyst ink glass — ONE per screen max: wallet hero, campaign money header */
+.glass-ink {
+  background: rgba(41, 7, 68, 0.92);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid rgba(250, 255, 71, 0.2);
+  color: #fffff4;
+  box-shadow: 0 40px 80px -32px rgba(53, 5, 90, 0.5);
+  border-radius: var(--radius-card);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Interactive glass card — CSS-only lift with a larger violet shadow */
+.glass-hover {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease;
+}
+.glass-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 24px 48px -24px rgba(53, 5, 90, 0.3);
+}
+
+/* Tappable list row — quiet ink tint on hover */
+.liftrow {
+  transition: background 0.15s;
+}
+.liftrow:hover {
+  background: rgba(53, 5, 90, 0.04);
+}
+
+/* ---- Klipr Glass typography scale (§1.4) ---- */
+
+.display-1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.1rem, 5vw, 3.25rem);
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.data-xl {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: clamp(1.6rem, 4vw, 2.25rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.data-sm {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pulsing BoltMark — the brand's loading indicator (replaces skeleton shimmer) */
+@keyframes bolt-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.bolt-pulse {
+  animation: bolt-pulse 1.3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* ============================================================
+   KLIPR PRODUCT — design-system ramps (Klipr Product.dc.html
+   handoff, tokens/colors.css + effects.css). Violet-tinted ink
+   ramp, violet accent ramp, status colors, violet shadows.
+   ============================================================ */
+
+:root {
+  /* Violet ramp (built around Amethyst + Royal Violet) */
+  --violet-950: #1f0335;
+  --violet-900: #35055a;
+  --violet-800: #4a067d;
+  --violet-700: #5f05a6;
+  --violet-600: #7d04d7;
+  --violet-500: #9834e2;
+  --violet-400: #b366ec;
+  --violet-300: #cd98f3;
+  --violet-200: #e3c6f9;
+  --violet-100: #f1e4fc;
+  --violet-50: #f9f2fe;
+
+  /* Ink ramp, non-conflicting stops. 700/800/900 are the legacy
+     ivory-surface tokens at :root — the dark values live in .klipr-app. */
+  --ink-950: #150720;
+  --ink-600: #5e4c74;
+  --ink-500: #7a6790;
+  --ink-400: #9a88ae;
+  --ink-300: #c0b3ce;
+  --ink-200: #e1d9ea;
+  --ink-150: #ede7f3;
+  --ink-100: #f4f0f8;
+  --ink-50: #faf8fc;
+
+  /* Accent soft tints */
+  --yellow-soft: #feffc9;
+  --pink-soft: #ffe3f2;
+  --aqua-soft: #e4fff3;
+  --mint-soft: #d3fef2;
+
+  /* Status (red is an intentional addition — the brand has no error color) */
+  --success-600: #0b9e79;
+  --success-500: #0fbe90;
+  --success-bg: var(--aqua-soft);
+  --warning-600: #b8860b;
+  --warning-500: #e0a400;
+  --warning-bg: var(--yellow-soft);
+  --danger-600: #d33a4a;
+  --danger-500: #e5484d;
+  --danger-bg: #fde7e8;
+
+  /* Violet-tinted shadows */
+  --shadow-xs: 0 1px 2px rgba(31, 3, 53, 0.06);
+  --shadow-sm: 0 1px 3px rgba(31, 3, 53, 0.08), 0 1px 2px rgba(31, 3, 53, 0.06);
+  --shadow-md: 0 4px 12px rgba(31, 3, 53, 0.1), 0 2px 4px rgba(31, 3, 53, 0.06);
+  --shadow-lg: 0 12px 28px rgba(31, 3, 53, 0.14), 0 4px 10px rgba(31, 3, 53, 0.08);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --overlay-scrim: rgba(28, 10, 46, 0.55);
+}
+
+/* App surfaces only (AppShell, admin, brand, apply): the design's dark ink
+   text ramp. Scoped so the landing's legacy ivory --ink-700/800/900 tokens
+   keep their meaning outside the product app. */
+.klipr-app {
+  --ink-700: #45325a;
+  --ink-800: #2c1740;
+  --ink-900: #1c0a2e;
+  color: var(--ink-900);
+}
+
+@theme inline {
+  --color-violet-950: var(--violet-950);
+  --color-violet-900: var(--violet-900);
+  --color-violet-800: var(--violet-800);
+  --color-violet-700: var(--violet-700);
+  --color-violet-600: var(--violet-600);
+  --color-violet-500: var(--violet-500);
+  --color-violet-400: var(--violet-400);
+  --color-violet-300: var(--violet-300);
+  --color-violet-200: var(--violet-200);
+  --color-violet-100: var(--violet-100);
+  --color-violet-50: var(--violet-50);
+
+  --color-ink-950: var(--ink-950);
+  --color-ink-600: var(--ink-600);
+  --color-ink-500: var(--ink-500);
+  --color-ink-400: var(--ink-400);
+  --color-ink-300: var(--ink-300);
+  --color-ink-200: var(--ink-200);
+  --color-ink-150: var(--ink-150);
+  --color-ink-100: var(--ink-100);
+  --color-ink-50: var(--ink-50);
+
+  --color-ivory: #fffff4;
+
+  --color-success-600: var(--success-600);
+  --color-success-500: var(--success-500);
+  --color-success-bg: var(--success-bg);
+  --color-warning-600: var(--warning-600);
+  --color-warning-500: var(--warning-500);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger-600: var(--danger-600);
+  --color-danger-500: var(--danger-500);
+  --color-danger-bg: var(--danger-bg);
+}
+
+/* Desktop content canvas — a flat, quiet content box inset from the ivory
+   chrome (header + sidebar): rounded top corners, runs flush to the bottom
+   of the viewport with no closing edge. Below md it's a plain pass-through
+   (mobile keeps the fixed full-viewport field). */
+.app-canvas {
+  min-width: 0;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .app-canvas {
+    background: #f4f3f7;
+    border: 1px solid rgba(53, 5, 90, 0.07);
+    border-right: none;
+    border-bottom: none;
+    border-radius: 18px 0 0 0;
+    /* chrome casts a whisper of shadow onto the recessed canvas edge */
+    box-shadow:
+      inset 0 3px 8px -3px rgba(53, 5, 90, 0.09),
+      inset 3px 0 8px -3px rgba(53, 5, 90, 0.05);
+    /* the app's one scroll container on desktop — explicit height (never a
+       percentage chain) so the scrollbar reliably lives inside the canvas,
+       below the header, never over the chrome */
+    height: calc(100dvh - 76px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(53, 5, 90, 0.3) transparent;
+  }
+  .app-canvas::-webkit-scrollbar {
+    width: 9px;
+  }
+  .app-canvas::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .app-canvas::-webkit-scrollbar-thumb {
+    background: rgba(53, 5, 90, 0.28);
+    border-radius: 8px;
+    border: 2px solid #f4f3f7;
+  }
+  .app-canvas::-webkit-scrollbar-thumb:hover {
+    background: rgba(53, 5, 90, 0.45);
+  }
+  /* On the grey canvas, cards go clean and minimal: flat white, no blur,
+     no border, a whisper of lift (mobile keeps warm ivory glass over the
+     gradient field). */
+  .app-canvas .glass,
+  .app-canvas .glass-strong {
+    background: #fff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: transparent;
+    box-shadow: 0 1px 2px rgba(31, 3, 53, 0.04);
+  }
+  .app-canvas .glass-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -10px rgba(31, 3, 53, 0.14);
+  }
+}
+
+/* Streak flame — an endless little flicker: wobble + breathe like a fire */
+@keyframes flame-flicker {
+  0%, 100% { transform: rotate(-4deg) scale(1); }
+  20% { transform: rotate(3deg) scale(1.1); }
+  40% { transform: rotate(-2deg) scale(0.94); }
+  60% { transform: rotate(4deg) scale(1.06); }
+  80% { transform: rotate(-3deg) scale(1.02); }
+}
+.flame {
+  display: inline-flex;
+  transform-origin: 50% 85%;
+  animation: flame-flicker 0.9s ease-in-out infinite;
+}
+
+/* Bottom-sheet / success-state entrances (spring), scrim fade */
+@keyframes sheet-rise {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes scrim-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.sheet-rise {
+  animation: sheet-rise 0.32s var(--ease-spring);
+}
+.scrim-fade {
+  animation: scrim-fade 0.2s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet-rise,
+  .scrim-fade {
+    animation: none;
+  }
+}

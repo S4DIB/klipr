@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/db";
+import { routeFor } from "@/lib/auth/guards";
+import { promoteIfPreapproved } from "@/lib/auth/preapproval";
 
 /** Google OAuth callback: exchange the code for a session, then route by
- *  whether the profile is completed (the onboarding gate). */
+ *  role + access state (the gated model — new users land on /apply). */
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -16,7 +18,9 @@ export async function GET(request: Request) {
         data: { user },
       } = await sb.auth.getUser();
       const profile = user ? await getProfile(user.id) : null;
-      const dest = profile?.profileCompleted ? "/marketplace" : "/onboarding";
+      // approved on the waitlist before signing up? Unlock the app right here.
+      const promoted = profile ? await promoteIfPreapproved(profile) : null;
+      const dest = promoted ? routeFor(promoted) : "/apply";
       return NextResponse.redirect(new URL(dest, url.origin));
     }
   }

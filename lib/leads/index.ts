@@ -17,6 +17,8 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 /** One page a clipper runs — paste-a-link + a niche chosen per page (spec §8). */
 export type LeadPage = { link: string; niche: string };
 
+export type LeadReviewStatus = "pending" | "approved" | "declined";
+
 export type Lead = {
   email: string;
   role: "clipper" | "brand";
@@ -28,6 +30,10 @@ export type Lead = {
   designation?: string; // brand
   source?: string;
   at: string; // ISO timestamp
+  /** Vetting decision from /admin/applications. Absent = pending. */
+  status?: LeadReviewStatus;
+  declineReason?: string;
+  reviewedAt?: string;
 };
 
 export type SaveResult = {
@@ -201,6 +207,9 @@ export async function listLeads(): Promise<Lead[]> {
           designation: row.designation ?? undefined,
           source: row.source ?? undefined,
           at: row.created_at,
+          status: row.status ?? undefined,
+          declineReason: row.decline_reason ?? undefined,
+          reviewedAt: row.reviewed_at ?? undefined,
         });
       }
     } catch (e) {
@@ -209,8 +218,71 @@ export async function listLeads(): Promise<Lead[]> {
   }
 
   for (const r of readFile()) {
-    if (!byEmail.has(r.email)) byEmail.set(r.email, r);
+    const existing = byEmail.get(r.email);
+    if (!existing) {
+      byEmail.set(r.email, r);
+    } else if (!existing.status && r.status) {
+      // review decision landed in the file store (Supabase columns missing) —
+      // carry it over so the queue reflects it
+      existing.status = r.status;
+      existing.declineReason = r.declineReason;
+      existing.reviewedAt = r.reviewedAt;
+    }
   }
 
   return [...byEmail.values()].sort((a, b) => (a.at < b.at ? 1 : -1));
+}
+
+export async function getLeadByEmail(email: string): Promise<Lead | undefined> {
+  const normalized = normalizeEmail(email);
+  return (await listLeads()).find((l) => l.email === normalized);
+}
+
+/**
+ * Record the admin's vetting decision on a waitlist lead. Supabase first
+ * (columns from migration 0005); falls back to the file store so a decision
+ * is never lost in dev or before the migration runs.
+ */
+export async function updateLeadReview(
+  email: string,
+  review: { status: "approved" | "declined"; declineReason?: string },
+): Promise<boolean> {
+  const normalized = normalizeEmail(email);
+  const reviewedAt = new Date().toISOString();
+
+  if (hasSupabaseService) {
+    try {
+      const sb = createSupabaseAdmin();
+      const { error } = await sb
+        .from("waitlist_leads")
+        .update({
+          status: review.status,
+          decline_reason: review.declineReason ?? null,
+          reviewed_at: reviewedAt,
+        })
+        .eq("email", normalized);
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      console.warn(
+        "[leads] review update failed (run migration 0005?), falling back to file:",
+        e,
+      );
+    }
+  }
+
+  const rows = readFile();
+  let row = rows.find((r) => r.email === normalized);
+  if (!row) {
+    // lead exists only in Supabase — mirror it into the file so the decision sticks
+    const known = await getLeadByEmail(normalized);
+    if (!known) return false;
+    row = { ...known };
+    rows.push(row);
+  }
+  row.status = review.status;
+  row.declineReason = review.declineReason;
+  row.reviewedAt = reviewedAt;
+  writeFileAtomic(rows);
+  return true;
 }

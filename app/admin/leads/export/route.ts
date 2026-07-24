@@ -4,8 +4,8 @@ import { listLeads } from "@/lib/leads";
 import { leadsToCsv } from "@/lib/leads/csv";
 
 /* Admin-only lead export. Unlike /api/waitlist/export (token-gated, for
- * external automation), this reuses the admin session — the same gate as the
- * rest of /admin — so a signed-in admin downloads with one click, no token. */
+ * external automation), this reuses the admin session. The same gate as the
+ * rest of /admin. So a signed-in admin downloads with one click, no token. */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 

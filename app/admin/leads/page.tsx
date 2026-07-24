@@ -4,7 +4,7 @@ import { listLeads, type Lead } from "@/lib/leads";
 
 export const metadata: Metadata = { title: "Waitlist leads · Admin" };
 
-// Always fresh — this is the private lead list, never cached.
+// Always fresh. This is the private lead list, never cached.
 export const dynamic = "force-dynamic";
 
 function fmtWhen(iso: string): string {

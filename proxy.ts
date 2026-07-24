@@ -50,9 +50,15 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/marketplace/:path*",
-    "/dashboard/:path*",
-    "/campaign/:path*",
+    "/apply/:path*",
+    "/home/:path*",
+    "/campaigns/:path*",
+    "/clips/:path*",
+    "/wallet/:path*",
+    "/leaderboard/:path*",
+    "/connections/:path*",
+    "/settings/:path*",
+    "/brand/:path*",
     "/admin/:path*",
     "/onboarding/:path*",
   ],

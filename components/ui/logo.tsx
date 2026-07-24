@@ -14,7 +14,7 @@ export function BoltMark({ className }: { className?: string }) {
   );
 }
 
-/** Official Klipr logo lockup (bolt + "klipr" wordmark) — the exact brand
+/** Official Klipr logo lockup (bolt + "klipr" wordmark). The exact brand
  *  vectors, so the wordmark is in the real logotype (Google Sans Flex, rounded)
  *  rather than an approximation. Uses currentColor: set `text-yellow` on a dark
  *  surface, or leave the default Dark-Amethyst. Size via a `text-[Npx]`

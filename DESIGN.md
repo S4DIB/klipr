@@ -1,112 +1,126 @@
-# KLIPR — Design & Architecture (as built)
+# KLIPR — Design & Architecture (V2, as built)
 
-The source of truth for how Klipr looks and works. Reflects what shipped. For
-deployment see **[PRODUCTION.md](./PRODUCTION.md)**.
+The source of truth for how the Klipr product looks and works. Reflects the
+V2 build (gated access, tiers & XP, automatic verification). For deployment
+see **[PRODUCTION.md](./PRODUCTION.md)**; for the full build rationale see
+**[KLIPR-BUILD-PLAN.md](./KLIPR-BUILD-PLAN.md)** and
+**`Klipr Product Flows v2.pdf`** (the product source of truth).
 
 ---
 
 ## 1. What Klipr is
 
-A **content-rewards marketplace**: brands fund a campaign with a budget;
-**clippers** (individuals) and **agencies** post the content to their own pages
-and earn **per verified view**, paid out of the budget proportionally. Generic
-`৳`/`$` currency, global framing (the earlier bKash/Bangladesh specificity was
-removed).
+A content-rewards marketplace, Bangladesh-first. Brands escrow a budget;
+**vetted** clippers post the brand's ready-made clip to their own pages and
+earn **৳50 / 1,000 verified views** (brands pay **৳60 / 1,000**; the spread is
+the margin). Views verify **automatically** against platform APIs; after a
+7-day tracking window they lock and pay to **bKash**.
 
-Three sides: **Clients/brands** (fund), **Clippers/Agencies** (post & earn),
-**Admins** (verify, close, pay). V1 verifies views **manually** (a human records
-the count) — no platform-API tracking yet.
-
----
-
-## 2. Visual direction — "daylight, electric"
-
-Landing benchmarked against the genre leaders (Vyro, Whop, contentrewards,
-clipaffiliates): money-forward headline, dual-audience CTA, proof numbers,
-3-step how-it-works, live campaign cards, an earnings-proof mockup, FAQ.
-
-**Mood:** clean white, soft rounded type, electric-blue identity, real motion.
-
-### Color (`app/globals.css` tokens)
-- Base: white page `#fbfcff`, cool near-white surfaces (`--ink-850/800/700`), hairlines `--line`.
-- Text: deep ink `--text-hi #0c1633`, blue-grey `--text-mid`, captions `--text-low`.
-- **Electric blue "signal":** `--volt-500 #2e5bff` (primary), `--volt-600 #1a3ad8`
-  (deep — AA on white for small text), `--volt-400` hover. Headlines use the
-  `.text-volt-grad` blue gradient.
-- Accent: `--ok` (verified/paid green). One blurred-glow budget; no neon spam.
-
-### Type
-- **Display:** Plus Jakarta Sans (soft, rounded, friendly — replaced the sharp Space Grotesk).
-- **Body:** Hanken Grotesk. **Data/mono:** Martian Mono (tabular figures so live counters never jitter).
-- Self-hosted via `next/font` (no CLS, no runtime fetch).
-
-### Motion (`components/motion/*`, `globals.css`)
-- Lenis smooth-scroll on one GSAP RAF loop; Motion for reveals, magnetic CTA,
-  count-ups; CSS for the aurora, clip-wall marquee, and phone bob.
-- **Reduced-motion + low-power are a first-class branch** (`lib/use-reduced-motion.ts`):
-  counters freeze, marquee/aurora/bob stop, smooth-scroll off.
-
-### Landing structure (`app/page.tsx`)
-Hero (two columns: blue-gradient headline + dual CTA on the left; an **animated
-phone mockup** with live-ticking view/earnings counters, a bottom tab-bar, and
-floating payout/clip cards on the right) → live clip-wall marquee → 3-step
-how-it-works → live campaign cards → earnings-proof dashboard →
-for-clippers / for-brands → FAQ → CTA → footer.
+**The V2 pillars**
+- **Gated access (the Upwork model):** apply → human vetting against the
+  Clipper Standard (active 3 weeks · posting 3–5×/week · real engagement) →
+  let in. No follower minimums; no instant accounts.
+- **Tiers & XP:** Beginner → Hustler → Pro → Elite. XP from verified
+  performance unlocks privileges (submission caps, early access) — **never a
+  different rate**.
+- **Automatic verification:** OAuth-connected accounts + direct platform APIs.
+  YouTube live day one; TikTok/IG/FB run clearly-labeled **Simulated** until
+  each platform's app review passes (`VERIFY_MODE_*` flips them live).
+- **Exactly five human touchpoints:** application vetting · escrow funding
+  confirmation · NID verification · fraud hold review · bKash payout
+  execution. Everything else is the sweep.
 
 ---
 
-## 3. Product architecture (V1, built)
+## 2. Visual direction — "Klipr Glass"
+
+Apple-like light glassmorphism on the official brand kit (`Klipr/` folder):
+frosted ivory panels over soft brand-color gradient fields, Dark Amethyst ink,
+Vibrant Yellow signal.
+
+- **Tokens & recipes:** `app/globals.css` (`KLIPR GLASS` section) — radii
+  rhythm 14/22/28, glass alphas via `color-mix`, amethyst-tinted elevation
+  (e1–e3), `.field-app` gradient field, `.glass` / `.glass-strong` /
+  `.glass-well` (no blur) / `.glass-ink` (max one per screen).
+- **Type:** Stack Sans Headline (display) · Stack Sans Text (body) ·
+  Martian Mono (every number, tabular). Mono eyebrows with section indices
+  ("01 / HOME") are the signature.
+- **Icons:** the curated brand set in repo-root `Functional Icons/`,
+  code-generated to `components/icons/index.tsx` by `npm run icons`
+  (currentColor, non-scaling-stroke). Fallback source: `Klipr/Icons/`.
+- **Charts:** hand-rolled SVG only — `components/ui/sparkline.tsx`,
+  `budget-bar.tsx`, the XP bar. No chart libs, no shadcn/radix.
+- **Motion:** the existing system (Lenis, Reveal/MaskReveal, CountUp,
+  Magnetic, RisePanel) with `lib/use-reduced-motion.ts` as a kill-switch.
+- **Mobile:** floating glass bottom tab bar with a raised yellow Submit
+  button (`components/app/tab-bar.tsx`).
+- **Honesty rule (absolute):** no fabricated counts, earnings, testimonials
+  or activity anywhere. Empty states state the truth; simulated verification
+  always wears the `Simulated` chip.
+
+The shipped dark landing (`app/page.tsx` + `components/landing/*`) is
+untouched; its redesign plan lives in `LANDING-REDESIGN.md`.
+
+---
+
+## 3. Product architecture
 
 ### Routes
-- `/` landing · `/login` (Google) · `/onboarding` (gated form)
-- `/marketplace`, `/campaign/[id]` (+ submit), `/dashboard` — clipper app (`(app)` group)
-- `/admin` — verify queue, close campaign, payout batch
-- `/auth/callback` — OAuth code exchange
-
-### Auth & the forced onboarding gate
-- **Dual-mode** (`lib/auth/session.ts`): Supabase Google OAuth when configured, else a cookie stub.
-- `proxy.ts` (Next 16's renamed Middleware): refreshes the Supabase session +
-  optimistic redirect of logged-out users. **Real gates in layouts:**
-  `app/(app)/layout.tsx` enforces signed-in **and** `profileCompleted` →
-  `/onboarding`; `app/admin/layout.tsx` enforces `role === 'admin'`.
-- Onboarding (`app/onboarding`): **Individual / Agency** choice + payout number +
-  page/handle/platform/followers, **Zod-validated**, flips `profileCompleted`.
+- `/` landing · `/login` (Google or 5 stub identities) · `/apply` + `/apply/status`
+  (the application) · `/onboarding` (post-approval: connect vetted pages →
+  bKash → tier welcome)
+- `(app)/`: `/home`, `/campaigns`, `/campaigns/[id]`, `/clips`, `/clips/[id]`,
+  `/wallet`, `/connections`, `/settings`, `/leaderboard` — clipper + agency
+  (gated: role ∈ {clipper, agency} AND access === "active")
+- `/brand`: overview, `campaigns/new` (wizard), `campaigns/[id]`, `billing`,
+  `settings`
+- `/admin`: ops home + sweep trigger, `applications` (vetting console),
+  `campaigns` (funding), `payouts` (bKash run), `fraud`, `clippers`, `leads`
+- API: `/api/cron/sweep` (CRON_SECRET) · `/api/connect/youtube[/callback]`
+  (OAuth) · `/api/waitlist*` (landing, unchanged)
+- Dev-only QA (404 in production): `/dev-login`, `/dev-submit`, `/dev-sweep`,
+  `/styleguide`
 
 ### Data model (`lib/db/types.ts`)
-`profile` (role individual|agency|admin, payoutNumber, profileCompleted) ·
-`campaign` (budget, minViewThreshold, allowedPlatforms, status) ·
-`submission` (postUrl unique, platform, postingHandle, status, verifiedViews) ·
-`payout` (viewsUsed, amount, status, txnRef — snapshotted at close).
+Profile (role, **access**, tier, xpTotal, streakWeeks, bkashNumber,
+nidStatus + encrypted NID) · Application + ApplicationPage (the vetting
+queue) · ConnectedAccount (vetted-page provenance, oauth|simulated proof,
+encrypted tokens) · Campaign (escrowed budget, fixed rate snapshots,
+minQualifyViews 2–4k, per-clipper cap, submission cap, early access, 7d
+window) · Submission (canonical URL + mediaId dedup, baseline→counted→locked
+views) · ViewSnapshot · XpEvent · **LedgerEntry (zero-sum events, unique
+(event_id, account) ⇒ idempotent)** · PayoutBatch (queued|blocked_nid|…|paid)
+· FraudFlag.
 
-**Dual-mode persistence** (`lib/db/index.ts`): async facade → Supabase
-(`supabase-impl.ts`, RLS-enforced) when configured, else the local JSON store
-(`store.ts`). Call sites only import `@/lib/db`.
+**Money is integer poisha.** `lib/money.ts` (settlement math: escrow clamp +
+cap clamp + qualification minimum) · `lib/ledger.ts` (zero-sum event
+builders) · `lib/xp.ts` (XP_CONFIG — draft constants, structure locked) —
+all unit-tested (`npm test`, 45+ assertions).
 
-### Payout engine (`lib/payout.ts` — unit-tested, 8 cases)
-`earnings = floor((account_views / total_qualifying_views) × budget)`, where
-qualifying = `verified` **and** ≥ `minViewThreshold`. **Agency rollup**: an
-account's many clips are summed and paid once. Floor rounding means the total
-**never exceeds budget**; divide-by-zero guarded.
+### The sweep (`lib/verify/sweep.ts`)
+Every ~15 min: baseline pending → poll open windows (snapshot + fraud rules)
+→ settle closed windows (ledger + XP + streak + tier recompute, idempotent)
+→ campaign lifecycle (settling → refund → completed). Overlap-guarded.
+Adapters: `lib/verify/youtube.ts` (live with `YOUTUBE_API_KEY`),
+`lib/verify/others.ts` (simulated until platform approvals).
 
-### Submission integrity (built-in)
-Unique post URL (no duplicate submissions), platform must match the campaign's
-allowed platforms, individuals submit once / agencies many, manual verification
-records the view count, rejected/below-threshold excluded from payout.
+### Dual-mode persistence
+`lib/db/index.ts` facade → Supabase (`supabase-impl.ts`, RLS + service-role
+split) when configured, else the JSON store (`store.ts`, v3 seed with five
+"Demo" identities). Migration: `supabase/migrations/0004_v2_schema.sql`
+(includes the transactional `settle_submission` function).
 
 ---
 
 ## 4. Production readiness
-- **RLS** on all tables, `is_admin()` SECURITY DEFINER, service-role key server-only.
-- Security headers (`next.config.ts`), typed **env validation** (`lib/env.ts`).
-- `error.tsx`, `not-found.tsx`, route `loading.tsx`, `robots.ts`, `sitemap.ts`, OG metadata.
-- **CI** (`.github/workflows/ci.yml`): test → typecheck → lint → build.
-- Verified: `npm test` (8/8), `tsc` clean, `next build` passes.
+- RLS on every table; token/NID columns service-role only; AES-256-GCM at
+  rest (`lib/crypto.ts`, `TOKEN_KEY`).
+- Guards in every server action (`lib/auth/guards.ts`) — Next 16 actions
+  bypass the proxy matcher by design.
+- Security headers (`next.config.ts`), env validation (`lib/env.ts` +
+  `lib/env.server.ts`), `vercel.json` cron (Hobby needs an external pinger).
+- Verified: `npm test` green · `tsc` clean · `eslint` 0 errors ·
+  `next build` passes · full stub-mode E2E (apply → vet → submit → sweep →
+  settle → payout) with a global ledger zero-sum of 0.
 
-## 5. Stubbed / next
-- Supabase + Google need **your** project + credentials (drop-in — see PRODUCTION.md);
-  the integration is wired and type-safe but runtime-tested by you with creds.
-- Manual view verification is by design for V1.
-- Follow-ups: Storage for clips/proof, transactional notifications, agency
-  sub-clipper view, client self-serve campaign creation, CSP.
-
-*⚡ Klipr — get paid per view.*
+*⚡ Klipr — the platform for clipping content.*
