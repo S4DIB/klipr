@@ -49,9 +49,13 @@ Set these where you deploy (Vercel/host env, **not** committed):
 Leave `YOUTUBE_API_KEY` / `VERIFY_MODE_*` empty → every platform stays **manual**
 (admin enters view counts). Set `YOUTUBE_API_KEY` later to flip YouTube live.
 
-## 4. Make yourself an admin
+## 4. Make yourself the first admin (important — read this)
 
-Sign in once with Google (creates your profile), then in the Supabase SQL editor:
+Because access is invite-only, your **very first Google sign-in will be
+refused** — you'll see *"This email isn't approved yet."* **That's expected.**
+The sign-in still created your profile row in Supabase. Now promote it:
+
+In the Supabase **SQL editor**, run (use the email you signed in with):
 
 ```sql
 update public.profiles
@@ -59,7 +63,9 @@ set role = 'admin', access = 'active', profile_completed = true
 where email = 'YOUR_GOOGLE_EMAIL';
 ```
 
-Sign out/in and you'll land on `/admin`.
+Then sign in again → you land on `/admin`. From there you approve waitlist
+leads in **/admin/applications**, and those people can sign in. (If your profile
+row isn't there yet, do the Google sign-in once first, then run the SQL.)
 
 ## 5. Deploy
 
