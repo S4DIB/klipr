@@ -6,9 +6,12 @@ FROM node:22-slim
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1 PORT=3000
 
-# Install ALL deps (devDeps are needed to build) using the lockfile.
+# Install ALL deps (devDeps are needed to build). We use `npm install`, not
+# `npm ci`: the committed lockfile drifts across platforms for native/optional
+# deps (@tailwindcss/oxide, @emnapi, …), which makes strict `npm ci` fail on the
+# Linux build host. `npm install` reconciles it for this platform.
 COPY package.json package-lock.json ./
-RUN npm ci --include=dev
+RUN npm install --include=dev --no-audit --no-fund
 
 # App source.
 COPY . .
