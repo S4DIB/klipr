@@ -49,7 +49,9 @@ export async function clearSession(): Promise<void> {
   jar.delete(COOKIE);
 }
 
-/** Stub-only Google identity (real Google profile is created by the DB trigger). */
+/** Stub-only Google identity (real Google profile is created by the DB trigger).
+ *  Always a fresh clipper with no access; admin/waitlist promotion happens at
+ *  the call site (promoteIfAdmin / promoteIfPreapproved). */
 export async function ensureGoogleUser(
   email: string,
   displayName: string,
@@ -57,29 +59,20 @@ export async function ensureGoogleUser(
   const existing = await getProfileByEmail(email);
   if (existing) return promoteIfPreapproved(existing);
 
-  // Dev-only bootstrap: in stub mode (no Supabase), the empty store has no
-  // admin. KLIPR_DEV_ADMIN_EMAIL lets one email come in as an active admin so
-  // the manual-verification queues are reachable locally. Never set in prod.
-  const devAdmin =
-    !hasSupabase &&
-    Boolean(process.env.KLIPR_DEV_ADMIN_EMAIL) &&
-    email.toLowerCase() === process.env.KLIPR_DEV_ADMIN_EMAIL!.toLowerCase();
-
   const created = await upsertProfile({
     id: newId("usr"),
     email,
     displayName,
-    role: devAdmin ? "admin" : "clipper",
-    // no marketplace access until the application is vetted (admins are active)
-    access: devAdmin ? "active" : "none",
+    role: "clipper",
+    access: "none", // no marketplace access until vetted / promoted
     tier: "beginner",
     xpTotal: 0,
     streakWeeks: 0,
     nidStatus: "none",
     leaderboardOptOut: false,
     accountStatus: "active",
-    profileCompleted: devAdmin,
-    onboardingStep: devAdmin ? 99 : 0,
+    profileCompleted: false,
+    onboardingStep: 0,
     createdAt: new Date().toISOString(),
   });
   return promoteIfPreapproved(created);

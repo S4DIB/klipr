@@ -4,6 +4,46 @@ import { platformFromUrl, handleFromUrl } from "@/lib/platforms";
 import type { Application, ApplicationPage, Profile } from "@/lib/db/types";
 
 /**
+ * SaaS admin allowlist. Only these emails may hold the admin role, and they are
+ * provisioned automatically on sign-in — no manual SQL, and they pass the
+ * invite-only gate. Add more admins via the ADMIN_EMAILS env var
+ * (comma-separated); KLIPR_DEV_ADMIN_EMAIL is the stub-mode dev admin.
+ */
+const DEFAULT_ADMIN_EMAILS = ["shahsadib25@gmail.com"];
+
+function adminEmailSet(): Set<string> {
+  const raw = [
+    ...DEFAULT_ADMIN_EMAILS,
+    ...(process.env.ADMIN_EMAILS ?? "").split(","),
+    process.env.KLIPR_DEV_ADMIN_EMAIL ?? "",
+  ];
+  return new Set(raw.map((e) => e.trim().toLowerCase()).filter(Boolean));
+}
+
+export function isAdminEmail(email: string): boolean {
+  return adminEmailSet().has(email.trim().toLowerCase());
+}
+
+/**
+ * Auto-provision the SaaS admin. A listed email always signs in as an active
+ * admin (created as a plain clipper by the auth trigger, upgraded here).
+ * Everyone else is returned untouched.
+ */
+export async function promoteIfAdmin(profile: Profile): Promise<Profile> {
+  if (!isAdminEmail(profile.email)) return profile;
+  if (profile.role === "admin" && profile.access === "active" && profile.profileCompleted) {
+    return profile;
+  }
+  return (
+    (await updateProfile(profile.id, {
+      role: "admin",
+      access: "active",
+      profileCompleted: true,
+    })) ?? { ...profile, role: "admin", access: "active", profileCompleted: true }
+  );
+}
+
+/**
  * Waitlist pre-approval → account access. Admins vet landing-waitlist leads
  * in /admin/applications before the person has an account. When an approved
  * lead's email signs in with access "none", the lead converts into an

@@ -49,23 +49,24 @@ Set these where you deploy (Vercel/host env, **not** committed):
 Leave `YOUTUBE_API_KEY` / `VERIFY_MODE_*` empty → every platform stays **manual**
 (admin enters view counts). Set `YOUTUBE_API_KEY` later to flip YouTube live.
 
-## 4. Make yourself the first admin (important — read this)
+## 4. Admin access — automatic
 
-Because access is invite-only, your **very first Google sign-in will be
-refused** — you'll see *"This email isn't approved yet."* **That's expected.**
-The sign-in still created your profile row in Supabase. Now promote it:
+The SaaS admin is **`shahsadib25@gmail.com`** (built into the code —
+`DEFAULT_ADMIN_EMAILS` in `lib/auth/preapproval.ts`). Just **sign in with that
+Google account** → you're provisioned as an active admin automatically and land
+on `/admin`. **No SQL step needed.**
 
-In the Supabase **SQL editor**, run (use the email you signed in with):
+- Only allowlisted emails can ever be admin. Everyone else who signs in is a
+  clipper — and only gets in if you approved them on the waitlist.
+- To add/change admins: set `ADMIN_EMAILS=a@x.com,b@y.com` in your env, or edit
+  `DEFAULT_ADMIN_EMAILS`.
 
-```sql
-update public.profiles
-set role = 'admin', access = 'active', profile_completed = true
-where email = 'YOUR_GOOGLE_EMAIL';
-```
+From `/admin` you approve waitlist leads in **/admin/applications**, and those
+people can then sign in.
 
-Then sign in again → you land on `/admin`. From there you approve waitlist
-leads in **/admin/applications**, and those people can sign in. (If your profile
-row isn't there yet, do the Google sign-in once first, then run the SQL.)
+> Manual fallback (if you ever need it): you can still promote any profile by
+> hand — `update public.profiles set role='admin', access='active',
+> profile_completed=true where email='…';` in the Supabase SQL editor.
 
 ## 5. Deploy
 

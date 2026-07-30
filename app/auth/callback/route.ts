@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/db";
 import { accessAllowed, routeFor } from "@/lib/auth/guards";
-import { promoteIfPreapproved } from "@/lib/auth/preapproval";
+import { promoteIfAdmin, promoteIfPreapproved } from "@/lib/auth/preapproval";
 
 /**
  * Google OAuth callback. Invite-only: exchange the code, then allow the session
@@ -22,8 +22,10 @@ export async function GET(request: Request) {
         data: { user },
       } = await sb.auth.getUser();
       const profile = user ? await getProfile(user.id) : null;
-      // approved on the waitlist before signing up? Unlock the app right here.
-      const promoted = profile ? await promoteIfPreapproved(profile) : null;
+      // The SaaS admin email is provisioned here; then approved-waitlist clippers
+      // are unlocked. Anything else stays access "none".
+      let promoted = profile ? await promoteIfAdmin(profile) : null;
+      if (promoted) promoted = await promoteIfPreapproved(promoted);
 
       if (promoted && accessAllowed(promoted)) {
         return NextResponse.redirect(new URL(routeFor(promoted), url.origin));
