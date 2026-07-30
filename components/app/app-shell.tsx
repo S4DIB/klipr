@@ -38,6 +38,8 @@ const RAIL: Record<ShellRole, RailItem[]> = {
   admin: [
     { href: "/admin", label: "Ops home", icon: "home" },
     { href: "/admin/applications", label: "Applications", icon: "clock" },
+    { href: "/admin/accounts", label: "Accounts", icon: "users" },
+    { href: "/admin/clips", label: "Clips", icon: "graph" },
     { href: "/admin/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/admin/payouts", label: "Payouts", icon: "bkash" },
     { href: "/admin/fraud", label: "Fraud", icon: "flag" },

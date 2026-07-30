@@ -100,12 +100,17 @@ export interface ConnectedAccount {
   displayName?: string;
   avatarUrl?: string;
   followerCount?: number;
-  /** How ownership was established. Live platforms require "oauth". */
-  proof: "oauth" | "simulated";
+  /** How ownership was established. Live platforms require "oauth"; "manual"
+   *  = pending admin approval of ownership (no platform API). */
+  proof: "oauth" | "simulated" | "manual";
   accessTokenEnc?: string;
   refreshTokenEnc?: string;
   tokenExpiresAt?: string;
-  status: "active" | "revoked";
+  /** "pending" ⇒ awaiting admin ownership approval; only "active" can submit. */
+  status: "pending" | "active" | "revoked";
+  /** Admin manual-verification audit. */
+  verifiedAt?: string;
+  verifiedBy?: string;
   createdAt: string;
 }
 

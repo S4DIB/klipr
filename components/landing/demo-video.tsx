@@ -33,7 +33,7 @@ const SCENES = [
   },
   {
     label: "Views verify",
-    still: "Every view is checked before it counts — bots and bought spikes never pay.",
+    still: "Every view is checked before it counts, bots and bought spikes never pay.",
   },
   {
     label: "Money lands",
@@ -55,29 +55,29 @@ function SceneBrowse() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: EASE, delay: 0.2 + i * 0.25 }}
-          className="relative rounded-2xl border border-white/12 bg-white/[0.07] p-4 backdrop-blur-sm"
+          className="relative rounded-2xl border border-line bg-white/80 p-4 shadow-[var(--shadow-sm)] backdrop-blur-sm"
         >
           {r.picked && (
             <motion.span
               aria-hidden
-              className="absolute inset-0 rounded-2xl border-2 border-yellow"
+              className="absolute inset-0 rounded-2xl border-2 border-volt-500"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.7, duration: 0.3 }}
             />
           )}
           <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/90 text-[11px] font-bold text-volt-600">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-volt-500 text-[11px] font-bold text-white">
               {r.tag}
             </span>
             <div className="min-w-0 flex-1 leading-tight">
-              <p className="truncate text-[13px] font-semibold text-white">{r.name}</p>
-              <p className="text-[11px] text-white/55">
+              <p className="truncate text-[13px] font-semibold text-text-hi">{r.name}</p>
+              <p className="text-[11px] text-text-mid">
                 {r.niche} · <TikTokIcon className="inline h-3 w-3" />{" "}
                 <InstagramIcon className="inline h-3 w-3" />
               </p>
             </div>
-            <span className="font-mono text-[12px] font-semibold text-yellow">{r.rate}</span>
+            <span className="font-mono text-[12px] font-semibold text-volt-600">{r.rate}</span>
           </div>
           {r.picked && (
             <motion.div
@@ -86,7 +86,7 @@ function SceneBrowse() {
               transition={{ delay: 2.1, duration: 0.35, ease: EASE }}
               className="overflow-hidden"
             >
-              <div className="mt-3 grid h-9 place-items-center rounded-lg bg-yellow text-[12px] font-semibold tracking-tight text-volt-600">
+              <div className="mt-3 grid h-9 place-items-center rounded-lg bg-volt-500 text-[12px] font-semibold tracking-tight text-white">
                 Join campaign
               </div>
             </motion.div>
@@ -105,23 +105,23 @@ function ScenePost() {
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE, delay: 0.2 }}
-        className="rounded-2xl border border-white/12 bg-white/[0.07] p-5 backdrop-blur-sm"
+        className="rounded-2xl border border-line bg-white/80 p-5 shadow-[var(--shadow-sm)] backdrop-blur-sm"
       >
-        <p className="text-left text-[11px] font-medium uppercase tracking-wider text-white/55">
+        <p className="text-left text-[11px] font-medium uppercase tracking-wider text-text-mid">
           Your post link
         </p>
-        <div className="mt-2 flex h-11 items-center overflow-hidden rounded-xl border border-white/15 bg-black/25 px-3.5">
+        <div className="mt-2 flex h-11 items-center overflow-hidden rounded-xl border border-[rgba(53,5,90,0.08)] bg-[rgba(53,5,90,0.045)] px-3.5">
           <motion.span
             initial={{ width: 0 }}
             animate={{ width: "auto" }}
             transition={{ delay: 0.7, duration: 1.3, ease: "linear" }}
-            className="overflow-hidden whitespace-nowrap font-mono text-[12px] text-white/85"
+            className="overflow-hidden whitespace-nowrap font-mono text-[12px] text-text-hi"
           >
             tiktok.com/@yourpage/video/7291…
           </motion.span>
           <motion.span
             aria-hidden
-            className="ml-0.5 h-4 w-[2px] shrink-0 bg-yellow"
+            className="ml-0.5 h-4 w-[2px] shrink-0 bg-volt-500"
             animate={{ opacity: [1, 0, 1] }}
             transition={{ duration: 0.9, repeat: Infinity }}
           />
@@ -130,7 +130,7 @@ function ScenePost() {
           initial={{ scale: 1 }}
           animate={{ scale: [1, 0.96, 1] }}
           transition={{ delay: 2.3, duration: 0.3 }}
-          className="mt-3 grid h-10 place-items-center rounded-xl bg-yellow text-[13px] font-semibold tracking-tight text-volt-600"
+          className="mt-3 grid h-10 place-items-center rounded-xl bg-volt-500 text-[13px] font-semibold tracking-tight text-white"
         >
           Submit clip
         </motion.div>
@@ -139,7 +139,7 @@ function ScenePost() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2.8, duration: 0.35 }}
-        className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-mint/30 bg-mint/10 px-3 py-1 text-[11px] font-medium text-mint"
+        className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-success-500/30 bg-success-bg px-3 py-1 text-[11px] font-medium text-success-600"
       >
         <BoltMark className="h-2.5" />
         Tracking started
@@ -156,7 +156,7 @@ function SceneVerify() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/55"
+        className="font-mono text-[11px] uppercase tracking-[0.22em] text-text-mid"
       >
         Verified views
       </motion.p>
@@ -164,7 +164,7 @@ function SceneVerify() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5, ease: EASE }}
-        className="mt-2 font-mono text-[clamp(2.6rem,7vw,4rem)] font-semibold tracking-tight text-white"
+        className="mt-2 font-mono text-[clamp(2.6rem,7vw,4rem)] font-semibold tracking-tight text-text-hi"
       >
         <CountUp to={48200} duration={2.2} />
       </motion.p>
@@ -172,7 +172,7 @@ function SceneVerify() {
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 2.5, duration: 0.3 }}
-        className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-mint/30 bg-mint/10 px-3.5 py-1.5 text-[12px] font-medium text-mint"
+        className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-success-500/30 bg-success-bg px-3.5 py-1.5 text-[12px] font-medium text-success-600"
       >
         <svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true">
           <path d="M2.5 7.5 6 11l5.5-7" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -229,32 +229,32 @@ function Poster({ onPlay }: { onPlay: () => void }) {
     <>
       {/* top chips — video player affordance */}
       <div className="absolute inset-x-4 top-4 z-10 flex items-center justify-between">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-black/30 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
-          <BoltMark className="h-2.5 text-yellow" />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white/70 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-text-mid backdrop-blur-sm">
+          <BoltMark className="h-2.5 text-volt-500" />
           Demo
         </span>
-        <span className="rounded-full bg-black/30 px-3 py-1 font-mono text-[10px] tracking-[0.18em] text-white/80 backdrop-blur-sm">
+        <span className="rounded-full border border-line bg-white/70 px-3 py-1 font-mono text-[10px] tracking-[0.18em] text-text-mid backdrop-blur-sm">
           0:15
         </span>
       </div>
 
       {/* dimmed story frames peeking through */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-45">
-        <div className="absolute left-1/2 top-[13%] w-[80%] -translate-x-1/2 -rotate-3 rounded-2xl border border-white/12 bg-white/[0.07] p-4">
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-60">
+        <div className="absolute left-1/2 top-[13%] w-[80%] -translate-x-1/2 -rotate-3 rounded-2xl border border-line bg-white/80 p-4 shadow-[var(--shadow-sm)]">
           <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/90 text-[11px] font-bold text-volt-600">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-volt-500 text-[11px] font-bold text-white">
               KL
             </span>
             <div className="min-w-0 flex-1 leading-tight">
-              <p className="truncate text-[13px] font-semibold text-white">
+              <p className="truncate text-[13px] font-semibold text-text-hi">
                 Klipr · Meme Drop
               </p>
-              <p className="text-[11px] text-white/55">Memes</p>
+              <p className="text-[11px] text-text-mid">Memes</p>
             </div>
-            <span className="font-mono text-[12px] font-semibold text-yellow">৳50 / 1K</span>
+            <span className="font-mono text-[12px] font-semibold text-volt-600">৳50 / 1K</span>
           </div>
         </div>
-        <div className="absolute bottom-[14%] left-1/2 w-[64%] -translate-x-1/2 rotate-2 rounded-2xl bg-ink-900/90 p-4">
+        <div className="absolute bottom-[14%] left-1/2 w-[64%] -translate-x-1/2 rotate-2 rounded-2xl border border-line bg-white/90 p-4 shadow-[var(--shadow-sm)]">
           <div className="flex items-center justify-between">
             <span className="text-[12px] font-semibold text-text-hi">Payout sent</span>
             <span className="font-mono text-[13px] font-semibold text-volt-600">৳2,410</span>
@@ -268,20 +268,20 @@ function Poster({ onPlay }: { onPlay: () => void }) {
           <span className="relative mx-auto block h-20 w-20">
             <span
               aria-hidden
-              className="pulse-ring absolute inset-0 rounded-full border-2 border-yellow/50"
+              className="pulse-ring absolute inset-0 rounded-full border-2 border-volt-500/50"
             />
             <button
               type="button"
               onClick={onPlay}
               aria-label="Play the 15-second demo"
-              className="grid h-20 w-20 place-items-center rounded-full bg-yellow shadow-[0_18px_56px_-12px_rgba(250,255,71,0.6)] transition-transform duration-200 hover:scale-105 active:scale-95"
+              className="grid h-20 w-20 place-items-center rounded-full bg-volt-500 shadow-[0_18px_56px_-12px_rgba(125,4,215,0.6)] transition-transform duration-200 hover:scale-105 active:scale-95"
             >
-              <svg width="22" height="26" viewBox="0 0 12 14" fill="var(--volt-600)" aria-hidden="true" className="ml-1">
+              <svg width="22" height="26" viewBox="0 0 12 14" fill="#fffff4" aria-hidden="true" className="ml-1">
                 <path d="M0 0l12 7-12 7V0Z" />
               </svg>
             </button>
           </span>
-          <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.24em] text-white/70">
+          <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.24em] text-text-mid">
             Press play · 15 seconds
           </p>
         </div>
@@ -311,17 +311,17 @@ function Player() {
   const ActiveScene = SCENE_VIEWS[scene];
 
   return (
-    <div className="relative mx-auto w-full max-w-[400px] overflow-hidden rounded-[28px] border border-white/12 bg-[#1b0433] shadow-[0_44px_90px_-32px_rgba(0,0,0,0.65)]">
+    <div className="field-app relative mx-auto w-full max-w-[400px] overflow-hidden rounded-[28px] border border-line shadow-[0_44px_90px_-40px_rgba(53,5,90,0.4)]">
       {/* In-flow 9:16 spacer (padding-top = 16/9). Every other child here is
           absolute, so without this the box has no content height — and iOS
           Safari collapses an aspect-ratio-only box to 0, hiding the phone.
           The padding hack forces a real height on every browser. */}
       <div aria-hidden className="pt-[177.78%]" />
 
-      {/* electric texture + corner glows, same voice as the hero */}
+      {/* soft daylight texture — dot-grid + gentle brand-color pools */}
       <div
         aria-hidden
-        className="pixel-grid pointer-events-none absolute inset-0"
+        className="dot-grid pointer-events-none absolute inset-0 opacity-70"
         style={{
           maskImage: "radial-gradient(85% 85% at 50% 20%, #000 0%, transparent 80%)",
           WebkitMaskImage: "radial-gradient(85% 85% at 50% 20%, #000 0%, transparent 80%)",
@@ -330,7 +330,7 @@ function Player() {
       <div
         aria-hidden
         className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full"
-        style={{ background: "radial-gradient(circle, rgba(250,255,71,0.16), transparent 65%)" }}
+        style={{ background: "radial-gradient(circle, rgba(125,4,215,0.14), transparent 65%)" }}
       />
       <div
         aria-hidden
@@ -342,12 +342,12 @@ function Player() {
       {phase !== "poster" && (
         <div className="absolute inset-x-4 top-4 z-20 flex gap-1.5">
           {SCENES.map((s, i) => (
-            <span key={s.label} className="h-1 flex-1 overflow-hidden rounded-full bg-white/20">
-              {(phase === "done" || i < scene) && <span className="block h-full w-full bg-yellow" />}
+            <span key={s.label} className="h-1 flex-1 overflow-hidden rounded-full bg-[rgba(53,5,90,0.12)]">
+              {(phase === "done" || i < scene) && <span className="block h-full w-full bg-volt-500" />}
               {phase === "playing" && i === scene && (
                 <motion.span
                   key={scene}
-                  className="block h-full w-full origin-left bg-yellow"
+                  className="block h-full w-full origin-left bg-volt-500"
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: SCENE_MS / 1000, ease: "linear" }}
@@ -391,16 +391,16 @@ function Player() {
             transition={{ duration: 0.4 }}
           >
             <div className="text-center">
-              <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-white/55">
+              <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-text-mid">
                 That&rsquo;s the whole loop
               </p>
-              <p className="display mt-3 text-[clamp(1.6rem,3.6vw,2.4rem)] text-ink-900">
-                Post. Verify. <span className="text-yellow">Get paid.</span>
+              <p className="display mt-3 text-[clamp(1.6rem,3.6vw,2.4rem)] text-text-hi">
+                Post. Verify. <span className="text-volt-grad">Get paid.</span>
               </p>
               <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
                 <a
                   href="#waitlist"
-                  className="group inline-flex h-12 items-center gap-2 rounded-full bg-yellow px-6 text-[14px] font-semibold tracking-tight text-volt-600 transition-all duration-200 hover:brightness-95 active:scale-[0.98]"
+                  className="group inline-flex h-12 items-center gap-2 rounded-full bg-volt-500 px-6 text-[14px] font-semibold tracking-tight text-white shadow-[0_8px_24px_-8px_rgba(125,4,215,0.5)] transition-all duration-200 hover:bg-violet-700 active:scale-[0.98]"
                 >
                   Join the waitlist
                   <ArrowEast />
@@ -408,7 +408,7 @@ function Player() {
                 <button
                   type="button"
                   onClick={play}
-                  className="inline-flex h-12 items-center gap-2 rounded-full border border-white/25 px-6 text-[14px] font-medium text-white transition-colors hover:border-white/50 hover:bg-white/10"
+                  className="inline-flex h-12 items-center gap-2 rounded-full border border-line bg-white/50 px-6 text-[14px] font-medium text-text-hi transition-colors hover:border-volt-400 hover:text-volt-600"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M3 12a9 9 0 1 0 2.6-6.4L3 8" />
@@ -424,7 +424,7 @@ function Player() {
 
       {/* scene caption */}
       {phase === "playing" && (
-        <p className="absolute bottom-4 left-5 z-20 font-mono text-[10px] uppercase tracking-[0.2em] text-white/55">
+        <p className="absolute bottom-4 left-5 z-20 font-mono text-[10px] uppercase tracking-[0.2em] text-text-mid">
           {`0${scene + 1}`} · {SCENES[scene].label}
         </p>
       )}
@@ -435,13 +435,13 @@ function Player() {
 /** Static storyboard for reduced-motion users — same story, no autoplay. */
 function Storyboard() {
   return (
-    <div className="mx-auto grid max-w-[400px] gap-3 rounded-[28px] border border-white/12 bg-[#1b0433] p-5 shadow-[0_44px_90px_-32px_rgba(0,0,0,0.65)]">
+    <div className="field-app mx-auto grid max-w-[400px] gap-3 rounded-[28px] border border-line p-5 shadow-[0_44px_90px_-40px_rgba(53,5,90,0.4)]">
       {SCENES.map((s, i) => (
-        <div key={s.label} className="rounded-2xl border border-white/12 bg-white/[0.06] p-5">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-yellow">
+        <div key={s.label} className="rounded-2xl border border-line bg-white/80 p-5 shadow-[var(--shadow-sm)]">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-volt-500">
             {`0${i + 1}`} · {s.label}
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-white/70">{s.still}</p>
+          <p className="mt-2 text-sm leading-relaxed text-text-mid">{s.still}</p>
         </div>
       ))}
     </div>
@@ -459,14 +459,11 @@ export function DemoVideo() {
         {/* Plain (no in-view Reveal) so the whole demo section is visible
             from SSR with zero JS — this is the section reported blank on iOS. */}
         <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow mb-4" style={{ color: "var(--yellow)" }}>
-            01 · Watch
-          </p>
-          <h2 className="display text-[clamp(2rem,4.4vw,3.2rem)] text-ink-900">
+          <h2 className="display text-[clamp(2rem,4.4vw,3.2rem)] text-text-hi">
             Klipr in 15 seconds.
           </h2>
-          <p className="mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed text-white/70">
-            No deck. No demo call. This is the whole product — from picking
+          <p className="mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed text-text-mid">
+            No deck. No demo call. This is the whole product, from picking
             a campaign to money landing.
           </p>
         </div>

@@ -169,11 +169,11 @@ export function WaitlistForm({
         setState("done");
       } else {
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
-        setError(data?.error ?? "Something went wrong — try again.");
+        setError(data?.error ?? "Something went wrong, try again.");
         setState("error");
       }
     } catch {
-      setError("Something went wrong — try again.");
+      setError("Something went wrong, try again.");
       setState("error");
     }
   }
@@ -187,7 +187,7 @@ export function WaitlistForm({
           <path d="M2.5 7.5 6 11l5.5-7" stroke={t.check} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <p className={t.successText}>
-          You&rsquo;re on the list — we&rsquo;ll email you at launch.
+          You&rsquo;re on the list, we&rsquo;ll email you at launch.
         </p>
       </div>
     );
@@ -318,7 +318,7 @@ export function WaitlistForm({
           <>
             {/* clipper: paste page links + a niche per page */}
             <div>
-              <label className={t.label}>Your pages — paste the link, pick a niche</label>
+              <label className={t.label}>Your pages: paste the link, pick a niche</label>
               <div className="space-y-2.5">
                 {pages.map((p, i) => (
                   <div key={i} className={`relative rounded-xl p-2.5 ${t.card}`}>

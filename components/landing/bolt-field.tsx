@@ -1,9 +1,15 @@
-/* Scattered brand bolts (Pattern 02) — the yellow 3D bolt sprinkled across the
- * whole page at varied size, rotation and depth, gently bobbing. Decorative and
- * behind the content. Placements are hand-authored (not Math.random) so SSR and
- * client match, and so bolts stay clear of the body copy. `top` is a % of full
- * page height; each bolt hugs a side (or drifts toward the middle at low
- * opacity). Rotation lives on the wrapper so the bob translate composes with it. */
+/* Scattered brand bolts (Pattern 02) — the Royal-Violet 3D bolt sprinkled across
+ * the whole page at varied size, rotation and depth, gently bobbing. Decorative
+ * and behind the content, kept at a low opacity so they read as a soft accent on
+ * the ivory daylight field (not a competing foreground). Placements are
+ * hand-authored (not Math.random) so SSR and client match, and so bolts stay
+ * clear of the body copy. `top` is a % of full page height; each bolt hugs a
+ * side (or drifts toward the middle). Rotation lives on the wrapper so the bob
+ * translate composes with it. */
+
+/* Global dimmer applied over each bolt's own hand-tuned relative opacity, so the
+ * violet bolts stay a soft accent (not a competing foreground) on the light field. */
+const OPACITY_SCALE = 1;
 
 type Bolt = {
   top: string;
@@ -65,12 +71,12 @@ export function BoltField() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/bolt-3d-yellow.svg"
+            src="/brand/bolt-3d-violet.svg"
             alt=""
             className="block w-auto"
             style={{
               height: b.h,
-              opacity: b.op,
+              opacity: b.op * OPACITY_SCALE,
               animation: `bob ${b.dur}s ease-in-out ${b.delay}s infinite`,
             }}
           />

@@ -56,20 +56,30 @@ export async function ensureGoogleUser(
 ): Promise<Profile> {
   const existing = await getProfileByEmail(email);
   if (existing) return promoteIfPreapproved(existing);
+
+  // Dev-only bootstrap: in stub mode (no Supabase), the empty store has no
+  // admin. KLIPR_DEV_ADMIN_EMAIL lets one email come in as an active admin so
+  // the manual-verification queues are reachable locally. Never set in prod.
+  const devAdmin =
+    !hasSupabase &&
+    Boolean(process.env.KLIPR_DEV_ADMIN_EMAIL) &&
+    email.toLowerCase() === process.env.KLIPR_DEV_ADMIN_EMAIL!.toLowerCase();
+
   const created = await upsertProfile({
     id: newId("usr"),
     email,
     displayName,
-    role: "clipper",
-    access: "none", // no marketplace access until the application is vetted
+    role: devAdmin ? "admin" : "clipper",
+    // no marketplace access until the application is vetted (admins are active)
+    access: devAdmin ? "active" : "none",
     tier: "beginner",
     xpTotal: 0,
     streakWeeks: 0,
     nidStatus: "none",
     leaderboardOptOut: false,
     accountStatus: "active",
-    profileCompleted: false,
-    onboardingStep: 0,
+    profileCompleted: devAdmin,
+    onboardingStep: devAdmin ? 99 : 0,
     createdAt: new Date().toISOString(),
   });
   return promoteIfPreapproved(created);

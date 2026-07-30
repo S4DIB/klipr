@@ -3,8 +3,7 @@
 import { redirect } from "next/navigation";
 import { hasSupabase, siteUrl } from "@/lib/env";
 import { ensureGoogleUser, setSession } from "@/lib/auth/session";
-import { routeFor } from "@/lib/auth/guards";
-import { getProfile } from "@/lib/db";
+import { accessAllowed, routeFor } from "@/lib/auth/guards";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
 export async function signInWithGoogle() {
@@ -18,38 +17,12 @@ export async function signInWithGoogle() {
     redirect(data.url);
   }
 
-  // stub mode: skip OAuth. Enter directly as the seeded ACTIVE demo clipper
-  // so testing lands straight in the app. Falls back to a fresh applicant
-  // identity if the seed is missing.
-  const demo = await getProfile("usr_clipper");
-  const user = demo ?? (await ensureGoogleUser("you@gmail.com", "You"));
+  // Dev stub mode (no Supabase): mint/lookup the identity like a first-time
+  // Google sign-in (ensureGoogleUser also promotes an approved-waitlist email).
+  // Invite-only gate: only staff/brand or an approved clipper gets a session.
+  // KLIPR_DEV_ADMIN_EMAIL makes you@gmail.com an admin for local testing.
+  const user = await ensureGoogleUser("you@gmail.com", "You");
+  if (!accessAllowed(user)) redirect("/login?error=not_approved");
   await setSession(user.id);
   redirect(routeFor(user));
-}
-
-/** Stub-only demo identities (hidden when Supabase is configured). */
-async function signInAsSeed(id: string) {
-  const profile = await getProfile(id);
-  if (!profile) redirect("/login?error=seed");
-  await setSession(profile.id);
-  redirect(routeFor(profile));
-}
-
-export async function signInAsClipper() {
-  await signInAsSeed("usr_clipper");
-}
-export async function signInAsNewClipper() {
-  await signInAsSeed("usr_newbie");
-}
-export async function signInAsAgency() {
-  await signInAsSeed("usr_agency");
-}
-export async function signInAsBrand() {
-  await signInAsSeed("usr_brand");
-}
-export async function signInAsAdmin() {
-  await signInAsSeed("usr_admin");
-}
-export async function signInAsApplicant() {
-  await signInAsSeed("usr_waitlist");
 }

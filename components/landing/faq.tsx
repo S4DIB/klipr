@@ -10,7 +10,7 @@ import { BoltMark } from "@/components/ui/logo";
 const ITEMS = [
   {
     q: "Do I need a big following?",
-    a: "No. There is no follower target. But your page has to be active — you post often and real people watch. A page that sits idle will not earn, because nobody sees the clip.",
+    a: "No. There is no follower target. But your page has to be active, you post often and real people watch. A page that sits idle will not earn, because nobody sees the clip.",
   },
   {
     q: "How are views verified?",
@@ -22,27 +22,27 @@ const ITEMS = [
   },
   {
     q: "Is this a scam?",
-    a: "Fair question. You pay nothing to join, and nothing to post. If your clip gets no views you earn nothing — but you lose nothing either. Once campaigns start paying out, we'll show the real receipts right here.",
+    a: "Fair question. You pay nothing to join, and nothing to post. If your clip gets no views you earn nothing, but you lose nothing either. Once campaigns start paying out, we'll show the real receipts right here.",
   },
   {
     q: "I'm a brand. How does it work?",
-    a: "You fund a campaign and pay only for verified views — ৳60 per 1,000.",
+    a: "You fund a campaign and pay only for verified views, ৳60 per 1,000.",
   },
 ];
 
 function Row({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-white/12">
+    <div className="border-b border-line">
       <button
         onClick={() => setOpen((o) => !o)}
         className="group flex w-full items-center justify-between gap-4 py-6 text-left"
         aria-expanded={open}
       >
-        <span className="font-display text-lg text-white transition-colors group-hover:text-yellow">
+        <span className="font-display text-lg text-text-hi transition-colors group-hover:text-volt-600">
           {q}
         </span>
-        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/20 text-white/60 transition-colors group-hover:border-yellow/50 group-hover:text-yellow">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-line text-text-mid transition-colors group-hover:border-volt-400 group-hover:text-volt-600">
           <motion.svg
             width="14"
             height="14"
@@ -64,7 +64,7 @@ function Row({ q, a }: { q: string; a: string }) {
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
-            <p className="max-w-[60ch] pb-6 text-white/65">{a}</p>
+            <p className="max-w-[60ch] pb-6 text-text-mid">{a}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -83,17 +83,12 @@ export function Faq() {
       />
       <div className="mx-auto max-w-2xl text-center">
         <Reveal>
-          <p className="eyebrow mb-4" style={{ color: "var(--yellow)" }}>
-            04 · Fair questions
-          </p>
-        </Reveal>
-        <Reveal delay={0.05}>
-          <h2 className="display text-[clamp(2rem,4.4vw,3.2rem)] text-ink-900">
+          <h2 className="display text-[clamp(2rem,4.4vw,3.2rem)] text-text-hi">
             Still on the fence?
           </h2>
         </Reveal>
         <Reveal delay={0.1}>
-          <p className="mx-auto mt-5 max-w-[46ch] text-lg leading-relaxed text-white/65">
+          <p className="mx-auto mt-5 max-w-[46ch] text-lg leading-relaxed text-text-mid">
             Fair. Here&rsquo;s everything people ask before they join.
           </p>
         </Reveal>
@@ -109,11 +104,11 @@ export function Faq() {
 
       {/* every objection handled — hand them straight to the close */}
       <Reveal delay={0.15}>
-        <p className="mt-14 text-center text-white/65">
-          That&rsquo;s every question we get. Only one thing left —{" "}
+        <p className="mt-14 text-center text-text-mid">
+          That&rsquo;s every question we get. Only one thing left,{" "}
           <a
             href="#waitlist"
-            className="inline-flex items-baseline gap-1.5 font-semibold text-yellow underline decoration-yellow/40 underline-offset-4 transition-colors hover:text-yellow/80"
+            className="inline-flex items-baseline gap-1.5 font-semibold text-volt-600 underline decoration-volt-400/50 underline-offset-4 transition-colors hover:text-volt-500"
           >
             <BoltMark className="h-[0.8em] self-center" />
             claim your spot

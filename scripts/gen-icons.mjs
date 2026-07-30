@@ -45,6 +45,7 @@ const NAME_MAP = {
   Graph: "IconGraph",
   Leaderboard: "IconTrophy",
   Link: "IconLink",
+  Login: "IconLogin",
   Megaphone: "IconMegaphone",
   Notifications: "IconBell",
   Play: "IconPlay",

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { requireActiveClipper } from "@/lib/auth/guards";
 import { getCampaign, listConnectedAccounts, listSubmissions } from "@/lib/db";
 import { GlassPanel } from "@/components/app/glass-panel";
+import { CampaignCover } from "@/components/app/campaign-cover";
 import { StatusChip } from "@/components/app/status-chip";
 import { SubmitSheet } from "@/components/app/submit-sheet";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,14 @@ export default async function CampaignDetailPage({
 
       <div className="mt-[14px] flex flex-col gap-[14px] lg:grid lg:grid-cols-[1fr_360px] lg:items-start lg:gap-5">
         <div className="flex min-w-0 flex-col gap-[14px]">
+      {/* cover — the supplied clip's art (placeholder until a brand uploads real media) */}
+      <CampaignCover
+        coverUrl={campaign.coverUrl}
+        seed={campaign.id}
+        rounded="all"
+        className="shadow-[var(--shadow-md)]"
+      />
+
       {/* the one ink surface. Brand + campaign header */}
       <GlassPanel variant="ink" className="p-[18px]">
         <p className="eyebrow text-[rgba(255,255,244,0.6)]">{campaign.brandName}</p>
@@ -153,7 +162,6 @@ export default async function CampaignDetailPage({
             <SubmitSheet
               campaignId={campaign.id}
               campaignName={`${campaign.brandName} · ${campaign.name}`}
-              windowDays={campaign.trackingWindowDays}
               accounts={eligibleAccounts}
               urlHint={urlHint}
             />

@@ -16,6 +16,7 @@ import { IconChevronLeft } from "@/components/icons";
 import { PLATFORMS } from "@/lib/platforms";
 import { takaFromPoisha, dhakaDate, dhakaDateTime } from "@/lib/format";
 import { clipperEarningsPoisha } from "@/lib/money";
+import { getAdapter } from "@/lib/verify";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "Clip" };
@@ -48,6 +49,10 @@ export default async function ClipDetailPage({
   const counted = snapshots.map((s) => Math.max(0, s.views - sub.baselineViews));
   const simulated = snapshots.some((s) => s.source === "simulated");
   const settled = sub.status === "settled";
+  // Manual mode (no platform API): views are entered by an admin at review, so
+  // there's no baseline/curve/countdown — the clip is simply "in review".
+  const manual = getAdapter(sub.platform).mode() === "manual";
+  const inReview = manual && !settled && sub.status !== "rejected";
   const dayNow = Math.max(
     0,
     Math.floor(
@@ -66,32 +71,44 @@ export default async function ClipDetailPage({
       ? clipperEarningsPoisha(displayViews, rate)
       : 0;
 
-  const steps: { label: string; note: string; state: "done" | "active" | "todo" }[] = [
+  type Step = { label: string; note: string; state: "done" | "active" | "todo" };
+  const midSteps: Step[] = manual
+    ? [
+        {
+          label: "In review",
+          note: "Our team verifies the view count and settles your earnings.",
+          state: settled || sub.status === "rejected" ? "done" : "active",
+        },
+      ]
+    : [
+        {
+          label: "Baseline captured",
+          note: "Starting views recorded automatically",
+          state: sub.status === "pending" ? "active" : "done",
+        },
+        {
+          label: sub.status === "held" ? "On hold" : "Tracking",
+          note:
+            sub.status === "held"
+              ? (sub.holdReason ?? "An automatic check flagged this clip. A reviewer will clear it.")
+              : simulated
+                ? "Simulated polling until this platform's API approval lands"
+                : "Polling the platform API every 15 min",
+          state:
+            sub.status === "tracking" || sub.status === "held"
+              ? "active"
+              : sub.status === "pending"
+                ? "todo"
+                : "done",
+        },
+      ];
+  const steps: Step[] = [
     {
       label: "Submitted",
       note: `${dhakaDate(sub.submittedAt)} · post URL accepted`,
       state: "done",
     },
-    {
-      label: "Baseline captured",
-      note: "Starting views recorded automatically",
-      state: sub.status === "pending" ? "active" : "done",
-    },
-    {
-      label: sub.status === "held" ? "On hold" : "Tracking",
-      note:
-        sub.status === "held"
-          ? (sub.holdReason ?? "An automatic check flagged this clip. A reviewer will clear it.")
-          : simulated
-            ? "Simulated polling until this platform's API approval lands"
-            : "Polling the platform API every 15 min",
-      state:
-        sub.status === "tracking" || sub.status === "held"
-          ? "active"
-          : sub.status === "pending"
-            ? "todo"
-            : "done",
-    },
+    ...midSteps,
     sub.status === "rejected"
       ? {
           label: "Rejected",
@@ -99,7 +116,11 @@ export default async function ClipDetailPage({
           state: "done",
         }
       : {
-          label: settled ? `Settled ${dhakaDate(sub.settledAt ?? sub.windowEndsAt)}` : `Settles ${dhakaDate(sub.windowEndsAt)}`,
+          label: settled
+            ? `Settled ${dhakaDate(sub.settledAt ?? sub.windowEndsAt)}`
+            : manual
+              ? "Settles at review"
+              : `Settles ${dhakaDate(sub.windowEndsAt)}`,
           note: "Views lock · earnings pay to your wallet",
           state: settled ? "done" : "todo",
         },
@@ -133,7 +154,11 @@ export default async function ClipDetailPage({
       <GlassPanel className="p-4">
         <div className="flex items-center justify-between">
           <span className="eyebrow">Verified views</span>
-          {sub.status === "tracking" && !simulated ? (
+          {inReview ? (
+            <span className="rounded-full bg-warning-bg px-[9px] py-1 text-[11px] font-bold text-warning-600">
+              ● In review
+            </span>
+          ) : sub.status === "tracking" && !simulated ? (
             <span className="rounded-full bg-success-bg px-[9px] py-1 text-[11px] font-bold text-success-600">
               ● Tracking · live
             </span>
@@ -146,11 +171,12 @@ export default async function ClipDetailPage({
           )}
         </div>
         <p className="mt-1.5 font-mono text-[40px] font-semibold tracking-[-0.02em] text-ink-900 [font-variant-numeric:tabular-nums]">
-          {displayViews.toLocaleString("en-US")}
+          {inReview ? "—" : displayViews.toLocaleString("en-US")}
         </p>
         <p className="text-[12px] text-ink-500">
-          Counts from submission onward
-          {settled ? " · views locked" : ` · ${windowLeft(sub.windowEndsAt)}`}
+          {inReview
+            ? "Counted by our team when your clip is reviewed"
+            : `Counts from submission onward${settled ? " · views locked" : ` · ${windowLeft(sub.windowEndsAt)}`}`}
         </p>
         {counted.length >= 2 ? (
           <>
@@ -170,7 +196,9 @@ export default async function ClipDetailPage({
           </>
         ) : (
           <p className="glass-well mt-3 px-3 py-2.5 text-[12px] text-ink-500">
-            The view curve appears after the first tracking snapshots land.
+            {manual
+              ? "Views are verified by our team; the count and earnings appear once your clip is reviewed."
+              : "The view curve appears after the first tracking snapshots land."}
           </p>
         )}
       </GlassPanel>
@@ -191,9 +219,11 @@ export default async function ClipDetailPage({
             ? estPoisha === 0
               ? `Below the ${minViews.toLocaleString("en-US")}-view minimum, or the budget was already spent. Shown honestly, never silently.`
               : `${(sub.lockedViews ?? 0).toLocaleString("en-US")} locked views × ${takaFromPoisha(rate)}/1,000.`
-            : displayViews < minViews
-              ? `Qualifies at ${minViews.toLocaleString("en-US")} views. Below that a clip settles at ৳0.`
-              : "Settles at window end, clamped to remaining budget."}
+            : manual
+              ? `Verified and settled by our team. Below ${minViews.toLocaleString("en-US")} views a clip settles at ৳0.`
+              : displayViews < minViews
+                ? `Qualifies at ${minViews.toLocaleString("en-US")} views. Below that a clip settles at ৳0.`
+                : "Settles at window end, clamped to remaining budget."}
         </p>
       </GlassPanel>
         </div>
@@ -250,9 +280,14 @@ export default async function ClipDetailPage({
         </GlassPanel>
       )}
 
-      <p className="text-center text-[11px] text-ink-400">
-        Last snapshot: {snapshots.length > 0 ? dhakaDateTime(snapshots[snapshots.length - 1].capturedAt) : "none yet"}
-      </p>
+      {!manual && (
+        <p className="text-center text-[11px] text-ink-400">
+          Last snapshot:{" "}
+          {snapshots.length > 0
+            ? dhakaDateTime(snapshots[snapshots.length - 1].capturedAt)
+            : "none yet"}
+        </p>
+      )}
         </div>
       </div>
     </div>

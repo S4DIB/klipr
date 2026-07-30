@@ -4,29 +4,25 @@ import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { GoogleGlyph } from "@/components/ui/google-glyph";
 import { GlassPanel } from "@/components/app/glass-panel";
-import { hasSupabase } from "@/lib/env";
-import {
-  signInWithGoogle,
-  signInAsClipper,
-  signInAsNewClipper,
-  signInAsAgency,
-  signInAsBrand,
-  signInAsAdmin,
-  signInAsApplicant,
-} from "./actions";
+import { signInWithGoogle } from "./actions";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-const DEMOS = [
-  { action: signInAsClipper, label: "Clipper", sub: "active · set up" },
-  { action: signInAsNewClipper, label: "New Clipper", sub: "active · setup checklist" },
-  { action: signInAsAgency, label: "Network Manager", sub: "active · 2 pages" },
-  { action: signInAsApplicant, label: "Applicant", sub: "waitlisted" },
-  { action: signInAsBrand, label: "Brand", sub: "console" },
-  { action: signInAsAdmin, label: "Admin", sub: "ops + vetting" },
-];
+const ERRORS: Record<string, string> = {
+  not_approved:
+    "This email isn't approved yet. Klipr is invite-only — join the waitlist and we'll email you once you're in.",
+  auth: "Sign-in didn't complete. Please try again.",
+  oauth: "Couldn't reach Google. Please try again.",
+};
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  const message = error ? ERRORS[error] : undefined;
+
   return (
     <div className="relative min-h-dvh">
       <div className="field-app fixed inset-0 -z-10" aria-hidden="true" />
@@ -36,12 +32,33 @@ export default function LoginPage() {
             <Logo className="text-[17px]" />
           </Link>
 
+          {message ? (
+            <GlassPanel
+              variant="well"
+              className="mb-4 border border-[rgba(255,123,192,0.35)] p-4 text-center"
+            >
+              <p className="text-[13px] font-medium leading-relaxed text-text-hi">{message}</p>
+              {error === "not_approved" ? (
+                <Link
+                  href="/#waitlist"
+                  className="mt-2 inline-block text-[13px] font-bold text-volt-500 underline decoration-[rgba(125,4,215,0.35)] underline-offset-2"
+                >
+                  Join the waitlist →
+                </Link>
+              ) : null}
+            </GlassPanel>
+          ) : null}
+
           <GlassPanel className="p-7 text-center">
             <p className="eyebrow">Sign in</p>
             <h1 className="title mt-2 text-[24px] text-text-hi">Welcome back.</h1>
             <p className="mt-2 text-[13.5px] leading-relaxed text-text-mid">
-              New here? Signing in creates a login. Marketplace access comes
-              after your application is reviewed.
+              Klipr is invite-only. Approved from the waitlist? Sign in with the same email. Not
+              yet?{" "}
+              <Link href="/#waitlist" className="font-semibold text-volt-500">
+                Join the waitlist
+              </Link>
+              .
             </p>
 
             <form action={signInWithGoogle} className="mt-6">
@@ -51,28 +68,6 @@ export default function LoginPage() {
               </Button>
             </form>
           </GlassPanel>
-
-          {!hasSupabase && (
-            <GlassPanel variant="well" className="mt-4 p-4">
-              <p className="eyebrow mb-3 text-center">Local demo identities</p>
-              <div className="grid grid-cols-2 gap-2">
-                {DEMOS.map(({ action, label, sub }) => (
-                  <form key={label} action={action} className="contents">
-                    <button
-                      type="submit"
-                      className="rounded-[12px] bg-white/60 px-3 py-2.5 text-left transition-colors hover:bg-white"
-                    >
-                      <span className="block text-[13px] font-semibold text-text-hi">{label}</span>
-                      <span className="block font-mono text-[10.5px] text-text-low">{sub}</span>
-                    </button>
-                  </form>
-                ))}
-              </div>
-              <p className="mt-3 text-center text-[11px] text-text-low">
-                Stub mode. Data lives in .data/db.json. Google is stubbed.
-              </p>
-            </GlassPanel>
-          )}
 
           <p className="mt-5 text-center text-[11.5px] text-text-low">
             By continuing you agree to the Klipr terms.

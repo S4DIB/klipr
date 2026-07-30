@@ -15,6 +15,7 @@ import {
   getCampaign,
   getConnectedAccount,
   getProfile,
+  getSubmission,
   listCampaigns,
   listFraudFlags,
   listPendingSubmissions,
@@ -94,8 +95,12 @@ export async function runSweep(now = new Date()): Promise<SweepReport> {
     return { ...report, skipped: "overlap" };
   }
 
+  // Manual-mode clips (no platform API) are never auto-baselined, polled, or
+  // settled — an admin enters their view count via /admin/clips. Skip them here.
+  const notManual = (s: Submission) => getAdapter(s.platform).mode() !== "manual";
+
   // 1 — baseline: pending submissions get their starting count
-  const pending = await listPendingSubmissions();
+  const pending = (await listPendingSubmissions()).filter(notManual);
   if (pending.length) {
     const stats = await fetchStatsByPlatform(pending);
     for (const sub of pending) {
@@ -130,7 +135,7 @@ export async function runSweep(now = new Date()): Promise<SweepReport> {
   }
 
   // 2 — poll: open-window submissions get a snapshot + fraud check
-  const polling = await listSubmissionsPolling(nowIso);
+  const polling = (await listSubmissionsPolling(nowIso)).filter(notManual);
   if (polling.length) {
     const stats = await fetchStatsByPlatform(polling);
     for (const sub of polling) {
@@ -183,7 +188,7 @@ export async function runSweep(now = new Date()): Promise<SweepReport> {
   }
 
   // 3 — settle: windows that just closed lock their views and pay
-  const due = await listSubmissionsDue(nowIso);
+  const due = (await listSubmissionsDue(nowIso)).filter(notManual);
   if (due.length) {
     // best-effort final count
     const finalStats = await fetchStatsByPlatform(due);
@@ -331,6 +336,23 @@ async function settleOne(
   });
 
   return { zero: math.payableViews === 0, xp: xpTotalAwarded, tierUpgraded };
+}
+
+/**
+ * Admin manual settlement — settle a submission with an admin-entered view
+ * count (no platform API). Runs the exact same money/XP/tier path as the
+ * automatic sweep, idempotent by ledger event id. Refuses to re-settle an
+ * already-settled/rejected clip (which would double-count XP). Returns null
+ * when the submission is gone or already finalized.
+ */
+export async function settleSubmissionManually(
+  submissionId: string,
+  lockedViews: number,
+  nowIso: string = new Date().toISOString(),
+): Promise<{ zero: boolean; xp: number; tierUpgraded: boolean } | null> {
+  const sub = await getSubmission(submissionId);
+  if (!sub || sub.status === "settled" || sub.status === "rejected") return null;
+  return settleOne(sub, Math.max(0, Math.floor(lockedViews)), nowIso);
 }
 
 /** Any upheld fraud flag on any of the profile's submissions taints the record. */

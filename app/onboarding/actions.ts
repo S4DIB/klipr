@@ -13,9 +13,11 @@ import {
 } from "@/lib/db";
 
 /**
- * Stub/simulated connect for a VETTED page. Live platforms replace this with
- * OAuth (Phase 5's /api/connect/youtube); the account row shape is identical,
- * so flipping a platform live never touches this flow's callers.
+ * Connect a VETTED page. With no platform API, ownership is verified MANUALLY:
+ * the account is created "pending" and an admin approves it (→ active) before
+ * it can submit. Live platforms replace this with OAuth (/api/connect/youtube),
+ * which lands an already-verified "active"/"oauth" account; the row shape is
+ * identical, so flipping a platform live never touches this flow's callers.
  */
 export async function connectVettedPage(formData: FormData): Promise<void> {
   const user = await requireActiveClipper();
@@ -26,18 +28,19 @@ export async function connectVettedPage(formData: FormData): Promise<void> {
   if (!page) return; // not theirs or not vetted. Silently no-op
 
   const existing = await listConnectedAccounts(user.id);
-  if (existing.some((a) => a.applicationPageId === pageId && a.status === "active")) return;
+  // Already connected (pending or active) for this page → no-op.
+  if (existing.some((a) => a.applicationPageId === pageId && a.status !== "revoked")) return;
 
   await upsertConnectedAccount({
     id: newId("acc"),
     profileId: user.id,
     platform: page.platform,
     applicationPageId: page.id,
-    externalId: `sim_${page.id}`,
+    externalId: `manual_${page.id}`,
     handle: page.handle,
     followerCount: page.selfReportedFollowers,
-    proof: "simulated",
-    status: "active",
+    proof: "manual",
+    status: "pending", // awaiting admin ownership approval
     createdAt: new Date().toISOString(),
   });
 

@@ -9,10 +9,12 @@ import type { Platform } from "@/lib/db/types";
 import type { ParsedPost, PlatformAdapter } from "./types.ts";
 import { simulatedFetchStats } from "./simulated.ts";
 
-function envMode(platform: Platform): "live" | "simulated" {
+function envMode(platform: Platform): "live" | "manual" | "simulated" {
   const forced = process.env[`VERIFY_MODE_${platform.toUpperCase()}`];
-  // No live implementations yet — "live" is only honoured once one exists.
-  return forced === "live" ? "simulated" : "simulated";
+  // No live API for these platforms yet, so default to MANUAL (admin enters the
+  // view count). "simulated" only if explicitly requested (tests/dev); "live"
+  // is not honoured until a real implementation exists.
+  return forced === "simulated" ? "simulated" : "manual";
 }
 
 export function parseTikTokUrl(url: string): ParsedPost | null {

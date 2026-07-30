@@ -29,7 +29,9 @@ export type StatsResult =
 
 export interface PlatformAdapter {
   platform: Platform;
-  mode(): "live" | "simulated";
+  /** "live" = real API; "manual" = admin enters view counts (no API);
+   *  "simulated" = deterministic fake curves (tests/opt-in dev only). */
+  mode(): "live" | "manual" | "simulated";
   /** Pure, synchronous URL → media identity. null = not a valid post URL. */
   parsePostUrl(url: string): ParsedPost | null;
   /** Batched stats read. Order/length may differ from input; match by mediaId. */

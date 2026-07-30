@@ -115,10 +115,11 @@ async function liveVerifyOwnership(
   }
 }
 
-function mode(): "live" | "simulated" {
+function mode(): "live" | "manual" | "simulated" {
   const forced = process.env.VERIFY_MODE_YOUTUBE;
-  if (forced === "live" || forced === "simulated") return forced;
-  return process.env.YOUTUBE_API_KEY ? "live" : "simulated";
+  if (forced === "live" || forced === "simulated" || forced === "manual") return forced;
+  // With an API key we go live; otherwise admin enters counts manually.
+  return process.env.YOUTUBE_API_KEY ? "live" : "manual";
 }
 
 export const youtubeAdapter: PlatformAdapter = {

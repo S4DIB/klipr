@@ -37,18 +37,24 @@ export async function requireActiveClipper(): Promise<Profile> {
   return user;
 }
 
+/**
+ * Invite-only gate. A person may hold a session ONLY if they're staff/customer
+ * (admin, brand) or an APPROVED clipper/agency (access "active"). Everyone else
+ * — including a fresh Google sign-in (role "clipper", access "none") — is
+ * refused at sign-in. The only way a clipper reaches "active" is the landing
+ * waitlist → admin approval → promoteIfPreapproved. There is no self-serve
+ * clipper application.
+ */
+export function accessAllowed(user: Profile): boolean {
+  if (user.role === "admin" || user.role === "brand") return true;
+  return user.access === "active";
+}
+
 /** Where a signed-in profile belongs — shared by login, OAuth callback, layouts. */
 export function routeFor(user: Profile): string {
   if (user.role === "admin") return "/admin";
   if (user.role === "brand") return user.profileCompleted ? "/brand" : "/apply";
-  // clipper / agency — the gated access model
-  switch (user.access) {
-    case "active":
-      return user.profileCompleted ? "/home" : "/onboarding";
-    case "waitlisted":
-    case "declined":
-      return "/apply/status";
-    default:
-      return "/apply";
-  }
+  // clipper / agency — active only (anyone else is refused at sign-in)
+  if (user.access === "active") return user.profileCompleted ? "/home" : "/onboarding";
+  return "/login?error=not_approved";
 }

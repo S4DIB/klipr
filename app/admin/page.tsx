@@ -3,9 +3,12 @@ import type { Metadata } from "next";
 import {
   listApplications,
   listCampaigns,
+  listConnectedAccounts,
   listFraudFlags,
   listPayoutBatches,
+  listSubmissions,
 } from "@/lib/db";
+import { getAdapter } from "@/lib/verify";
 import { listLeads } from "@/lib/leads";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { SweepButton } from "./sweep-button";
@@ -14,20 +17,34 @@ export const metadata: Metadata = { title: "Ops" };
 
 /** Ops home. The queues that need a human, plus the sweep trigger. */
 export default async function AdminOpsPage() {
-  const [applications, leads, pendingFunding, holds, payoutsQueued, payoutsBlocked] =
-    await Promise.all([
-      listApplications("submitted"),
-      listLeads(),
-      listCampaigns("pending_funding"),
-      listFraudFlags({ status: "open" }),
-      listPayoutBatches({ status: "queued" }),
-      listPayoutBatches({ status: "blocked_nid" }),
-    ]);
+  const [
+    applications,
+    leads,
+    accounts,
+    trackingSubs,
+    pendingFunding,
+    holds,
+    payoutsQueued,
+    payoutsBlocked,
+  ] = await Promise.all([
+    listApplications("submitted"),
+    listLeads(),
+    listConnectedAccounts(),
+    listSubmissions({ status: "tracking" }),
+    listCampaigns("pending_funding"),
+    listFraudFlags({ status: "open" }),
+    listPayoutBatches({ status: "queued" }),
+    listPayoutBatches({ status: "blocked_nid" }),
+  ]);
   // waitlist clippers awaiting review count as applications — same human queue
   const pendingLeads = leads.filter(
     (l) => l.role === "clipper" && (l.status ?? "pending") === "pending",
   ).length;
   const toVet = applications.length + pendingLeads;
+  const accountsPending = accounts.filter((a) => a.status === "pending").length;
+  const clipsToVerify = trackingSubs.filter(
+    (s) => getAdapter(s.platform).mode() === "manual",
+  ).length;
 
   const tiles = [
     {
@@ -35,6 +52,18 @@ export default async function AdminOpsPage() {
       label: "Applications to vet",
       count: toVet,
       hot: toVet > 0,
+    },
+    {
+      href: "/admin/accounts",
+      label: "Accounts to verify",
+      count: accountsPending,
+      hot: accountsPending > 0,
+    },
+    {
+      href: "/admin/clips",
+      label: "Clips to verify",
+      count: clipsToVerify,
+      hot: clipsToVerify > 0,
     },
     {
       href: "/admin/campaigns",
@@ -61,12 +90,12 @@ export default async function AdminOpsPage() {
       <header>
         <p className="eyebrow">00 / Ops</p>
         <h1 className="display-1 mt-1 text-[32px] text-text-hi">
-          The five human touchpoints.
+          Where a human decides.
         </h1>
         <p className="mt-1 max-w-xl text-[13.5px] leading-relaxed text-text-mid">
-          Vetting · funding confirmation · NID checks · fraud holds · bKash
-          execution. Everything else (verification, settlement, XP) runs
-          itself.
+          Vetting · account verification · clip verification · funding · NID ·
+          fraud · bKash execution. Enter a clip&rsquo;s verified views and
+          settlement, XP, and tiers run themselves from there.
         </p>
       </header>
 

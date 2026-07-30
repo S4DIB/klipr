@@ -95,14 +95,22 @@ export async function submitClip(_prev: SubmitState, formData: FormData): Promis
     return { error: "Couldn't confirm the post belongs to your page. Try again in a minute." };
   }
 
-  // baseline snapshot. Views count from submission onward
-  const [stats] = await adapter.fetchStats([{ mediaId: post.mediaId, submittedAt: now }]);
-  const baselineOk = stats?.ok === true;
-  if (!baselineOk && stats && !("views" in stats) && stats.error === "not_found") {
-    return { error: "The platform can't find that post. Is it public?" };
-  }
-  if (!baselineOk && stats && "error" in stats && stats.error === "private") {
-    return { error: "That post is private. Make it public first." };
+  // Manual mode (no platform API): no baseline is fetched — the clip goes to
+  // the admin review queue as "tracking", and an admin enters the verified view
+  // count to settle it. Live mode snapshots a baseline so views count onward.
+  let baselineViews = 0;
+  let status: "tracking" | "pending" = "tracking";
+  if (adapter.mode() !== "manual") {
+    const [stats] = await adapter.fetchStats([{ mediaId: post.mediaId, submittedAt: now }]);
+    const baselineOk = stats?.ok === true;
+    if (!baselineOk && stats && "error" in stats && stats.error === "not_found") {
+      return { error: "The platform can't find that post. Is it public?" };
+    }
+    if (!baselineOk && stats && "error" in stats && stats.error === "private") {
+      return { error: "That post is private. Make it public first." };
+    }
+    baselineViews = baselineOk && stats.ok ? stats.views : 0;
+    status = baselineOk ? "tracking" : "pending"; // pending → the sweep retries the baseline
   }
 
   await createSubmission({
@@ -113,10 +121,10 @@ export async function submitClip(_prev: SubmitState, formData: FormData): Promis
     platform: account.platform,
     postUrl: post.canonicalUrl,
     mediaId: post.mediaId,
-    baselineViews: baselineOk && stats.ok ? stats.views : 0,
-    latestViews: baselineOk && stats.ok ? stats.views : 0,
+    baselineViews,
+    latestViews: baselineViews,
     countedViews: 0,
-    status: baselineOk ? "tracking" : "pending", // pending → the sweep retries the baseline
+    status,
     submittedAt: now,
     windowEndsAt: submissionWindowEnd(campaign, now),
   });

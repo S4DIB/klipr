@@ -48,10 +48,10 @@ export function Hero() {
         {/* left — the hook */}
         <div className="relative z-10 flex flex-col items-center text-center lg:items-start lg:text-left">
           <Reveal>
-            <p className="mb-6 flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.22em] text-yellow">
-              <PatternBolt className="h-4 w-auto" />
+            <p className="mb-6 flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.22em] text-volt-500">
+              <PatternBolt variant="violet" className="h-4 w-auto" />
               Post · Earn · Repeat
-              <PatternBolt className="h-4 w-auto -scale-x-100" />
+              <PatternBolt variant="violet" className="h-4 w-auto -scale-x-100" />
             </p>
           </Reveal>
 
@@ -59,15 +59,15 @@ export function Hero() {
             <MaskReveal
               lines={["Stop posting", "for free."]}
               lineClassName="block pb-[0.08em]"
-              lineClassNames={["text-ink-900", "text-yellow"]}
+              lineClassNames={["text-text-hi", "text-volt-grad"]}
             />
           </h1>
 
           <Reveal delay={0.15}>
-            <p className="mt-6 max-w-[46ch] text-lg leading-relaxed text-white/70">
+            <p className="mt-6 max-w-[46ch] text-lg leading-relaxed text-text-mid">
               You already post clips every day. Now they pay. Pick a campaign,
               post to your page, earn on every{" "}
-              <span className="font-semibold text-yellow">view</span>.
+              <span className="font-semibold text-volt-500">view</span>.
             </p>
           </Reveal>
 
@@ -76,7 +76,7 @@ export function Hero() {
               <Magnetic>
                 <a
                   href="#waitlist"
-                  className="group inline-flex h-[52px] items-center gap-2 rounded-full bg-yellow px-7 text-[15px] font-semibold tracking-tight text-volt-600 shadow-[0_10px_36px_-10px_rgba(250,255,71,0.55)] transition-all duration-200 hover:brightness-95 active:scale-[0.98]"
+                  className="group inline-flex h-[52px] items-center gap-2 rounded-full bg-volt-500 px-7 text-[15px] font-semibold tracking-tight text-white shadow-[0_3px_8px_-2px_rgba(125,4,215,0.35)] transition-all duration-200 hover:bg-violet-700 hover:shadow-[0_6px_16px_-4px_rgba(125,4,215,0.42)] active:scale-[0.98]"
                 >
                   Join the waitlist
                   <ArrowEast />
@@ -84,9 +84,9 @@ export function Hero() {
               </Magnetic>
               <a
                 href="#demo"
-                className="inline-flex h-[52px] items-center gap-2.5 rounded-full border border-white/25 px-7 text-[15px] font-medium text-white transition-colors duration-200 hover:border-white/50 hover:bg-white/10"
+                className="inline-flex h-[52px] items-center gap-2.5 rounded-full border border-line bg-white/50 px-7 text-[15px] font-medium text-text-hi backdrop-blur-sm transition-colors duration-200 hover:border-volt-400 hover:text-volt-600"
               >
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-white/15">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-volt-500/10 text-volt-600">
                   <svg width="9" height="11" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
                     <path d="M0 0l12 7-12 7V0Z" />
                   </svg>
@@ -97,7 +97,7 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={0.35}>
-            <div className="mt-7 flex items-center justify-center gap-4 text-white/50 lg:justify-start">
+            <div className="mt-7 flex items-center justify-center gap-4 text-text-low lg:justify-start">
               <TikTokIcon className="h-4 w-4" />
               <InstagramIcon className="h-4 w-4" />
               <YouTubeIcon className="h-4 w-4" />

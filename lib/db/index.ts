@@ -79,6 +79,13 @@ export const getConnectedAccount = (id: string): Promise<ConnectedAccount | unde
   hasSupabase ? remote.getConnectedAccount(id) : Promise.resolve(local.getConnectedAccount(id));
 export const upsertConnectedAccount = (a: ConnectedAccount): Promise<ConnectedAccount> =>
   hasSupabase ? remote.upsertConnectedAccount(a) : Promise.resolve(local.upsertConnectedAccount(a));
+export const updateConnectedAccount = (
+  id: string,
+  patch: Partial<ConnectedAccount>,
+): Promise<ConnectedAccount | undefined> =>
+  hasSupabase
+    ? remote.updateConnectedAccount(id, patch)
+    : Promise.resolve(local.updateConnectedAccount(id, patch));
 
 /* ── Campaigns ── */
 export const listCampaigns = (status?: CampaignStatus): Promise<Campaign[]> =>

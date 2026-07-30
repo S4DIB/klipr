@@ -2,33 +2,36 @@ import { Reveal } from "@/components/motion/reveal";
 import { WaitlistForm } from "@/components/landing/waitlist-form";
 import { NextCue } from "@/components/landing/next-cue";
 import { ArrowEast } from "@/components/ui/button";
-import { BoltMark } from "@/components/ui/logo";
+import {
+  IconSearch,
+  IconUpload,
+  IconWallet,
+  IconUsers,
+  IconVerified,
+  IconBolt,
+  IconFilter,
+  IconLink,
+  IconChart,
+} from "@/components/icons";
 
-/* Shared section header — friendly eyebrow + display heading, centered. */
+/* Shared section header: display heading, centered. */
 function Header({
-  kicker,
   title,
   sub,
 }: {
-  kicker: string;
   title: React.ReactNode;
   sub?: string;
 }) {
   return (
     <div className="mx-auto max-w-2xl text-center">
       <Reveal>
-        <p className="eyebrow mb-4" style={{ color: "var(--yellow)" }}>
-          {kicker}
-        </p>
-      </Reveal>
-      <Reveal delay={0.05}>
-        <h2 className="display text-[clamp(2rem,4.4vw,3.2rem)] text-ink-900">
+        <h2 className="display text-[clamp(2rem,4.4vw,3.2rem)] text-text-hi">
           {title}
         </h2>
       </Reveal>
       {sub && (
         <Reveal delay={0.1}>
-          <p className="mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed text-white/65">
+          <p className="mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed text-text-mid">
             {sub}
           </p>
         </Reveal>
@@ -44,36 +47,25 @@ export function HowItWorks() {
       n: "01",
       t: "Find a campaign",
       d: "Browse live campaigns. Filter by niche, platform and rate.",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20.5 20.5-4.2-4.2" />
-        </svg>
-      ),
+      icon: <IconSearch size={20} strokeWidth={1.5} />,
     },
     {
       n: "02",
       t: "Post the clip",
       d: "Post it to your page. Then paste the link back into Klipr.",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <path d="M12 15V4m0 0L8 8m4-4 4 4" />
-          <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
-        </svg>
-      ),
+      icon: <IconUpload size={20} strokeWidth={1.5} />,
     },
     {
       n: "03",
       t: "Get paid per view",
       d: "Views are verified automatically. ৳50 per 1,000 verified views, paid to your bKash.",
-      icon: <span className="text-lg font-bold leading-none">৳</span>,
+      icon: <IconWallet size={20} strokeWidth={1.5} />,
     },
   ];
   return (
     <section id="how" className="relative py-16 md:py-20">
       <div className="shell">
         <Header
-          kicker="02 · How it works"
           title="Three steps to your first payout."
           sub="No media kit. No brand deals. If your page is active, you can earn."
         />
@@ -83,14 +75,14 @@ export function HowItWorks() {
           <div className="relative mt-16 hidden gap-6 md:grid md:grid-cols-3">
             <div
               aria-hidden
-              className="flow-line absolute left-[16.67%] right-[16.67%] top-1/2 h-[3px] -translate-y-1/2 rounded-full"
+              className="flow-line-violet absolute left-[16.67%] right-[16.67%] top-1/2 h-[3px] -translate-y-1/2 rounded-full"
             />
             {steps.map((s, i) => (
               <div key={s.n} className="relative flex justify-center">
-                <span className="relative grid h-11 w-11 place-items-center rounded-full border border-yellow/60 bg-volt-600 font-mono text-sm font-semibold text-yellow">
+                <span className="relative grid h-11 w-11 place-items-center rounded-full border border-volt-500/30 bg-volt-500 font-mono text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(125,4,215,0.5)]">
                   <span
                     aria-hidden
-                    className="pulse-ring absolute inset-0 rounded-full border border-yellow/50"
+                    className="pulse-ring absolute inset-0 rounded-full border border-volt-500/50"
                     style={{ animationDelay: `${i * 0.9}s` }}
                   />
                   {i + 1}
@@ -103,24 +95,24 @@ export function HowItWorks() {
         <div className="mt-8 grid gap-6 md:mt-10 md:grid-cols-3">
           {steps.map((s, i) => (
             <Reveal key={s.n} delay={i * 0.12}>
-              <div className="group relative h-full overflow-hidden rounded-[var(--radius)] border border-white/12 bg-white/[0.06] p-8 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-yellow/40 hover:bg-white/[0.09] hover:shadow-[0_28px_64px_-28px_rgba(250,255,71,0.35)]">
+              <div className="glass glass-hover group relative h-full overflow-hidden p-8">
                 {/* ghost numeral */}
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute -bottom-6 right-2 select-none font-mono text-[110px] font-bold leading-none text-white/[0.05] transition-colors duration-300 group-hover:text-yellow/[0.08]"
+                  className="pointer-events-none absolute -bottom-6 right-2 select-none font-mono text-[110px] font-bold leading-none text-volt-500/[0.06] transition-colors duration-300 group-hover:text-volt-500/[0.12]"
                 >
                   {s.n}
                 </span>
                 <div className="flex items-center justify-between">
-                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-yellow/10 text-yellow transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-volt-500/10 text-volt-600 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                     {s.icon}
                   </span>
-                  <span className="font-mono text-sm font-semibold text-yellow">
+                  <span className="font-mono text-sm font-semibold text-volt-500">
                     {s.n}
                   </span>
                 </div>
-                <h3 className="mt-5 font-display text-xl text-ink-900">{s.t}</h3>
-                <p className="mt-2 text-white/65">{s.d}</p>
+                <h3 className="mt-5 font-display text-xl text-text-hi">{s.t}</h3>
+                <p className="mt-2 text-text-mid">{s.d}</p>
               </div>
             </Reveal>
           ))}
@@ -135,11 +127,14 @@ export function HowItWorks() {
 /* Chapter 03 — the value. Every card is a promise the product already keeps
  * (DESIGN.md §3): verification, thresholds, rollups, payout engine.
  * Each card carries one brand accent — the whole palette, one grid. */
+/* Match the product's iconography: one consistent Royal-Violet accent on a soft
+   violet tile for every feature tile (green/amber stay reserved for status, as
+   in the app). Keyed the same way so the data below is untouched. */
 const ACCENTS = {
-  mint: { tile: "bg-mint/10 text-mint", hover: "hover:border-mint/40" },
-  pink: { tile: "bg-pink/10 text-pink", hover: "hover:border-pink/40" },
-  yellow: { tile: "bg-yellow/10 text-yellow", hover: "hover:border-yellow/40" },
-  aqua: { tile: "bg-aqua/10 text-aqua", hover: "hover:border-aqua/40" },
+  mint: { tile: "bg-volt-500/10 text-volt-600", hover: "hover:border-volt-400/50" },
+  pink: { tile: "bg-volt-500/10 text-volt-600", hover: "hover:border-volt-400/50" },
+  yellow: { tile: "bg-volt-500/10 text-volt-600", hover: "hover:border-volt-400/50" },
+  aqua: { tile: "bg-volt-500/10 text-volt-600", hover: "hover:border-volt-400/50" },
 } as const;
 
 export function Features() {
@@ -153,71 +148,45 @@ export function Features() {
       t: "Active pages, not big ones",
       d: "You don't need a blue tick. You don't need a media kit. You need a page that posts and people who watch.",
       accent: "pink",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <path d="M9 11a3.2 3.2 0 1 0 0-6.4A3.2 3.2 0 0 0 9 11ZM2.5 20c0-3.3 2.9-5.8 6.5-5.8s6.5 2.5 6.5 5.8" />
-          <path d="M16 10.6a2.8 2.8 0 1 0-1.4-5.3M17.4 14.6c2.4.6 4.1 2.4 4.1 4.9" />
-        </svg>
-      ),
+      icon: <IconUsers size={20} strokeWidth={1.5} />,
     },
     {
       t: "Verified views only",
       d: "Every view is checked before it counts. Bots and bought views are flagged and never paid.",
       accent: "mint",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <path d="M12 2 4 5.5v5.2c0 5 3.4 9.2 8 10.3 4.6-1.1 8-5.3 8-10.3V5.5L12 2Z" />
-          <path d="m8.5 12 2.4 2.4L15.5 9.5" />
-        </svg>
-      ),
+      icon: <IconVerified size={20} strokeWidth={1.5} />,
     },
     {
       t: "Fast payouts",
       d: "Campaign closes. Views lock. Money goes to your bKash. No invoices, no waiting.",
       accent: "yellow",
-      icon: <BoltMark className="h-5" />,
+      icon: <IconBolt size={20} strokeWidth={1.5} />,
     },
     {
       t: "Campaigns that fit your page",
       d: "Filter by niche, platform and rate. Post the ones you'd post anyway.",
       accent: "aqua",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <path d="M4 5h16M7 12h10M10 19h4" />
-        </svg>
-      ),
+      icon: <IconFilter size={20} strokeWidth={1.5} />,
     },
     {
       t: "Three platforms, one place",
       d: "TikTok, Instagram Reels, YouTube Shorts. Run every page you own from one account.",
       accent: "pink",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <circle cx="18" cy="5" r="3" />
-          <circle cx="6" cy="12" r="3" />
-          <circle cx="18" cy="19" r="3" />
-          <path d="M8.6 10.5 15.4 6.5M8.6 13.5l6.8 4" />
-        </svg>
-      ),
+      icon: <IconLink size={20} strokeWidth={1.5} />,
     },
     {
       t: "One honest dashboard",
       d: "Every clip. Every verified view. Every taka. You see exactly what you earned.",
       accent: "mint",
-      icon: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-          <path d="M5 21V11M12 21V4M19 21v-8" />
-        </svg>
-      ),
+      icon: <IconChart size={20} strokeWidth={1.5} />,
     },
   ];
 
   return (
     <section id="features" className="shell py-16 md:py-24">
       <Header
-        kicker="03 · What you get"
         title="Built so every view pays."
-        sub="No media kit, no gatekeepers — just the things that turn a view into money in your account."
+        sub="No media kit, no gatekeepers, just the things that turn a view into money in your account."
       />
 
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -226,15 +195,15 @@ export function Features() {
           return (
             <Reveal key={f.t} delay={(i % 3) * 0.08}>
               <div
-                className={`group h-full rounded-[var(--radius)] border border-white/12 bg-white/[0.06] p-7 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.09] ${a.hover}`}
+                className={`group glass glass-hover h-full p-7 ${a.hover}`}
               >
                 <span
                   className={`grid h-11 w-11 place-items-center rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${a.tile}`}
                 >
                   {f.icon}
                 </span>
-                <h3 className="display mt-5 text-lg text-ink-900">{f.t}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-white/65">{f.d}</p>
+                <h3 className="display mt-5 text-lg text-text-hi">{f.t}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-text-mid">{f.d}</p>
               </div>
             </Reveal>
           );
@@ -258,7 +227,7 @@ export function ForBrands() {
     {
       n: "02",
       t: "The network posts",
-      d: "Real pages across our network post your clip to their own audiences — in their own voice, not as an ad.",
+      d: "Real pages across our network post your clip to their own audiences, in their own voice, not as an ad.",
     },
     {
       n: "03",
@@ -269,20 +238,19 @@ export function ForBrands() {
   return (
     <section id="brands" className="shell py-16 md:py-24">
       <Header
-        kicker="04 · For brands"
         title="Your content, distributed everywhere."
-        sub="You have content. We get it posted — by real pages, to their own audiences, all at once. One upload turns into dozens of posts, reaching people who've never heard of you."
+        sub="You have content. We get it posted by real pages, to their own audiences, all at once. One upload turns into dozens of posts, reaching people who've never heard of you."
       />
 
       <div className="mt-14 grid gap-5 md:grid-cols-3">
         {steps.map((s, i) => (
           <Reveal key={s.n} delay={i * 0.1}>
-            <div className="group h-full rounded-[var(--radius)] border border-white/12 bg-white/[0.06] p-7 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-pink/40 hover:bg-white/[0.09]">
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-pink/10 font-mono text-sm font-semibold text-pink">
+            <div className="group glass glass-hover h-full p-7 hover:border-volt-400/50">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-volt-500/10 font-mono text-sm font-semibold text-volt-600">
                 {s.n}
               </span>
-              <h3 className="display mt-5 text-lg text-ink-900">{s.t}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-white/65">{s.d}</p>
+              <h3 className="display mt-5 text-lg text-text-hi">{s.t}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-text-mid">{s.d}</p>
             </div>
           </Reveal>
         ))}
@@ -290,13 +258,13 @@ export function ForBrands() {
 
       <Reveal delay={0.2}>
         <div className="mt-10 flex flex-col items-center gap-5 text-center">
-          <p className="max-w-[42ch] text-lg text-white/70">
+          <p className="max-w-[42ch] text-lg text-text-mid">
             Your campaign ends with two things. Real views. And the clip that
             worked best.
           </p>
           <a
             href="#waitlist-brand"
-            className="group inline-flex h-12 items-center gap-2 rounded-full bg-pink px-6 text-[14px] font-semibold tracking-tight text-volt-600 transition-all duration-200 hover:brightness-105 active:scale-[0.98]"
+            className="group inline-flex h-12 items-center gap-2 rounded-full bg-volt-500 px-6 text-[14px] font-semibold tracking-tight text-white shadow-[0_3px_8px_-2px_rgba(125,4,215,0.35)] transition-all duration-200 hover:bg-violet-700 hover:shadow-[0_6px_16px_-4px_rgba(125,4,215,0.42)] active:scale-[0.98]"
           >
             Get early access
             <ArrowEast />
@@ -317,24 +285,19 @@ export function FinalCta() {
       {/* scattered yellow bolts live in the page-wide <BoltField/> */}
       <div className="shell relative text-center">
         <Reveal>
-          <p className="eyebrow mb-4" style={{ color: "var(--yellow)" }}>
-            Last step
-          </p>
-        </Reveal>
-        <Reveal delay={0.05}>
-          <h2 className="display mx-auto max-w-[16ch] text-[clamp(2.4rem,5.5vw,4.2rem)] text-ink-900 pb-[0.1em]">
+          <h2 className="display mx-auto max-w-[16ch] text-[clamp(2.4rem,5.5vw,4.2rem)] text-text-hi pb-[0.1em]">
             Your next post could be{" "}
-            <span className="text-yellow">your first payout.</span>
+            <span className="text-volt-grad">your first payout.</span>
           </h2>
         </Reveal>
         <Reveal delay={0.1}>
-          <p className="mx-auto mt-5 max-w-[44ch] text-lg text-white/65">
+          <p className="mx-auto mt-5 max-w-[44ch] text-lg text-text-mid">
             Klipr is launching soon. Waitlist members get in first.
           </p>
         </Reveal>
         <Reveal delay={0.15}>
-          <div className="mx-auto mt-10 max-w-xl text-left">
-            <WaitlistForm variant="dark" />
+          <div className="glass mx-auto mt-10 max-w-xl p-6 text-left sm:p-8">
+            <WaitlistForm variant="light" />
           </div>
         </Reveal>
       </div>

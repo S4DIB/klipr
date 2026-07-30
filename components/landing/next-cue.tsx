@@ -1,6 +1,6 @@
 const TONES = {
-  dark: "text-white/55 hover:text-yellow",
-  yellow: "text-volt-600/60 hover:text-volt-500",
+  dark: "text-text-low hover:text-volt-600",
+  yellow: "text-text-low hover:text-volt-500",
 } as const;
 
 /** Funnel connective tissue — every chapter ends by pointing at the next one,

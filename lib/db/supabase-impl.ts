@@ -73,7 +73,9 @@ const toConnectedAccount = (r: any): ConnectedAccount => ({
   displayName: r.display_name ?? undefined, avatarUrl: r.avatar_url ?? undefined,
   followerCount: r.follower_count ?? undefined, proof: r.proof,
   accessTokenEnc: r.access_token_enc ?? undefined, refreshTokenEnc: r.refresh_token_enc ?? undefined,
-  tokenExpiresAt: r.token_expires_at ?? undefined, status: r.status, createdAt: r.created_at,
+  tokenExpiresAt: r.token_expires_at ?? undefined, status: r.status,
+  verifiedAt: r.verified_at ?? undefined, verifiedBy: r.verified_by ?? undefined,
+  createdAt: r.created_at,
 });
 const fromConnectedAccount = (a: ConnectedAccount) => ({
   id: a.id, profile_id: a.profileId, platform: a.platform,
@@ -81,7 +83,8 @@ const fromConnectedAccount = (a: ConnectedAccount) => ({
   display_name: a.displayName ?? null, avatar_url: a.avatarUrl ?? null,
   follower_count: a.followerCount ?? null, proof: a.proof,
   access_token_enc: a.accessTokenEnc ?? null, refresh_token_enc: a.refreshTokenEnc ?? null,
-  token_expires_at: a.tokenExpiresAt ?? null, status: a.status, created_at: a.createdAt,
+  token_expires_at: a.tokenExpiresAt ?? null, status: a.status,
+  verified_at: a.verifiedAt ?? null, verified_by: a.verifiedBy ?? null, created_at: a.createdAt,
 });
 
 const toCampaign = (r: any): Campaign => ({
@@ -292,6 +295,15 @@ export async function upsertConnectedAccount(a: ConnectedAccount): Promise<Conne
   const { error } = await admin().from("connected_accounts").upsert(fromConnectedAccount(a));
   if (error) throw error;
   return a;
+}
+export async function updateConnectedAccount(
+  id: string,
+  patch: Partial<ConnectedAccount>,
+): Promise<ConnectedAccount | undefined> {
+  const { data, error } = await admin()
+    .from("connected_accounts").update(snakePatch(patch)).eq("id", id).select("*").maybeSingle();
+  if (error) throw error;
+  return data ? toConnectedAccount(data) : undefined;
 }
 
 /* ── Campaigns ── */

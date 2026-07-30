@@ -13,24 +13,22 @@ export interface SubmitAccount {
   id: string;
   platform: Platform;
   handle: string;
-  proof: "oauth" | "simulated";
+  proof: "oauth" | "simulated" | "manual";
 }
 
 /**
- * The submit flow: post from a vetted page, paste the post link. Disclosure
- * is part of the design. Budget is a ceiling, settlement is first-come
- * first-served, views verify automatically.
+ * The submit flow: post from a vetted page, paste the post link. Budget is a
+ * ceiling, settlement is first-come first-served. With no platform API, the
+ * clip is reviewed and its verified view count is entered by an admin.
  */
 export function SubmitSheet({
   campaignId,
   campaignName,
-  windowDays,
   accounts,
   urlHint,
 }: {
   campaignId: string;
   campaignName: string;
-  windowDays: number;
   accounts: SubmitAccount[];
   urlHint: string;
 }) {
@@ -55,8 +53,8 @@ export function SubmitSheet({
                 Submitted
               </h3>
               <p className="mt-[5px] text-[13px] leading-[1.55] text-ink-600">
-                Baseline captured. Status: <b>Pending → Tracking</b>. Views verify automatically
-                over the next {windowDays} days.
+                Your clip is <b>in review</b>. Our team verifies the view count and settles your
+                earnings — usually within a day of the campaign&rsquo;s tracking window.
               </p>
             </div>
             <Button
@@ -94,10 +92,10 @@ export function SubmitSheet({
                   <span className="flex-1 truncate text-[13.5px] font-semibold text-ink-900">
                     {single.handle} · {PLATFORMS[single.platform].label}
                   </span>
-                  {single.proof === "oauth" ? (
-                    <span className="text-[11px] font-bold text-success-600">Vetted ✓</span>
-                  ) : (
+                  {single.proof === "simulated" ? (
                     <span className="text-[11px] font-bold text-warning-600">Simulated</span>
+                  ) : (
+                    <span className="text-[11px] font-bold text-success-600">Vetted ✓</span>
                   )}
                 </div>
               </div>
@@ -130,12 +128,12 @@ export function SubmitSheet({
             ) : null}
 
             <p className="text-[11.5px] leading-[1.5] text-ink-500">
-              Budget is a ceiling. Earnings settle first-come, first-served. Views verify
-              automatically; nothing is entered by hand.
+              Budget is a ceiling. Earnings settle first-come, first-served. Verified views are
+              counted by our team after review.
             </p>
 
             <Button type="submit" disabled={pending} className="h-12 w-full text-[15px]">
-              {pending ? "Checking with the platform…" : "Submit for tracking"}
+              {pending ? "Submitting…" : "Submit clip"}
             </Button>
           </form>
         )}

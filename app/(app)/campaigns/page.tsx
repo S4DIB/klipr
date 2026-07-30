@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { requireActiveClipper } from "@/lib/auth/guards";
 import { listCampaigns } from "@/lib/db";
 import { GlassPanel } from "@/components/app/glass-panel";
+import { CampaignCover } from "@/components/app/campaign-cover";
 import { EmptyState } from "@/components/app/empty-state";
 import { IconTrophy, IconVerified } from "@/components/icons";
 import { TikTokIcon, InstagramIcon, YouTubeIcon } from "@/components/ui/platform-icons";
@@ -127,6 +128,13 @@ export default async function CampaignsPage({
           {unlocked.map((c) => (
             <Link key={c.id} href={`/campaigns/${c.id}`} className="block h-full">
               <GlassPanel interactive className="flex h-full flex-col gap-4 p-5">
+                {/* cover — real clip art, or an on-brand placeholder for now */}
+                <CampaignCover
+                  coverUrl={c.coverUrl}
+                  seed={c.id}
+                  className="-mx-5 -mt-5"
+                />
+
                 {/* brand row */}
                 <div className="flex items-center gap-3">
                   <span
@@ -180,6 +188,12 @@ export default async function CampaignsPage({
 
           {locked.map((c) => (
             <GlassPanel key={c.id} className="flex h-full flex-col gap-4 p-5 opacity-90">
+              <CampaignCover
+                coverUrl={c.coverUrl}
+                seed={c.id}
+                locked
+                className="-mx-5 -mt-5"
+              />
               <div className="flex items-center gap-3">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-ink-150 text-[17px] font-extrabold text-ink-400">
                   {c.brandName.trim().charAt(0).toUpperCase()}

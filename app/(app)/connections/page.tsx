@@ -36,8 +36,10 @@ export default async function ConnectionsPage() {
     xpByAccount(user.id),
     latestApplicationForProfile(user.id),
   ]);
+  // Include pending (awaiting admin approval) as well as active — a page with a
+  // pending account shows "In review", not another Connect button.
   const accountByPage = new Map(
-    accounts.filter((a) => a.status === "active").map((a) => [a.applicationPageId, a]),
+    accounts.filter((a) => a.status !== "revoked").map((a) => [a.applicationPageId, a]),
   );
   const isAgency = user.role === "agency";
 
@@ -73,12 +75,20 @@ export default async function ConnectionsPage() {
                       {acc?.followerCount ? ` · ${fmtViews(acc.followerCount)} followers` : ""}
                     </p>
                   </div>
-                  {acc ? (
+                  {acc?.status === "active" ? (
                     <StatusChip status="active" label="Connected" />
+                  ) : acc?.status === "pending" ? (
+                    <StatusChip status="pending" label="In review" />
                   ) : (
                     <StatusChip status="approved" label="Vetted" />
                   )}
                 </div>
+                {acc?.status === "pending" && (
+                  <p className="mt-2 text-[12px] text-ink-500">
+                    We&rsquo;re confirming this page is yours. You can submit clips once it&rsquo;s
+                    approved.
+                  </p>
+                )}
                 {!acc && (
                   <form action={connectVettedPage} className="mt-3.5">
                     <input type="hidden" name="pageId" value={page.id} />
@@ -211,7 +221,9 @@ export default async function ConnectionsPage() {
                       {xp.toLocaleString("en-US")} XP
                     </p>
                   </div>
-                  {acc ? (
+                  {acc?.status === "pending" ? (
+                    <StatusChip status="pending" label="In review" />
+                  ) : acc ? (
                     acc.proof === "simulated" ? (
                       <StatusChip status="simulated" />
                     ) : (
