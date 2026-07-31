@@ -69,7 +69,9 @@ export async function promoteIfPreapproved(profile: Profile): Promise<Profile> {
       .filter(Boolean)
       .join(" "),
     status: "approved",
-    reviewedBy: "waitlist-review",
+    // reviewed_by is a uuid FK to profiles — there is no human reviewer for a
+    // waitlist auto-promotion, so leave it null. The "pre-approved from the
+    // waitlist" provenance is recorded in `note` above (and reviewedAt below).
     reviewedAt: lead.reviewedAt ?? new Date().toISOString(),
     createdAt: lead.at,
   };
