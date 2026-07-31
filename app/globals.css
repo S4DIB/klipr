@@ -774,6 +774,34 @@ body {
   box-shadow: 0 12px 28px -12px rgba(31, 3, 53, 0.16);
 }
 
+/* Onboarding stepper — ONLY the current tick breathes on an endless loop. */
+@keyframes step-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.step-blink {
+  animation: step-blink 1.4s ease-in-out infinite;
+}
+
+/* Stepper connectors — one uniform dash pattern (5px dash / 5px gap, in
+   currentColor) for EVERY line, so dashes never look mismatched. The
+   previous→current segment marches toward the tick like a loading bar. */
+.step-dash {
+  background-image: repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 10px);
+  background-position-x: 0;
+}
+.step-dash-load {
+  animation: step-dash-load 0.55s linear infinite;
+}
+@keyframes step-dash-load {
+  to { background-position-x: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-blink,
+  .step-dash-load { animation: none; }
+}
+
 /* Streak flame — an endless little flicker: wobble + breathe like a fire */
 @keyframes flame-flicker {
   0%, 100% { transform: rotate(-4deg) scale(1); }

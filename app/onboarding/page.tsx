@@ -1,26 +1,27 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { currentUser } from "@/lib/auth/session";
 import { routeFor } from "@/lib/auth/guards";
+import { signOut } from "@/lib/auth/actions";
+import { getLeadByEmail } from "@/lib/leads";
 import { listConnectedAccounts, listVettedPagesForProfile } from "@/lib/db";
 import { Logo } from "@/components/ui/logo";
-import { GlassPanel } from "@/components/app/glass-panel";
-import { TierBadge } from "@/components/app/tier-badge";
-import { XpBar } from "@/components/app/xp-bar";
-import { StatusChip } from "@/components/app/status-chip";
-import { Button, ArrowEast } from "@/components/ui/button";
-import { IconCheck } from "@/components/icons";
-import { PLATFORMS } from "@/lib/platforms";
-import { nextTier, XP_CONFIG } from "@/lib/xp";
+import { IconCheckCircle, IconChevronLeft } from "@/components/icons";
+import { PreviewCard } from "./preview-card";
+import { ProfileStep } from "./profile-step";
+import { AboutStep } from "./about-step";
+import { ConnectStep, type ConnectPage } from "./connect-step";
 import { BkashForm } from "./bkash-form";
-import { connectVettedPage, continueToPayout, completeOnboarding } from "./actions";
+import { backTo } from "./actions";
 
 export const metadata: Metadata = { title: "Set up" };
 
+const STEPS = ["Profile", "About you", "Connect", "Payout"];
+
 /**
- * Post-approval onboarding: connect vetted pages → payout number → tier
- * welcome. Progress persists in Profile.onboardingStep (refresh-safe).
+ * Post-approval onboarding — four steps inside one centred Royal Violet card on
+ * the ivory field, matching the sign-in. White type, translucent inputs, a
+ * white preview inset. Progress persists in Profile.onboardingStep.
  */
 export default async function OnboardingPage() {
   const user = await currentUser();
@@ -29,151 +30,153 @@ export default async function OnboardingPage() {
   if (user.access !== "active") redirect(routeFor(user));
   if (user.profileCompleted) redirect("/home");
 
-  const step = Math.min(user.onboardingStep, 2);
-  const [vettedPages, accounts] = await Promise.all([
+  const step = Math.min(user.onboardingStep, 3);
+
+  const [lead, vettedPages, accounts] = await Promise.all([
+    getLeadByEmail(user.email),
     listVettedPagesForProfile(user.id),
     listConnectedAccounts(user.id),
   ]);
-  const connectedPageIds = new Set(
-    accounts.filter((a) => a.status === "active").map((a) => a.applicationPageId),
-  );
 
-  const STEPS = ["Connect pages", "Payout", "Your tier"];
-  const upcoming = nextTier("beginner");
+  const name = user.displayName?.trim() || "";
+  const username = user.username ?? "";
+  const languages = user.postLanguages
+    ? user.postLanguages.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  const connectPages: ConnectPage[] = vettedPages.map((p) => {
+    const acc = accounts.find((a) => a.applicationPageId === p.id && a.status !== "revoked");
+    return {
+      id: p.id,
+      platform: p.platform,
+      handle: p.handle,
+      url: p.url,
+      status: acc ? (acc.status === "active" ? "active" : "pending") : "none",
+      fromWaitlist: true,
+    };
+  });
 
   return (
     <div className="relative min-h-dvh">
       <div className="field-app fixed inset-0 -z-10" aria-hidden="true" />
-      <main className="mx-auto w-full max-w-xl px-5 py-12">
-        <Link href="/" className="mb-8 flex justify-center text-text-hi">
-          <Logo className="text-[17px]" />
-        </Link>
 
-        {/* stepper */}
-        <ol className="mb-8 flex items-center justify-center gap-2" aria-label="Setup progress">
-          {STEPS.map((label, i) => (
-            <li key={label} className="flex items-center gap-2">
-              <span
-                className={
-                  i <= step
-                    ? "flex h-7 w-7 items-center justify-center rounded-full bg-volt-500 font-mono text-[12px] text-white"
-                    : "glass-well flex h-7 w-7 items-center justify-center rounded-full font-mono text-[12px] text-text-low"
-                }
-                aria-current={i === step ? "step" : undefined}
-              >
-                {i < step ? <IconCheck size={13} className="text-white" strokeWidth={1.6} /> : i + 1}
-              </span>
-              <span
-                className={`hidden text-[12.5px] sm:block ${i <= step ? "text-text-hi" : "text-text-low"}`}
-              >
-                {label}
-              </span>
-              {i < STEPS.length - 1 && <span className="hairline w-6" />}
-            </li>
-          ))}
-        </ol>
+      <form action={signOut} className="absolute right-5 top-5 z-10 sm:right-8 sm:top-6">
+        <button
+          type="submit"
+          className="rounded-full px-3 py-1.5 text-[13px] font-medium text-ink-500 transition-colors hover:bg-[rgba(53,5,90,0.05)] hover:text-ink-800"
+        >
+          Sign out
+        </button>
+      </form>
 
-        <GlassPanel className="p-6 sm:p-8">
-          {step === 0 && (
-            <>
-              <h1 className="title text-[22px] text-text-hi">Connect your vetted pages.</h1>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-text-mid">
-                Only pages that passed review can be linked. The link is how
-                Klipr reads your real views from the platform. No screenshots,
-                ever.
-              </p>
+      <main className="mx-auto flex min-h-dvh w-full max-w-[560px] flex-col justify-center px-5 py-16">
+        <div className="rounded-[28px] bg-[#7d04d7] px-6 py-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_2px_6px_rgba(53,5,90,0.2),0_44px_90px_-30px_rgba(125,4,215,0.55)] sm:px-9 sm:py-10">
+          <div className="mb-6 flex justify-center [&_svg]:text-ivory">
+            <Logo className="text-[16px]" />
+          </div>
 
-              <div className="mt-5 space-y-2.5">
-                {vettedPages.length === 0 ? (
-                  <p className="glass-well px-4 py-3 text-[13px] text-text-mid">
-                    No vetted pages on this account yet.
-                  </p>
-                ) : (
-                  vettedPages.map((p) => {
-                    const connected = connectedPageIds.has(p.id);
-                    return (
-                      <div
-                        key={p.id}
-                        className="glass-well flex items-center justify-between gap-3 px-4 py-3"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-[13.5px] font-medium text-text-hi">
-                            {p.handle}
-                          </p>
-                          <p className="text-[12px] text-text-low">
-                            {PLATFORMS[p.platform].surface}
-                          </p>
-                        </div>
-                        {connected ? (
-                          <StatusChip status="active" label="connected" />
-                        ) : (
-                          <form action={connectVettedPage}>
-                            <input type="hidden" name="pageId" value={p.id} />
-                            <button
-                              type="submit"
-                              className="rounded-full bg-volt-500 px-4 py-1.5 text-[12.5px] font-semibold text-white transition-colors hover:bg-volt-400"
-                            >
-                              Connect
-                            </button>
-                          </form>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+          <Stepper current={step} />
 
-              <form action={continueToPayout} className="mt-6">
-                <Button type="submit" className="w-full">
-                  Continue <ArrowEast />
-                </Button>
-              </form>
-              <p className="mt-3 text-center text-[12px] text-text-low">
-                You can connect later. But submissions require a linked page.
-              </p>
-            </>
-          )}
-
-          {step === 1 && (
-            <>
-              <h1 className="title text-[22px] text-text-hi">Where should the money go?</h1>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-text-mid">
-                Earnings settle automatically after each clip&rsquo;s tracking
-                window and pay out to bKash.
-              </p>
-              <div className="mt-5">
-                <BkashForm defaultValue={user.bkashNumber} />
-              </div>
-            </>
-          )}
-
-          {step === 2 && (
-            <div className="text-center">
-              <TierBadge tier="beginner" className="mx-auto" />
-              <h1 className="title mt-4 text-[24px] text-text-hi">
-                Welcome. You start at Beginner.
-              </h1>
-              <p className="mx-auto mt-2 max-w-sm text-[13.5px] leading-relaxed text-text-mid">
-                Every verified view earns XP. Tiers unlock access and privileges
-               . The rate is ৳50 per 1,000 verified views at every tier,
-                always.
-              </p>
-              <div className="mx-auto mt-6 max-w-xs text-left">
-                <XpBar xp={user.xpTotal} nextThreshold={upcoming?.threshold} nextTierLabel="Hustler" />
-              </div>
-              <p className="mt-4 text-[12.5px] text-text-low">
-                Hustler unlocks a higher submission cap per campaign
-                (currently ×{XP_CONFIG.submissionCapMultiplier.hustler}).
-              </p>
-              <form action={completeOnboarding} className="mt-7">
-                <Button type="submit" className="w-full">
-                  Enter Klipr <ArrowEast />
-                </Button>
-              </form>
-            </div>
-          )}
-        </GlassPanel>
+          <div className="mt-7">
+            {step === 0 && (
+              <ProfileStep
+                avatarUrl={user.avatarUrl}
+                firstName={user.firstName ?? ""}
+                lastName={user.lastName ?? ""}
+                username={username}
+                mobile={lead?.phone}
+                email={user.email}
+              />
+            )}
+            {step === 1 && (
+              <AboutStep
+                avatarUrl={user.avatarUrl}
+                name={name}
+                username={username}
+                location={user.location ?? ""}
+                languages={languages}
+                onBack={<BackButton to={0} />}
+              />
+            )}
+            {step === 2 && (
+              <ConnectStep
+                avatarUrl={user.avatarUrl}
+                name={name}
+                username={username}
+                location={user.location ?? undefined}
+                languages={languages}
+                pages={connectPages}
+                onBack={<BackButton to={1} />}
+              />
+            )}
+            {step === 3 && (
+              <BkashForm
+                avatarUrl={user.avatarUrl}
+                name={name}
+                username={username}
+                location={user.location ?? undefined}
+                languages={languages}
+                defaultValue={user.bkashNumber}
+                onBack={<BackButton to={2} />}
+              />
+            )}
+          </div>
+        </div>
       </main>
     </div>
+  );
+}
+
+/** Four-step rail inside the violet card — white active pill, checks behind. */
+function Stepper({ current }: { current: number }) {
+  return (
+    <ol className="flex items-center gap-1.5" aria-label="Setup progress">
+      {STEPS.map((label, i) => {
+        const done = i < current;
+        const active = i === current;
+        const loadingLine = i === current - 1; // the previous → current connector
+        return (
+          <li key={label} className="flex flex-1 items-center gap-1.5 last:flex-none">
+            {done ? (
+              <IconCheckCircle size={24} strokeWidth={1.5} className="shrink-0 text-white" />
+            ) : (
+              <span
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px] ${
+                  active
+                    ? "step-blink bg-white font-bold text-violet-900"
+                    : "bg-white/15 text-white"
+                }`}
+                aria-current={active ? "step" : undefined}
+              >
+                {i + 1}
+              </span>
+            )}
+            {i < STEPS.length - 1 && (
+              <span
+                className={`step-dash h-[1.5px] flex-1 text-white ${
+                  loadingLine ? "step-dash-load" : ""
+                }`}
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** Server-rendered back control, passed into the client steps as a prop. */
+function BackButton({ to }: { to: number }) {
+  return (
+    <form action={backTo}>
+      <input type="hidden" name="step" value={to} />
+      <button
+        type="submit"
+        aria-label="Back"
+        className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:bg-white/10 hover:text-white"
+      >
+        <IconChevronLeft size={18} strokeWidth={1.6} />
+      </button>
+    </form>
   );
 }
