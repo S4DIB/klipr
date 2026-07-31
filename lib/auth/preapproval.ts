@@ -9,7 +9,7 @@ import type { Application, ApplicationPage, Profile } from "@/lib/db/types";
  * invite-only gate. Add more admins via the ADMIN_EMAILS env var
  * (comma-separated); KLIPR_DEV_ADMIN_EMAIL is the stub-mode dev admin.
  */
-const DEFAULT_ADMIN_EMAILS = ["shahsadib25@gmail.com"];
+const DEFAULT_ADMIN_EMAILS = ["shahsadib25@gmail.com", "mehrabkhan059@gmail.com"];
 
 function adminEmailSet(): Set<string> {
   const raw = [
