@@ -10,8 +10,8 @@ import {
   YouTubeIcon,
 } from "@/components/ui/platform-icons";
 
-/* The official 3D bolt, isolated from brand Pattern 02 (Klipr/Patterns/02).
- * "yellow" = Vibrant Yellow body / Royal Violet face; "violet" = tone-on-tone. */
+/* The flat brand bolt (Klipr/Bolt), matched to the scattered <BoltField/>.
+ * "violet" = Royal Violet (#7d04d7, --volt-500); "yellow" = Vibrant Yellow. */
 function PatternBolt({
   variant = "yellow",
   className,
@@ -21,15 +21,15 @@ function PatternBolt({
 }) {
   return (
     <svg
-      viewBox="0 0 121.71 236.39"
+      viewBox="0 0 133.26 265.91"
       aria-hidden="true"
       className={className}
-      style={{ aspectRatio: "121.71 / 236.39" }}
+      style={{ aspectRatio: "133.26 / 265.91" }}
     >
       <image
-        href={variant === "yellow" ? "/brand/bolt-3d-yellow.svg" : "/brand/bolt-3d-violet.svg"}
-        width="121.71"
-        height="236.39"
+        href={variant === "yellow" ? "/brand/bolt-flat-yellow.svg" : "/brand/bolt-flat-royal-violet.svg"}
+        width="133.26"
+        height="265.91"
       />
     </svg>
   );

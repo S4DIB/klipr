@@ -71,7 +71,7 @@ export function BoltField() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brand/bolt-3d-violet.svg"
+            src="/brand/bolt-flat-royal-violet.svg"
             alt=""
             className="block w-auto"
             style={{
