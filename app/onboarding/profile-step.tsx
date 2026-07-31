@@ -31,6 +31,7 @@ export function ProfileStep({
   const [username, setUsername] = useState(initialUsername);
 
   const name = [first, last].filter(Boolean).join(" ").trim();
+  const usernameLocked = initialUsername.trim().length > 0; // set once, permanent
 
   return (
     <div>
@@ -67,17 +68,31 @@ export function ProfileStep({
           />
         </div>
 
-        <VField
-          label="Username"
-          name="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value.replace(/^@/, ""))}
-          placeholder="sadib"
-          autoCapitalize="none"
-          spellCheck={false}
-          error={state.field === "username" ? state.error : undefined}
-          required
-        />
+        {usernameLocked ? (
+          <div>
+            <VLocked label="Username" value={`@${initialUsername}`} />
+            <p className="mt-1.5 text-[12px] font-medium text-yellow">
+              Your username is set — it can&rsquo;t be changed.
+            </p>
+          </div>
+        ) : (
+          <div>
+            <VField
+              label="Username"
+              name="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.replace(/^@/, ""))}
+              placeholder="sadib"
+              autoCapitalize="none"
+              spellCheck={false}
+              error={state.field === "username" ? state.error : undefined}
+              required
+            />
+            <p className="mt-1.5 text-[12px] font-medium text-yellow">
+              Choose carefully — your username can&rsquo;t be changed once it&rsquo;s set.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <VLocked label="Mobile number" value={mobile || "Not provided"} muted={!mobile} />

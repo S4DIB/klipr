@@ -29,19 +29,26 @@ export async function saveProfile(
   const user = await requireActiveClipper();
   const firstName = String(formData.get("firstName") ?? "").trim();
   const lastName = String(formData.get("lastName") ?? "").trim();
-  const username = String(formData.get("username") ?? "")
-    .trim()
-    .toLowerCase()
-    .replace(/^@/, "");
 
   if (!firstName) return { error: "Enter your first name.", field: "firstName" };
-  if (!USERNAME_RE.test(username)) {
-    return { error: "3–20 letters, numbers or underscores.", field: "username" };
+
+  // Username is PERMANENT: claimed once, never changed. Only validate/claim on
+  // the first pass (when the profile has none). After that the submitted value
+  // is ignored — the stored username always wins, even against tampering.
+  let username = user.username ?? "";
+  if (!username) {
+    username = String(formData.get("username") ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/^@/, "");
+    if (!USERNAME_RE.test(username)) {
+      return { error: "3–20 letters, numbers or underscores.", field: "username" };
+    }
+    const taken = (await listProfiles()).some(
+      (p) => p.id !== user.id && p.username?.toLowerCase() === username,
+    );
+    if (taken) return { error: "That username is taken.", field: "username" };
   }
-  const taken = (await listProfiles()).some(
-    (p) => p.id !== user.id && p.username?.toLowerCase() === username,
-  );
-  if (taken) return { error: "That username is taken.", field: "username" };
 
   await updateProfile(user.id, {
     firstName,
