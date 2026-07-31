@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { listProfiles } from "@/lib/db";
+import type { Profile } from "@/lib/db/types";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { TierBadge } from "@/components/app/tier-badge";
 import { StatusChip } from "@/components/app/status-chip";
@@ -8,11 +9,36 @@ import { verifyNid, toggleBlock } from "./actions";
 
 export const metadata: Metadata = { title: "Clippers · Admin" };
 
+/** The three post-approval onboarding steps, mirroring app/onboarding/page.tsx. */
+const ONBOARDING_STEPS = ["Connect pages", "Payout", "Your tier"];
+
+/**
+ * Where a clipper/agency stands in setup. Only "active" accounts have reached
+ * onboarding; everyone else is still waiting on marketplace access.
+ */
+function onboardingChip(p: Profile): { label: string; className: string } {
+  if (p.access !== "active") {
+    return { label: "Awaiting access", className: "bg-[rgba(53,5,90,0.06)] text-text-low" };
+  }
+  if (p.profileCompleted) {
+    return { label: "Onboarded", className: "bg-[rgba(10,143,79,0.12)] text-ok" };
+  }
+  const step = Math.min(p.onboardingStep ?? 0, ONBOARDING_STEPS.length - 1);
+  return {
+    label: `Setup · ${ONBOARDING_STEPS[step]}`,
+    className: "bg-[rgba(125,4,215,0.1)] text-volt-500",
+  };
+}
+
 export default async function AdminClippersPage() {
   const all = await listProfiles();
   const earners = all
     .filter((p) => p.role === "clipper" || p.role === "agency")
     .sort((a, b) => b.xpTotal - a.xpTotal);
+
+  const onboarded = earners.filter((p) => p.access === "active" && p.profileCompleted).length;
+  const inSetup = earners.filter((p) => p.access === "active" && !p.profileCompleted).length;
+  const awaiting = earners.filter((p) => p.access !== "active").length;
 
   return (
     <div className="space-y-6">
@@ -23,6 +49,11 @@ export default async function AdminClippersPage() {
           NID verification unblocks first payouts. Blocking stops submissions
           immediately.
         </p>
+        {earners.length > 0 && (
+          <p className="mt-2 font-mono text-[11.5px] text-text-mid">
+            Onboarding · {onboarded} onboarded · {inSetup} in setup · {awaiting} awaiting access
+          </p>
+        )}
       </header>
 
       <GlassPanel className="p-3">
@@ -30,7 +61,9 @@ export default async function AdminClippersPage() {
           <EmptyState title="No clippers yet" line="Approved applicants appear here." />
         ) : (
           <div className="divide-y divide-[rgba(53,5,90,0.06)]">
-            {earners.map((p) => (
+            {earners.map((p) => {
+              const ob = onboardingChip(p);
+              return (
               <div key={p.id} className="flex flex-wrap items-center gap-3 px-3 py-3.5">
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-center gap-2 text-[14px] font-medium text-text-hi">
@@ -41,6 +74,11 @@ export default async function AdminClippersPage() {
                         network manager
                       </span>
                     )}
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${ob.className}`}
+                    >
+                      {ob.label}
+                    </span>
                     {p.accountStatus === "blocked" && <StatusChip status="blocked" />}
                   </p>
                   <p className="mt-0.5 font-mono text-[11.5px] text-text-mid">
@@ -72,7 +110,8 @@ export default async function AdminClippersPage() {
                   </form>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </GlassPanel>
