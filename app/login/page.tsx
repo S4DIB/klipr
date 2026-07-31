@@ -24,18 +24,14 @@ export default async function LoginPage({
   const message = error ? ERRORS[error] : undefined;
 
   return (
-    <div className="relative min-h-dvh">
+    <div className="relative min-h-dvh overflow-x-clip">
       <div className="field-app fixed inset-0 -z-10" aria-hidden="true" />
-      <main className="grid min-h-dvh place-items-center px-5 py-16">
-        <div className="w-full max-w-sm">
-          <Link href="/" className="mb-8 flex justify-center text-text-hi">
-            <Logo className="text-[17px]" />
-          </Link>
-
+      <main className="flex min-h-dvh items-center justify-center px-5 py-16">
+        <div className="w-full max-w-[416px]">
           {message ? (
             <GlassPanel
               variant="well"
-              className="mb-4 border border-[rgba(255,123,192,0.35)] p-4 text-center"
+              className="mb-5 border border-[rgba(255,123,192,0.35)] p-4 text-center"
             >
               <p className="text-[13px] font-medium leading-relaxed text-text-hi">{message}</p>
               {error === "not_approved" ? (
@@ -49,29 +45,41 @@ export default async function LoginPage({
             </GlassPanel>
           ) : null}
 
-          <GlassPanel className="p-7 text-center">
-            <p className="eyebrow">Sign in</p>
-            <h1 className="title mt-2 text-[24px] text-text-hi">Welcome back.</h1>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-text-mid">
+          {/* One prominent Royal Violet box holds everything */}
+          <div className="rounded-[28px] bg-[#7d04d7] px-7 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_2px_6px_rgba(53,5,90,0.2),0_44px_90px_-30px_rgba(125,4,215,0.55)] sm:px-9">
+            {/* Official Klipr logo lockup — ivory on violet */}
+            <Link
+              href="/"
+              aria-label="Klipr — back to home"
+              className="mb-5 flex justify-center transition-opacity duration-200 hover:opacity-80 [&_svg]:text-ivory"
+            >
+              <Logo className="text-[18px]" />
+            </Link>
+
+            <h1 className="font-display text-[28px] font-bold leading-[1.1] tracking-[-0.02em] text-ivory">
+              Sign in to Klipr
+            </h1>
+            <p className="mx-auto mt-3 max-w-[32ch] text-[13.5px] leading-relaxed text-ivory/80">
               Klipr is invite-only. Approved from the waitlist? Sign in with the same email. Not
               yet?{" "}
-              <Link href="/#waitlist" className="font-semibold text-volt-500">
+              <Link href="/#waitlist" className="font-semibold text-yellow hover:underline">
                 Join the waitlist
               </Link>
               .
             </p>
 
-            <form action={signInWithGoogle} className="mt-6">
-              <Button type="submit" className="h-[50px] w-full">
+            <form action={signInWithGoogle} className="mt-7">
+              <Button type="submit" variant="inverse" className="h-[52px] w-full text-[15px]">
                 <GoogleGlyph />
                 Continue with Google
               </Button>
             </form>
-          </GlassPanel>
 
-          <p className="mt-5 text-center text-[11.5px] text-text-low">
-            By continuing you agree to the Klipr terms.
-          </p>
+            <div className="mx-auto mt-8 h-px w-full bg-[rgba(255,255,255,0.18)]" />
+            <p className="mt-4 text-[11.5px] leading-relaxed text-ivory/60">
+              By continuing you agree to the Klipr terms.
+            </p>
+          </div>
         </div>
       </main>
     </div>
