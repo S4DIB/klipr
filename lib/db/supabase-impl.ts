@@ -30,6 +30,9 @@ import type { LedgerDraft } from "@/lib/ledger";
 
 const toProfile = (r: any): Profile => ({
   id: r.id, email: r.email, displayName: r.display_name, avatarUrl: r.avatar_url ?? undefined,
+  firstName: r.first_name ?? undefined, lastName: r.last_name ?? undefined,
+  username: r.username ?? undefined, location: r.location ?? undefined,
+  postLanguages: r.post_languages ?? undefined,
   role: r.role, access: r.access, tier: r.tier, xpTotal: r.xp_total, streakWeeks: r.streak_weeks,
   bkashNumber: r.bkash_number ?? undefined, nidStatus: r.nid_status,
   nidNumberEnc: r.nid_number_enc ?? undefined, orgName: r.org_name ?? undefined,
@@ -38,6 +41,9 @@ const toProfile = (r: any): Profile => ({
 });
 const fromProfile = (p: Profile) => ({
   id: p.id, email: p.email, display_name: p.displayName, avatar_url: p.avatarUrl ?? null,
+  first_name: p.firstName ?? null, last_name: p.lastName ?? null,
+  username: p.username ?? null, location: p.location ?? null,
+  post_languages: p.postLanguages ?? null,
   role: p.role, access: p.access, tier: p.tier, xp_total: p.xpTotal, streak_weeks: p.streakWeeks,
   bkash_number: p.bkashNumber ?? null, nid_status: p.nidStatus,
   nid_number_enc: p.nidNumberEnc ?? null, org_name: p.orgName ?? null,
