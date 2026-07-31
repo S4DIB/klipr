@@ -1,9 +1,8 @@
 import { listLeads, type Lead } from "@/lib/leads";
-import { GlassPanel } from "@/components/app/glass-panel";
 import { EmptyState } from "@/components/app/empty-state";
 import { StatusChip } from "@/components/app/status-chip";
 import { PLATFORMS, platformFromUrl, handleFromUrl } from "@/lib/platforms";
-import { hoursSince } from "@/lib/format";
+import { hoursSince, dhakaDateTime } from "@/lib/format";
 import { reviewWaitlistLead } from "./actions";
 
 const SLA_HOURS = 48;
@@ -76,8 +75,8 @@ export async function WaitlistQueue() {
     .slice(0, 6);
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-5">
-      <GlassPanel>
+    <div className="flex w-full flex-col gap-8">
+      <section>
         <p className="eyebrow">Waitlist · landing page</p>
         <h2 className="mt-1 text-[19px] font-extrabold tracking-[-0.01em] text-ink-900">
           Waitlist applications
@@ -115,15 +114,18 @@ export async function WaitlistQueue() {
                         {lead.postFrequency ? ` · posts ${lead.postFrequency}` : ""}
                       </p>
                     </div>
-                    {breach ? (
-                      <span className="shrink-0 rounded-full bg-danger-bg px-[7px] py-[3px] text-[10px] font-bold text-danger-600">
-                        SLA {age(lead.at)}
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      {breach ? (
+                        <span className="rounded-full bg-danger-bg px-[7px] py-[3px] text-[10px] font-bold text-danger-600">
+                          SLA {age(lead.at)}
+                        </span>
+                      ) : (
+                        <span className="font-mono text-[11px] text-ink-400">{age(lead.at)}</span>
+                      )}
+                      <span className="whitespace-nowrap font-mono text-[11px] text-ink-400">
+                        {dhakaDateTime(lead.at)}
                       </span>
-                    ) : (
-                      <span className="shrink-0 font-mono text-[11px] text-ink-400">
-                        {age(lead.at)}
-                      </span>
-                    )}
+                    </div>
                   </div>
 
                   {lead.pages && lead.pages.length > 0 ? (
@@ -173,16 +175,16 @@ export async function WaitlistQueue() {
             })}
           </div>
         )}
-      </GlassPanel>
+      </section>
 
       {decided.length > 0 ? (
-        <GlassPanel>
+        <section>
           <p className="eyebrow">Recently reviewed</p>
           <div className="mt-2.5 flex flex-col gap-1.5">
             {decided.map((lead) => (
               <div
                 key={lead.email}
-                className="flex items-center justify-between gap-3 rounded-[12px] bg-[rgba(53,5,90,0.03)] px-3.5 py-2.5"
+                className="flex items-center justify-between gap-3 rounded-[12px] border border-[rgba(53,5,90,0.06)] bg-white px-3.5 py-2.5"
               >
                 <div className="min-w-0">
                   <p className="truncate text-[13px] font-semibold text-ink-700">
@@ -196,7 +198,7 @@ export async function WaitlistQueue() {
               </div>
             ))}
           </div>
-        </GlassPanel>
+        </section>
       ) : null}
     </div>
   );
