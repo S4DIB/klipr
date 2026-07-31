@@ -88,6 +88,9 @@ body {
   background: var(--ink-900);
   color: var(--text-hi);
   font-family: var(--font-sans);
+  /* Body tier (brand guideline p18): 16px · line-height 1.5 · 0 tracking */
+  font-size: 16px;
+  line-height: 1.5;
   font-feature-settings: "ss01";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -542,6 +545,40 @@ body {
   font-weight: 400;
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---- Brand typescale (guideline p18) ----
+   The canonical four-tier scale from the brand book, exact to spec.
+   Tracking is expressed as % of em: the guideline's "-2 / -1 / 0 / +1"
+   → -0.02 / -0.01 / 0 / +0.01em (matches .display's -0.02em Headline).
+   Headline/Subtext use the Stack Sans Headline cut; Body/Caption the Text cut. */
+.headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.subtext {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.body-text {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.caption {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
 }
 
 /* Pulsing BoltMark — the brand's loading indicator (replaces skeleton shimmer) */
