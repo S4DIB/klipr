@@ -77,11 +77,18 @@ export async function startOnboardingPreview() {
       ],
     );
   } else {
-    // Re-entry: rewind to step 0 so the flow always restarts from the top.
+    // Re-entry: rewind to step 0 AND wipe the profile fields so every preview
+    // starts blank (editable username, empty name/location/languages).
     await updateProfile(profile.id, {
       access: "active",
       profileCompleted: false,
       onboardingStep: 0,
+      displayName: "Preview Clipper",
+      firstName: undefined,
+      lastName: undefined,
+      username: undefined,
+      location: undefined,
+      postLanguages: undefined,
     });
   }
 
