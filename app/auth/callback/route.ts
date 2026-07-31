@@ -22,17 +22,25 @@ export async function GET(request: Request) {
     const sb = await createSupabaseServer();
     const { error } = await sb.auth.exchangeCodeForSession(code);
     if (!error) {
-      const {
-        data: { user },
-      } = await sb.auth.getUser();
-      const profile = user ? await getProfile(user.id) : null;
-      // The SaaS admin email is provisioned here; then approved-waitlist clippers
-      // are unlocked. Anything else stays access "none".
-      let promoted = profile ? await promoteIfAdmin(profile) : null;
-      if (promoted) promoted = await promoteIfPreapproved(promoted);
+      try {
+        const {
+          data: { user },
+        } = await sb.auth.getUser();
+        const profile = user ? await getProfile(user.id) : null;
+        // The SaaS admin email is provisioned here; then approved-waitlist clippers
+        // are unlocked. Anything else stays access "none".
+        let promoted = profile ? await promoteIfAdmin(profile) : null;
+        if (promoted) promoted = await promoteIfPreapproved(promoted);
 
-      if (promoted && accessAllowed(promoted)) {
-        return NextResponse.redirect(new URL(routeFor(promoted), siteUrl));
+        if (promoted && accessAllowed(promoted)) {
+          return NextResponse.redirect(new URL(routeFor(promoted), siteUrl));
+        }
+      } catch (e) {
+        // Provisioning failed (e.g. a DB write): never dead-end the user on a
+        // raw 500 — log it, drop the half-made session, and let them retry.
+        console.error("[auth/callback] account provisioning failed:", e);
+        await sb.auth.signOut();
+        return NextResponse.redirect(new URL("/login?error=auth", siteUrl));
       }
       // Not approved → refuse the session entirely.
       await sb.auth.signOut();

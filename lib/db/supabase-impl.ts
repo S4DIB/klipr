@@ -223,7 +223,12 @@ export async function updateProfile(id: string, patch: Partial<Profile>): Promis
 
 /* ── Applications ── */
 export async function createApplication(app: Application, pages: ApplicationPage[]): Promise<Application> {
-  const client = await sb();
+  // Privileged write: the only caller is the waitlist pre-approval promotion
+  // (lib/auth/preapproval), which inserts an already-APPROVED application on
+  // behalf of a just-signed-in clipper. That is authorised in app code, but a
+  // user-scoped (RLS) client cannot insert a pre-approved row — it would be
+  // privilege escalation — so the insert must go through the service role.
+  const client = admin();
   const { error } = await client.from("applications").insert(fromApplication(app));
   if (error) throw error;
   if (pages.length) {
