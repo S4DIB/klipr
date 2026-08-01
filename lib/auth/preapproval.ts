@@ -52,10 +52,27 @@ export async function promoteIfAdmin(profile: Profile): Promise<Profile> {
  * Declined or pending leads change nothing: the normal /apply flow runs.
  */
 export async function promoteIfPreapproved(profile: Profile): Promise<Profile> {
-  if (profile.role !== "clipper" || profile.access !== "none") return profile;
+  if (profile.access !== "none") return profile;
 
   const lead = await getLeadByEmail(profile.email);
-  if (!lead || lead.role !== "clipper" || lead.status !== "approved") return profile;
+  if (!lead || lead.status !== "approved") return profile;
+
+  // Approved BRAND → active brand; the 3-step brand onboarding runs next. A
+  // fresh Google sign-in is a "clipper" by default, so this also flips the role.
+  if (lead.role === "brand") {
+    return (
+      (await updateProfile(profile.id, {
+        role: "brand",
+        access: "active",
+        orgName: lead.company ?? profile.orgName,
+        profileCompleted: false,
+        onboardingStep: 0,
+      })) ?? { ...profile, role: "brand", access: "active", profileCompleted: false }
+    );
+  }
+
+  // Approved CLIPPER → active clipper with vetted pages (below).
+  if (profile.role !== "clipper") return profile;
 
   const application: Application = {
     id: newId("app"),

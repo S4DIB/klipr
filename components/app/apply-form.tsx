@@ -7,13 +7,9 @@ import { TextField, SelectField, TextAreaField } from "@/components/app/field";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { IconAdd, IconX } from "@/components/icons";
 import { PLATFORMS, PLATFORM_ORDER, NICHES } from "@/lib/platforms";
-import {
-  submitApplication,
-  submitBrandSignup,
-  type ApplyState,
-} from "@/app/apply/actions";
+import { submitApplication, type ApplyState } from "@/app/apply/actions";
 
-type Kind = "clipper" | "agency" | "brand";
+type Kind = "clipper" | "agency";
 
 interface PageRow {
   platform: string;
@@ -34,7 +30,6 @@ const emptyRow = (): PageRow => ({
 const KINDS: { id: Kind; label: string }[] = [
   { id: "clipper", label: "Clipper" },
   { id: "agency", label: "Agency" },
-  { id: "brand", label: "Brand" },
 ];
 
 export function ApplyForm() {
@@ -44,11 +39,6 @@ export function ApplyForm() {
     submitApplication,
     {},
   );
-  const [brandState, brandAction, branding] = useActionState<ApplyState, FormData>(
-    submitBrandSignup,
-    {},
-  );
-
   const setRow = (i: number, patch: Partial<PageRow>) =>
     setRows((r) => r.map((row, j) => (j === i ? { ...row, ...patch } : row)));
 
@@ -88,31 +78,7 @@ export function ApplyForm() {
         </div>
       </div>
 
-      {kind === "brand" ? (
-        <form action={brandAction} className="flex flex-col gap-3.5">
-          <TextField label="Company name" name="orgName" placeholder="Your brand or company" required />
-          <TextField
-            label="Contact number"
-            name="contactNumber"
-            inputMode="numeric"
-            placeholder="01XXXXXXXXX"
-            required
-          />
-          <TextField label="Your role" name="designation" placeholder="e.g. Marketing lead" required />
-          {brandState.error ? (
-            <p className="text-[13px] font-medium text-danger-600" role="alert">
-              {brandState.error}
-            </p>
-          ) : null}
-          <Button type="submit" disabled={branding} className="h-[52px] w-full text-[15px]">
-            {branding ? "Creating console…" : "Enter the brand console"}
-          </Button>
-          <p className="text-center text-[12px] text-ink-400">
-            Brands don&apos;t join the review queue. Campaigns are vetted at funding time.
-          </p>
-        </form>
-      ) : (
-        <form action={applyAction} className="flex flex-col gap-[14px]">
+      <form action={applyAction} className="flex flex-col gap-[14px]">
           <input type="hidden" name="role" value={kind} />
           <input type="hidden" name="pages" value={pagesJson} />
 
@@ -239,7 +205,6 @@ export function ApplyForm() {
             {applying ? "Submitting…" : "Submit application"}
           </Button>
         </form>
-      )}
     </div>
   );
 }

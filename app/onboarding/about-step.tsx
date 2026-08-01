@@ -5,23 +5,7 @@ import { Button, ArrowEast } from "@/components/ui/button";
 import { PreviewCard } from "./preview-card";
 import { VSelect } from "./violet-field";
 import { saveAbout, type AboutState } from "./actions";
-
-const COUNTRIES = [
-  "Bangladesh",
-  "India",
-  "Pakistan",
-  "United States",
-  "United Kingdom",
-  "Canada",
-  "Australia",
-  "United Arab Emirates",
-  "Saudi Arabia",
-  "Malaysia",
-  "Singapore",
-  "Indonesia",
-  "Nigeria",
-  "Other",
-];
+import { COUNTRIES } from "./options";
 
 const LANGUAGES = ["Bangla", "English", "Hindi", "Urdu", "Arabic", "Other"];
 

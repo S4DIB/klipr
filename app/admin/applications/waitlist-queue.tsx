@@ -63,7 +63,7 @@ function PageChip({ page }: { page: RawLeadPage }) {
  * the reviewed pages marked vetted.
  */
 export async function WaitlistQueue() {
-  const leads = (await listLeads()).filter((l) => l.role === "clipper");
+  const leads = (await listLeads()).filter((l) => l.role === "clipper" || l.role === "brand");
   const pending = leads
     .filter((l) => (l.status ?? "pending") === "pending")
     .sort((a, b) => a.at.localeCompare(b.at));
@@ -105,13 +105,29 @@ export async function WaitlistQueue() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-[14.5px] font-bold text-ink-900">
-                        {lead.name ?? lead.email}
+                      <p className="flex items-center gap-2 text-[14.5px] font-bold text-ink-900">
+                        <span className="truncate">{lead.name ?? lead.email}</span>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] ${
+                            lead.role === "brand"
+                              ? "bg-[rgba(125,4,215,0.1)] text-violet-700"
+                              : "bg-[rgba(53,5,90,0.06)] text-ink-500"
+                          }`}
+                        >
+                          {lead.role}
+                        </span>
                       </p>
                       <p className="mt-0.5 truncate text-[12.5px] text-ink-500">
                         {lead.email}
                         {lead.phone ? ` · ${lead.phone}` : ""}
-                        {lead.postFrequency ? ` · posts ${lead.postFrequency}` : ""}
+                        {lead.role === "brand"
+                          ? [lead.company, lead.designation]
+                              .filter(Boolean)
+                              .map((s) => ` · ${s}`)
+                              .join("")
+                          : lead.postFrequency
+                            ? ` · posts ${lead.postFrequency}`
+                            : ""}
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">

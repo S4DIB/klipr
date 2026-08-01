@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireActiveClipper } from "@/lib/auth/guards";
+import { requireActiveClipper, requireRole, requireUser } from "@/lib/auth/guards";
 import { bkashSchema } from "@/lib/validation/apply";
 import {
   createApplication,
@@ -194,9 +194,10 @@ export async function continueToPayout(): Promise<void> {
   revalidatePath("/onboarding");
 }
 
-/** Back one step. Forward save actions re-advance via Math.max, so re-walking is safe. */
+/** Back one step (shared by clipper + brand). Forward save actions re-advance
+ *  via Math.max, so re-walking is safe. */
 export async function backTo(formData: FormData): Promise<void> {
-  const user = await requireActiveClipper();
+  const user = await requireUser();
   const step = Number(formData.get("step") ?? 0);
   await updateProfile(user.id, { onboardingStep: Math.max(0, Math.min(step, 3)) });
   revalidatePath("/onboarding");
@@ -220,4 +221,85 @@ export async function saveBkash(
     onboardingStep: 99,
   });
   redirect("/home");
+}
+
+/* ── Brand onboarding: 0 business · 1 details · 2 finish ── */
+
+const WEBSITE_RE = /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(\/\S*)?$/i;
+
+export type BrandProfileState = { error?: string; field?: "orgName" | "website" };
+
+/** Brand step 0 → 1. Business name + validated website. */
+export async function saveBusinessProfile(
+  _prev: BrandProfileState,
+  formData: FormData,
+): Promise<BrandProfileState> {
+  const user = await requireRole("brand");
+  const orgName = String(formData.get("orgName") ?? "").trim();
+  const raw = String(formData.get("website") ?? "").trim();
+
+  if (!orgName) return { error: "Enter your business name.", field: "orgName" };
+  if (!WEBSITE_RE.test(raw)) {
+    return { error: "Please enter a valid company website.", field: "website" };
+  }
+  const website = raw.startsWith("http") ? raw : `https://${raw}`;
+
+  await updateProfile(user.id, {
+    orgName,
+    website,
+    onboardingStep: Math.max(user.onboardingStep, 1),
+  });
+  revalidatePath("/onboarding");
+  return {};
+}
+
+export type BrandDetailsState = { error?: string };
+
+/** Brand step 1 → 2. Industry, country, estimated monthly spend. */
+export async function saveCompanyDetails(
+  _prev: BrandDetailsState,
+  formData: FormData,
+): Promise<BrandDetailsState> {
+  const user = await requireRole("brand");
+  const industry = String(formData.get("industry") ?? "").trim();
+  const location = String(formData.get("location") ?? "").trim();
+  const monthlySpend = String(formData.get("monthlySpend") ?? "").trim();
+
+  if (!industry) return { error: "Select your industry." };
+  if (!location) return { error: "Select your location." };
+  if (!monthlySpend) return { error: "Select your estimated monthly spend." };
+
+  await updateProfile(user.id, {
+    industry,
+    location,
+    monthlySpend,
+    onboardingStep: Math.max(user.onboardingStep, 2),
+  });
+  revalidatePath("/onboarding");
+  return {};
+}
+
+export type BrandFinishState = { error?: string };
+
+/** Brand step 2 → done. Contact name + campaign history; finishes onboarding. */
+export async function finishBrandSetup(
+  _prev: BrandFinishState,
+  formData: FormData,
+): Promise<BrandFinishState> {
+  const user = await requireRole("brand");
+  const firstName = String(formData.get("firstName") ?? "").trim();
+  const lastName = String(formData.get("lastName") ?? "").trim();
+  const campaignExperience = String(formData.get("campaignExperience") ?? "").trim();
+
+  if (!firstName) return { error: "Enter your name." };
+
+  await updateProfile(user.id, {
+    firstName,
+    lastName: lastName || undefined,
+    displayName: lastName ? `${firstName} ${lastName}` : firstName,
+    campaignExperience: campaignExperience || undefined,
+    profileCompleted: true,
+    onboardingStep: 99,
+  });
+  redirect("/brand");
 }

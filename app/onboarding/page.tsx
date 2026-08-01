@@ -7,54 +7,63 @@ import { getLeadByEmail } from "@/lib/leads";
 import { listConnectedAccounts, listVettedPagesForProfile } from "@/lib/db";
 import { Logo } from "@/components/ui/logo";
 import { IconCheckCircle, IconChevronLeft } from "@/components/icons";
-import { PreviewCard } from "./preview-card";
 import { ProfileStep } from "./profile-step";
 import { AboutStep } from "./about-step";
 import { ConnectStep, type ConnectPage } from "./connect-step";
 import { BkashForm } from "./bkash-form";
+import { BusinessStep } from "./business-step";
+import { DetailsStep } from "./details-step";
+import { FinishStep } from "./finish-step";
 import { backTo } from "./actions";
 
 export const metadata: Metadata = { title: "Set up" };
 
-const STEPS = ["Profile", "About you", "Connect", "Payout"];
+const CLIPPER_STEPS = ["Profile", "About you", "Connect", "Payout"];
+const BRAND_STEPS = ["Business", "Details", "Finish"];
 
 /**
- * Post-approval onboarding — four steps inside one centred Royal Violet card on
- * the ivory field, matching the sign-in. White type, translucent inputs, a
- * white preview inset. Progress persists in Profile.onboardingStep.
+ * Post-approval onboarding inside one centred Royal Violet card. Role-aware:
+ * clippers/agencies get the 4-step flow, brands get the 3-step business setup.
+ * Progress persists in Profile.onboardingStep.
  */
 export default async function OnboardingPage() {
   const user = await currentUser();
   if (!user) redirect("/login");
-  if (user.role === "brand" || user.role === "admin") redirect(routeFor(user));
+  if (user.role === "admin") redirect(routeFor(user));
   if (user.access !== "active") redirect(routeFor(user));
-  if (user.profileCompleted) redirect("/home");
+  if (user.profileCompleted) redirect(routeFor(user));
 
-  const step = Math.min(user.onboardingStep, 3);
-
-  const [lead, vettedPages, accounts] = await Promise.all([
-    getLeadByEmail(user.email),
-    listVettedPagesForProfile(user.id),
-    listConnectedAccounts(user.id),
-  ]);
-
+  const isBrand = user.role === "brand";
+  const steps = isBrand ? BRAND_STEPS : CLIPPER_STEPS;
+  const step = Math.min(user.onboardingStep, steps.length - 1);
   const name = user.displayName?.trim() || "";
-  const username = user.username ?? "";
-  const languages = user.postLanguages
-    ? user.postLanguages.split(",").map((s) => s.trim()).filter(Boolean)
-    : [];
 
-  const connectPages: ConnectPage[] = vettedPages.map((p) => {
-    const acc = accounts.find((a) => a.applicationPageId === p.id && a.status !== "revoked");
-    return {
-      id: p.id,
-      platform: p.platform,
-      handle: p.handle,
-      url: p.url,
-      status: acc ? (acc.status === "active" ? "active" : "pending") : "none",
-      fromWaitlist: true,
-    };
-  });
+  // clipper/agency-only data
+  let leadPhone: string | undefined;
+  let languages: string[] = [];
+  let connectPages: ConnectPage[] = [];
+  if (!isBrand) {
+    const [lead, vettedPages, accounts] = await Promise.all([
+      getLeadByEmail(user.email),
+      listVettedPagesForProfile(user.id),
+      listConnectedAccounts(user.id),
+    ]);
+    leadPhone = lead?.phone;
+    languages = user.postLanguages
+      ? user.postLanguages.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+    connectPages = vettedPages.map((p) => {
+      const acc = accounts.find((a) => a.applicationPageId === p.id && a.status !== "revoked");
+      return {
+        id: p.id,
+        platform: p.platform,
+        handle: p.handle,
+        url: p.url,
+        status: acc ? (acc.status === "active" ? "active" : "pending") : "none",
+        fromWaitlist: true,
+      };
+    });
+  }
 
   return (
     <div className="relative min-h-dvh">
@@ -75,50 +84,84 @@ export default async function OnboardingPage() {
             <Logo className="text-[16px]" />
           </div>
 
-          <Stepper current={step} />
+          <Stepper current={step} labels={steps} />
 
           <div className="mt-7">
-            {step === 0 && (
-              <ProfileStep
-                avatarUrl={user.avatarUrl}
-                firstName={user.firstName ?? ""}
-                lastName={user.lastName ?? ""}
-                username={username}
-                mobile={lead?.phone}
-                email={user.email}
-              />
-            )}
-            {step === 1 && (
-              <AboutStep
-                avatarUrl={user.avatarUrl}
-                name={name}
-                username={username}
-                location={user.location ?? ""}
-                languages={languages}
-                onBack={<BackButton to={0} />}
-              />
-            )}
-            {step === 2 && (
-              <ConnectStep
-                avatarUrl={user.avatarUrl}
-                name={name}
-                username={username}
-                location={user.location ?? undefined}
-                languages={languages}
-                pages={connectPages}
-                onBack={<BackButton to={1} />}
-              />
-            )}
-            {step === 3 && (
-              <BkashForm
-                avatarUrl={user.avatarUrl}
-                name={name}
-                username={username}
-                location={user.location ?? undefined}
-                languages={languages}
-                defaultValue={user.bkashNumber}
-                onBack={<BackButton to={2} />}
-              />
+            {isBrand ? (
+              <>
+                {step === 0 && (
+                  <BusinessStep orgName={user.orgName ?? ""} website={user.website ?? ""} />
+                )}
+                {step === 1 && (
+                  <DetailsStep
+                    businessName={user.orgName ?? ""}
+                    website={user.website ?? ""}
+                    industry={user.industry ?? ""}
+                    country={user.location ?? ""}
+                    monthlySpend={user.monthlySpend ?? ""}
+                    onBack={<BackButton to={0} />}
+                  />
+                )}
+                {step === 2 && (
+                  <FinishStep
+                    businessName={user.orgName ?? ""}
+                    website={user.website ?? ""}
+                    industry={user.industry ?? undefined}
+                    country={user.location ?? undefined}
+                    avatarUrl={user.avatarUrl}
+                    email={user.email}
+                    firstName={user.firstName ?? ""}
+                    lastName={user.lastName ?? ""}
+                    experience={user.campaignExperience ?? ""}
+                    onBack={<BackButton to={1} />}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                {step === 0 && (
+                  <ProfileStep
+                    avatarUrl={user.avatarUrl}
+                    firstName={user.firstName ?? ""}
+                    lastName={user.lastName ?? ""}
+                    username={user.username ?? ""}
+                    mobile={leadPhone}
+                    email={user.email}
+                  />
+                )}
+                {step === 1 && (
+                  <AboutStep
+                    avatarUrl={user.avatarUrl}
+                    name={name}
+                    username={user.username ?? ""}
+                    location={user.location ?? ""}
+                    languages={languages}
+                    onBack={<BackButton to={0} />}
+                  />
+                )}
+                {step === 2 && (
+                  <ConnectStep
+                    avatarUrl={user.avatarUrl}
+                    name={name}
+                    username={user.username ?? ""}
+                    location={user.location ?? undefined}
+                    languages={languages}
+                    pages={connectPages}
+                    onBack={<BackButton to={1} />}
+                  />
+                )}
+                {step === 3 && (
+                  <BkashForm
+                    avatarUrl={user.avatarUrl}
+                    name={name}
+                    username={user.username ?? ""}
+                    location={user.location ?? undefined}
+                    languages={languages}
+                    defaultValue={user.bkashNumber}
+                    onBack={<BackButton to={2} />}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
@@ -127,11 +170,11 @@ export default async function OnboardingPage() {
   );
 }
 
-/** Four-step rail inside the violet card — white active pill, checks behind. */
-function Stepper({ current }: { current: number }) {
+/** Progress rail inside the violet card — white active pill, checks behind. */
+function Stepper({ current, labels }: { current: number; labels: string[] }) {
   return (
     <ol className="flex items-center gap-1.5" aria-label="Setup progress">
-      {STEPS.map((label, i) => {
+      {labels.map((label, i) => {
         const done = i < current;
         const active = i === current;
         const loadingLine = i === current - 1; // the previous → current connector
@@ -151,7 +194,7 @@ function Stepper({ current }: { current: number }) {
                 {i + 1}
               </span>
             )}
-            {i < STEPS.length - 1 && (
+            {i < labels.length - 1 && (
               <span
                 className={`step-dash h-[1.5px] flex-1 text-white ${
                   loadingLine ? "step-dash-load" : ""

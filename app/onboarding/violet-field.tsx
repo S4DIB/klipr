@@ -29,7 +29,7 @@ export function VField({
 }: { label: string; error?: string } & InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
-      <Label>{label}</Label>
+      {label ? <Label>{label}</Label> : null}
       <input className={cn(control, className)} {...rest} />
       <Err error={error} />
     </div>

@@ -53,7 +53,7 @@ export function accessAllowed(user: Profile): boolean {
 /** Where a signed-in profile belongs — shared by login, OAuth callback, layouts. */
 export function routeFor(user: Profile): string {
   if (user.role === "admin") return "/admin";
-  if (user.role === "brand") return user.profileCompleted ? "/brand" : "/apply";
+  if (user.role === "brand") return user.profileCompleted ? "/brand" : "/onboarding";
   // clipper / agency — active only (anyone else is refused at sign-in)
   if (user.access === "active") return user.profileCompleted ? "/home" : "/onboarding";
   return "/login?error=not_approved";
