@@ -13,6 +13,7 @@ export default async function SettingsPage() {
       <SettingsTabs
         personal={{
           displayName: user.displayName,
+          avatarUrl: user.avatarUrl,
           firstName: user.firstName,
           lastName: user.lastName,
           username: user.username,

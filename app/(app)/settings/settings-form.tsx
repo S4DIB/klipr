@@ -27,6 +27,7 @@ const TABS: { key: Tab; label: string }[] = [
 
 export interface PersonalInfo {
   displayName: string;
+  avatarUrl?: string;
   firstName?: string;
   lastName?: string;
   username?: string;
@@ -131,9 +132,18 @@ function PersonalPanel({
 
       {/* identity header */}
       <div className="flex items-center gap-4">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-volt-600 font-mono text-[24px] text-yellow">
-          {initial}
-        </span>
+        {personal.avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={personal.avatarUrl}
+            alt=""
+            className="h-16 w-16 shrink-0 rounded-full object-cover ring-1 ring-[rgba(53,5,90,0.1)]"
+          />
+        ) : (
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-volt-600 font-mono text-[24px] text-yellow">
+            {initial}
+          </span>
+        )}
         <div>
           <p className="text-[20px] font-extrabold tracking-[-0.01em] text-ink-900">
             {personal.displayName}
