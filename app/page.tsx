@@ -1,3 +1,5 @@
+import { currentUser } from "@/lib/auth/session";
+import { routeFor, accessAllowed } from "@/lib/auth/guards";
 import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
 import { WaitlistModal } from "@/components/site/waitlist-modal";
@@ -13,12 +15,18 @@ import { Faq } from "@/components/landing/faq";
  * Every chapter ends pointing at the next; every CTA points at #waitlist.
  * The hero's world IS the page: one continuous Klipr Glass daylight field —
  * frosted ivory over soft brand-color pools — matching the product app. */
-export default function Home() {
+export default async function Home() {
+  // Recognise an existing session so the nav can offer "Go to app" instead of
+  // the logged-out Sign in / Join actions. Only sessions that actually have
+  // access get an app link.
+  const user = await currentUser();
+  const appHref = user && accessAllowed(user) ? routeFor(user) : undefined;
+
   return (
     <>
       {/* landing-only: the canvas behind overscroll matches the product's neutral surface */}
       <style>{`html, body { background: #f4f3f7; }`}</style>
-      <Nav />
+      <Nav appHref={appHref} displayName={user?.displayName} avatarUrl={user?.avatarUrl} />
       <Backdrop />
       <div className="landing-surface relative">
         {/* soft violet brand bolts scattered across the whole page, behind the content */}
