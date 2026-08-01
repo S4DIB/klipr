@@ -48,6 +48,12 @@ export interface Profile {
   nidNumberEnc?: string;
   /** Brand / agency organisation name. */
   orgName?: string;
+  /* ── Brand onboarding (collected in the 3-step brand setup) ── */
+  website?: string;
+  industry?: string;
+  monthlySpend?: string;
+  /** "not_yet" | "a_few" | "often" — brand's clipping-campaign history. */
+  campaignExperience?: string;
   leaderboardOptOut: boolean;
   accountStatus: "active" | "blocked";
   profileCompleted: boolean;
