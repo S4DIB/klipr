@@ -1,22 +1,41 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { getProfile, listCampaigns } from "@/lib/db";
+import type { Campaign } from "@/lib/db/types";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
 import { EmptyState } from "@/components/app/empty-state";
 import { BudgetBar } from "@/components/ui/budget-bar";
+import { FilterTabs, normalizeFilter, type FilterKey } from "@/components/app/filter-tabs";
 import { takaFromPoisha, dhakaDate } from "@/lib/format";
-import { confirmFunding, cancelCampaign } from "./actions";
+import { approveCampaign, rejectCampaign } from "./actions";
 
 export const metadata: Metadata = { title: "Campaigns · Admin" };
 
-export default async function AdminCampaignsPage() {
+/**
+ * Campaign approvals — the same Pending / Approved / Rejected model as the
+ * waitlist. Brands post a campaign (→ pending); Approve makes it public to
+ * clippers. Money is a SEPARATE step on each campaign's detail page.
+ */
+export default async function AdminCampaignsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
+  const filter = normalizeFilter(status);
+
   const all = await listCampaigns();
-  const pending = all.filter((c) => c.status === "pending_funding");
-  const running = all.filter((c) => c.status === "active" || c.status === "settling");
-  const done = all.filter((c) => c.status === "completed" || c.status === "cancelled");
+  const pending = all.filter((c) => c.status === "pending_funding" || c.status === "draft");
+  const approved = all.filter(
+    (c) => c.status === "active" || c.status === "settling" || c.status === "completed",
+  );
+  const rejected = all.filter((c) => c.status === "cancelled");
+  const counts = { pending: pending.length, approved: approved.length, rejected: rejected.length };
+  const list = filter === "approved" ? approved : filter === "rejected" ? rejected : pending;
 
   const brandNames = new Map<string, string>();
-  for (const c of pending) {
+  for (const c of list) {
     if (!brandNames.has(c.brandProfileId)) {
       const p = await getProfile(c.brandProfileId);
       brandNames.set(c.brandProfileId, p?.orgName ?? p?.displayName ?? c.brandProfileId);
@@ -24,99 +43,113 @@ export default async function AdminCampaignsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <header>
         <p className="eyebrow">02 / Campaigns</p>
-        <h1 className="display-1 mt-1 text-[32px] text-text-hi">Funding & lifecycle.</h1>
+        <h1 className="display-1 mt-1 text-[32px] text-text-hi">Campaign approvals.</h1>
+        <p className="mt-1 max-w-xl text-[13.5px] leading-relaxed text-text-mid">
+          Brands post campaigns here. Approve to make one public to clippers — funding is a
+          separate step you confirm on each campaign.
+        </p>
       </header>
 
-      <section className="space-y-3">
-        <p className="eyebrow">Awaiting escrow confirmation</p>
-        {pending.length === 0 ? (
-          <GlassPanel>
-            <EmptyState title="Nothing needs you" line="New campaigns appear here until their escrow is confirmed." />
-          </GlassPanel>
-        ) : (
-          pending.map((c) => (
-            <GlassPanel key={c.id} className="flex flex-wrap items-center justify-between gap-4 p-5">
-              <div className="min-w-0">
-                <p className="text-[15px] font-semibold text-text-hi">{c.name}</p>
-                <p className="mt-0.5 text-[12.5px] text-text-mid">
-                  {brandNames.get(c.brandProfileId)} · {takaFromPoisha(c.budgetPoisha)} ·
-                  ends {dhakaDate(c.endDate)}
-                </p>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <form action={confirmFunding}>
-                  <input type="hidden" name="campaignId" value={c.id} />
-                  <button
-                    type="submit"
-                    className="rounded-full bg-volt-500 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-volt-400"
-                  >
-                    Confirm funding received
-                  </button>
-                </form>
-                <form action={cancelCampaign}>
-                  <input type="hidden" name="campaignId" value={c.id} />
-                  <button
-                    type="submit"
-                    className="rounded-full border border-[rgba(255,123,192,0.6)] px-4 py-2 text-[13px] font-semibold text-text-hi transition-colors hover:bg-[rgba(255,123,192,0.14)]"
-                  >
-                    Cancel
-                  </button>
-                </form>
-              </div>
-            </GlassPanel>
-          ))
-        )}
-      </section>
+      <FilterTabs basePath="/admin/campaigns" current={filter} counts={counts} />
 
-      <section className="space-y-3">
-        <p className="eyebrow">Running</p>
-        {running.length === 0 ? (
-          <p className="text-[13px] text-text-mid">None right now.</p>
-        ) : (
-          running.map((c) => (
-            <GlassPanel key={c.id} className="flex flex-wrap items-center justify-between gap-4 p-5">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-3">
-                  <p className="text-[15px] font-semibold text-text-hi">{c.name}</p>
-                  <StatusChip status={c.status} />
-                </div>
-                <BudgetBar spent={c.spentPoisha} total={c.budgetPoisha} className="mt-3 max-w-md" />
-              </div>
-              <form action={cancelCampaign}>
-                <input type="hidden" name="campaignId" value={c.id} />
-                <button
-                  type="submit"
-                  className="rounded-full border border-[rgba(255,123,192,0.6)] px-4 py-2 text-[13px] font-semibold text-text-hi transition-colors hover:bg-[rgba(255,123,192,0.14)]"
-                >
-                  {c.status === "active" ? "Stop submissions" : "Close now (refund remainder)"}
-                </button>
-              </form>
-            </GlassPanel>
-          ))
-        )}
-      </section>
-
-      {done.length > 0 && (
-        <section className="space-y-3">
-          <p className="eyebrow">Finished</p>
-          <GlassPanel className="divide-y divide-[rgba(53,5,90,0.06)] p-3">
-            {done.map((c) => (
-              <div key={c.id} className="flex items-center justify-between gap-4 px-3 py-3">
-                <p className="text-[14px] text-text-hi">{c.name}</p>
-                <div className="flex items-center gap-3">
-                  <span className="data-sm text-text-mid">
-                    spent {takaFromPoisha(c.spentPoisha)}
-                  </span>
-                  <StatusChip status={c.status} />
-                </div>
-              </div>
-            ))}
-          </GlassPanel>
-        </section>
+      {list.length === 0 ? (
+        <GlassPanel>
+          <EmptyState
+            title={`No ${filter} campaigns`}
+            line={
+              filter === "pending"
+                ? "Campaigns brands post appear here for approval."
+                : `Campaigns you’ve ${filter === "approved" ? "approved" : "rejected"} show up here.`
+            }
+          />
+        </GlassPanel>
+      ) : (
+        <div className="space-y-3">
+          {list.map((c) => (
+            <CampaignRow
+              key={c.id}
+              campaign={c}
+              brandName={brandNames.get(c.brandProfileId) ?? ""}
+              filter={filter}
+            />
+          ))}
+        </div>
       )}
     </div>
+  );
+}
+
+function FundedBadge({ fundedAt }: { fundedAt?: string }) {
+  return fundedAt ? (
+    <span className="shrink-0 rounded-full bg-[rgba(10,143,79,0.12)] px-2.5 py-0.5 text-[11px] font-bold text-ok">
+      Funded
+    </span>
+  ) : (
+    <span className="shrink-0 rounded-full bg-[rgba(53,5,90,0.06)] px-2.5 py-0.5 text-[11px] font-bold text-ink-500">
+      Not funded
+    </span>
+  );
+}
+
+function CampaignRow({
+  campaign: c,
+  brandName,
+  filter,
+}: {
+  campaign: Campaign;
+  brandName: string;
+  filter: FilterKey;
+}) {
+  return (
+    <GlassPanel className="flex flex-wrap items-center justify-between gap-4 p-5">
+      <Link href={`/admin/campaigns/${c.id}`} className="group min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <p className="text-[15px] font-semibold text-text-hi transition-colors group-hover:text-volt-600">
+            {c.name}
+          </p>
+          {filter !== "pending" ? <StatusChip status={c.status} /> : null}
+          <FundedBadge fundedAt={c.fundedAt} />
+        </div>
+        <p className="mt-0.5 text-[12.5px] text-text-mid">
+          {brandName} · {takaFromPoisha(c.budgetPoisha)} · ends {dhakaDate(c.endDate)}
+        </p>
+        {filter === "approved" ? (
+          <BudgetBar spent={c.spentPoisha} total={c.budgetPoisha} className="mt-3 max-w-md" />
+        ) : null}
+      </Link>
+
+      {filter === "pending" ? (
+        <div className="flex items-center gap-2.5">
+          <form action={approveCampaign}>
+            <input type="hidden" name="campaignId" value={c.id} />
+            <button
+              type="submit"
+              className="rounded-full bg-volt-600 px-4.5 py-2 text-[13px] font-bold text-white transition-colors hover:bg-volt-500"
+            >
+              Approve
+            </button>
+          </form>
+          <form action={rejectCampaign}>
+            <input type="hidden" name="campaignId" value={c.id} />
+            <button
+              type="submit"
+              className="rounded-full border border-[rgba(255,123,192,0.6)] px-4 py-2 text-[13px] font-semibold text-danger-600 transition-colors hover:bg-danger-bg"
+            >
+              Reject
+            </button>
+          </form>
+        </div>
+      ) : (
+        <Link
+          href={`/admin/campaigns/${c.id}`}
+          className="rounded-full border border-line px-4 py-2 text-[13px] font-semibold text-text-hi transition-colors hover:border-volt-400 hover:text-volt-600"
+        >
+          View
+        </Link>
+      )}
+    </GlassPanel>
   );
 }
