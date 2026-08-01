@@ -20,3 +20,14 @@ create index if not exists notifications_profile_idx
 create index if not exists notifications_unread_idx
   on public.notifications (profile_id)
   where read_at is null;
+
+-- ── Row Level Security ──────────────────────────────────
+-- The server reads/writes via the service-role key (bypasses RLS). These
+-- policies just keep the public anon/authenticated key from seeing anyone
+-- else's notices, matching every other table in this schema.
+alter table public.notifications enable row level security;
+
+create policy "notifications_self_read" on public.notifications
+  for select using (profile_id = auth.uid() or public.is_admin());
+create policy "notifications_admin_write" on public.notifications
+  for all using (public.is_admin()) with check (public.is_admin());

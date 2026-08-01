@@ -34,6 +34,7 @@ const RAIL: Record<ShellRole, RailItem[]> = {
   brand: [
     { href: "/brand", label: "Overview", icon: "chart" },
     { href: "/brand/campaigns/new", label: "New campaign", icon: "add" },
+    { href: "/brand/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/brand/billing", label: "Billing", icon: "bkash" },
     { href: "/brand/settings", label: "Settings", icon: "gear" },
   ],
@@ -68,7 +69,7 @@ const TABS: Record<ShellRole, TabItem[]> = {
   ],
   brand: [
     { href: "/brand", label: "Overview", icon: "chart" },
-    { href: "/brand", label: "Campaigns", icon: "megaphone" },
+    { href: "/brand/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/brand/campaigns/new", label: "New", icon: "upload", center: true },
     { href: "/brand/billing", label: "Billing", icon: "bkash" },
     { href: "/brand/settings", label: "Settings", icon: "gear" },
@@ -86,10 +87,7 @@ const TITLES: Record<ShellRole, PageTitle[]> = {
     ...RAIL.agency.map(({ href, label }) => ({ href, label })),
     { href: "/settings", label: "Settings" },
   ],
-  brand: [
-    ...RAIL.brand.map(({ href, label }) => ({ href, label })),
-    { href: "/brand/campaigns", label: "Campaigns" },
-  ],
+  brand: [...RAIL.brand.map(({ href, label }) => ({ href, label }))],
   admin: RAIL.admin.map(({ href, label }) => ({ href, label })),
 };
 
