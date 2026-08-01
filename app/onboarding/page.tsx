@@ -90,12 +90,17 @@ export default async function OnboardingPage() {
             {isBrand ? (
               <>
                 {step === 0 && (
-                  <BusinessStep orgName={user.orgName ?? ""} website={user.website ?? ""} />
+                  <BusinessStep
+                    orgName={user.orgName ?? ""}
+                    website={user.website ?? ""}
+                    logoUrl={user.logoUrl}
+                  />
                 )}
                 {step === 1 && (
                   <DetailsStep
                     businessName={user.orgName ?? ""}
                     website={user.website ?? ""}
+                    logoUrl={user.logoUrl}
                     industry={user.industry ?? ""}
                     country={user.location ?? ""}
                     monthlySpend={user.monthlySpend ?? ""}
@@ -106,6 +111,7 @@ export default async function OnboardingPage() {
                   <FinishStep
                     businessName={user.orgName ?? ""}
                     website={user.website ?? ""}
+                    logoUrl={user.logoUrl}
                     industry={user.industry ?? undefined}
                     country={user.location ?? undefined}
                     avatarUrl={user.avatarUrl}

@@ -16,6 +16,7 @@ const EXPERIENCE = [
 export function FinishStep({
   businessName,
   website,
+  logoUrl,
   industry,
   country,
   avatarUrl,
@@ -27,6 +28,7 @@ export function FinishStep({
 }: {
   businessName: string;
   website: string;
+  logoUrl?: string;
   industry?: string;
   country?: string;
   avatarUrl?: string;
@@ -59,6 +61,7 @@ export function FinishStep({
         <BrandPreviewCard
           businessName={businessName}
           website={website}
+          logoUrl={logoUrl}
           industry={industry}
           country={country}
           avatarUrl={avatarUrl}

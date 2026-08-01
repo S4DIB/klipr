@@ -34,6 +34,7 @@ const SPEND = [
 export function DetailsStep({
   businessName,
   website,
+  logoUrl,
   industry: initialIndustry,
   country: initialCountry,
   monthlySpend: initialSpend,
@@ -41,6 +42,7 @@ export function DetailsStep({
 }: {
   businessName: string;
   website: string;
+  logoUrl?: string;
   industry: string;
   country: string;
   monthlySpend: string;
@@ -67,6 +69,7 @@ export function DetailsStep({
         <BrandPreviewCard
           businessName={businessName}
           website={website}
+          logoUrl={logoUrl}
           industry={industry}
           country={country}
         />

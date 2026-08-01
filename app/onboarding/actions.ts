@@ -14,6 +14,7 @@ import {
   upsertConnectedAccount,
 } from "@/lib/db";
 import { platformFromUrl, handleFromUrl } from "@/lib/platforms";
+import { uploadBrandLogo } from "@/lib/storage/brand-logo";
 
 /* ── Steps: 0 profile · 1 about · 2 connect (skippable) · 3 payout ── */
 
@@ -244,9 +245,15 @@ export async function saveBusinessProfile(
   }
   const website = raw.startsWith("http") ? raw : `https://${raw}`;
 
+  // Optional logo → Supabase Storage. Failures/stub-mode keep the existing logo.
+  const logo = formData.get("logo");
+  const logoUrl =
+    logo instanceof File && logo.size > 0 ? await uploadBrandLogo(logo, user.id) : null;
+
   await updateProfile(user.id, {
     orgName,
     website,
+    ...(logoUrl ? { logoUrl } : {}),
     onboardingStep: Math.max(user.onboardingStep, 1),
   });
   revalidatePath("/onboarding");

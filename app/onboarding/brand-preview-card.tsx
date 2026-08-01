@@ -27,6 +27,7 @@ function PinIcon() {
 export function BrandPreviewCard({
   businessName,
   website,
+  logoUrl,
   industry,
   country,
   avatarUrl,
@@ -36,6 +37,7 @@ export function BrandPreviewCard({
 }: {
   businessName?: string;
   website?: string;
+  logoUrl?: string;
   industry?: string;
   country?: string;
   avatarUrl?: string;
@@ -52,9 +54,18 @@ export function BrandPreviewCard({
   return (
     <div className="rounded-[18px] bg-white p-5 shadow-[0_10px_30px_-12px_rgba(20,0,40,0.5)]">
       <div className="flex items-center gap-4">
-        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[16px] bg-[rgba(125,4,215,0.1)] font-mono text-[22px] font-bold text-violet-700">
-          {initial}
-        </span>
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoUrl}
+            alt=""
+            className="h-16 w-16 shrink-0 rounded-[16px] object-cover ring-1 ring-[rgba(53,5,90,0.08)]"
+          />
+        ) : (
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[16px] bg-[rgba(125,4,215,0.1)] font-mono text-[22px] font-bold text-violet-700">
+            {initial}
+          </span>
+        )}
         <div className="min-w-0">
           <p className="truncate text-[19px] font-extrabold tracking-[-0.01em] text-[#1c0a2e]">
             {businessName?.trim() || "Your business"}

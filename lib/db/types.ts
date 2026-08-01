@@ -49,6 +49,8 @@ export interface Profile {
   /** Brand / agency organisation name. */
   orgName?: string;
   /* ── Brand onboarding (collected in the 3-step brand setup) ── */
+  /** Brand logo — public URL in the Supabase `brand-logos` storage bucket. */
+  logoUrl?: string;
   website?: string;
   industry?: string;
   monthlySpend?: string;
