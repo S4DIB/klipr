@@ -31,6 +31,16 @@ export function CampaignForm({ brandName }: { brandName: string }) {
   const [minViews, setMinViews] = useState(2000);
   const [earlyAccess, setEarlyAccess] = useState(true);
   const [budget, setBudget] = useState("60000");
+  // Controlled so values in the hidden step panels still submit (React's form
+  // action captures controlled values but drops uncontrolled ones off-step).
+  const [name, setName] = useState("");
+  const [niche, setNiche] = useState("Fashion");
+  const [endDate, setEndDate] = useState("");
+  const [maxPerClipper, setMaxPerClipper] = useState("5000");
+  const [subCap, setSubCap] = useState("1");
+  const [brief, setBrief] = useState("");
+  const [guidelines, setGuidelines] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
 
   const togglePlatform = (p: Platform) =>
     setPlatforms((prev) => {
@@ -83,7 +93,13 @@ export function CampaignForm({ brandName }: { brandName: string }) {
       <GlassPanel className={cn("flex-col gap-4 p-[22px]", step === 1 ? "flex" : "hidden")}>
         <div>
           <FieldLabel>Campaign name</FieldLabel>
-          <input name="name" placeholder="Seen by every clipper" className={well} />
+          <input
+            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Seen by every clipper"
+            className={well}
+          />
         </div>
         <div className="flex flex-col gap-3.5 sm:flex-row">
           <div className="flex-1">
@@ -92,7 +108,12 @@ export function CampaignForm({ brandName }: { brandName: string }) {
           </div>
           <div className="flex-1">
             <FieldLabel>Niche</FieldLabel>
-            <select name="niche" defaultValue="Fashion" className={cn(well, "appearance-none")}>
+            <select
+              name="niche"
+              value={niche}
+              onChange={(e) => setNiche(e.target.value)}
+              className={cn(well, "appearance-none")}
+            >
               {NICHES.map((n) => (
                 <option key={n} value={n}>
                   {n}
@@ -221,7 +242,13 @@ export function CampaignForm({ brandName }: { brandName: string }) {
             </div>
             <div className="flex-1">
               <FieldLabel>End date</FieldLabel>
-              <input name="endDate" type="date" className={well} />
+              <input
+                name="endDate"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className={well}
+              />
             </div>
           </div>
 
@@ -231,7 +258,8 @@ export function CampaignForm({ brandName }: { brandName: string }) {
               <input
                 name="maxPerClipperTaka"
                 inputMode="numeric"
-                defaultValue="5000"
+                value={maxPerClipper}
+                onChange={(e) => setMaxPerClipper(e.target.value.replace(/\D/g, ""))}
                 className={cn(well, "font-mono [font-variant-numeric:tabular-nums]")}
               />
             </div>
@@ -239,7 +267,8 @@ export function CampaignForm({ brandName }: { brandName: string }) {
               <FieldLabel>Submissions per clipper</FieldLabel>
               <select
                 name="submissionCapBase"
-                defaultValue="1"
+                value={subCap}
+                onChange={(e) => setSubCap(e.target.value)}
                 className={cn(well, "appearance-none")}
               >
                 {[1, 2, 3, 5].map((n) => (
@@ -260,6 +289,8 @@ export function CampaignForm({ brandName }: { brandName: string }) {
             <FieldLabel>The brief</FieldLabel>
             <textarea
               name="brief"
+              value={brief}
+              onChange={(e) => setBrief(e.target.value)}
               placeholder="Post the supplied clip to your page. Hook in 2s, keep product name on screen…"
               className={cn(well, "min-h-[96px] resize-y leading-[1.5]")}
             />
@@ -268,6 +299,8 @@ export function CampaignForm({ brandName }: { brandName: string }) {
             <FieldLabel>Rules · one per line (optional)</FieldLabel>
             <textarea
               name="guidelines"
+              value={guidelines}
+              onChange={(e) => setGuidelines(e.target.value)}
               placeholder={"Keep the supplied audio\nNo political or edited-price claims"}
               className={cn(well, "min-h-[72px] resize-y leading-[1.5]")}
             />
@@ -281,6 +314,8 @@ export function CampaignForm({ brandName }: { brandName: string }) {
               <input
                 name="sourceUrl"
                 type="url"
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
                 placeholder="https://… link to the exact video clippers download and post"
                 className={cn(well, "max-w-[420px] text-center")}
               />
