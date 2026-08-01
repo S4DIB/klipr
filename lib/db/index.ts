@@ -14,6 +14,7 @@ import type {
   ConnectedAccount,
   FraudFlag,
   LedgerEntry,
+  Notification,
   PayoutBatch,
   Profile,
   Submission,
@@ -100,6 +101,8 @@ export const upsertCampaign = (c: Campaign): Promise<Campaign> =>
   hasSupabase ? remote.upsertCampaign(c) : Promise.resolve(local.upsertCampaign(c));
 export const updateCampaign = (id: string, patch: Partial<Campaign>): Promise<Campaign | undefined> =>
   hasSupabase ? remote.updateCampaign(id, patch) : Promise.resolve(local.updateCampaign(id, patch));
+export const deleteCampaign = (id: string): Promise<void> =>
+  hasSupabase ? remote.deleteCampaign(id) : Promise.resolve(local.deleteCampaign(id));
 
 /* ── Submissions ── */
 export const listSubmissions = (filter?: {
@@ -187,6 +190,20 @@ export const updateFraudFlag = (
   patch: Partial<FraudFlag>,
 ): Promise<FraudFlag | undefined> =>
   hasSupabase ? remote.updateFraudFlag(id, patch) : Promise.resolve(local.updateFraudFlag(id, patch));
+
+/* ── Notifications ── */
+export const createNotification = (n: Notification): Promise<Notification> =>
+  hasSupabase ? remote.createNotification(n) : Promise.resolve(local.createNotification(n));
+export const listNotifications = (profileId: string): Promise<Notification[]> =>
+  hasSupabase ? remote.listNotifications(profileId) : Promise.resolve(local.listNotifications(profileId));
+export const markNotificationRead = (id: string, profileId: string): Promise<void> =>
+  hasSupabase
+    ? remote.markNotificationRead(id, profileId)
+    : Promise.resolve(local.markNotificationRead(id, profileId));
+export const markAllNotificationsRead = (profileId: string): Promise<void> =>
+  hasSupabase
+    ? remote.markAllNotificationsRead(profileId)
+    : Promise.resolve(local.markAllNotificationsRead(profileId));
 
 /* ── Leaderboard + sweep lock ── */
 export const leaderboard = (limit?: number) =>

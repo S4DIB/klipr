@@ -15,6 +15,7 @@ import type {
   ConnectedAccount,
   FraudFlag,
   LedgerEntry,
+  Notification,
   PayoutBatch,
   Profile,
   Submission,
@@ -111,7 +112,8 @@ const toCampaign = (r: any): Campaign => ({
   submissionCapBase: r.submission_cap_base, earlyAccessTier: r.early_access_tier ?? undefined,
   earlyAccessEndsAt: r.early_access_ends_at ?? undefined, trackingWindowDays: r.tracking_window_days,
   startDate: r.start_date, endDate: r.end_date, status: r.status,
-  fundedAt: r.funded_at ?? undefined, createdAt: r.created_at,
+  fundedAt: r.funded_at ?? undefined, deletionRequestedAt: r.deletion_requested_at ?? undefined,
+  createdAt: r.created_at,
 });
 const fromCampaign = (c: Campaign) => ({
   id: c.id, brand_profile_id: c.brandProfileId, name: c.name, brand_name: c.brandName,
@@ -123,7 +125,8 @@ const fromCampaign = (c: Campaign) => ({
   submission_cap_base: c.submissionCapBase, early_access_tier: c.earlyAccessTier ?? null,
   early_access_ends_at: c.earlyAccessEndsAt ?? null, tracking_window_days: c.trackingWindowDays,
   start_date: c.startDate, end_date: c.endDate, status: c.status,
-  funded_at: c.fundedAt ?? null, created_at: c.createdAt,
+  funded_at: c.fundedAt ?? null, deletion_requested_at: c.deletionRequestedAt ?? null,
+  created_at: c.createdAt,
 });
 
 const toSubmission = (r: any): Submission => ({
@@ -353,6 +356,19 @@ export async function updateCampaign(id: string, patch: Partial<Campaign>): Prom
   if (error) throw error;
   return data ? toCampaign(data) : undefined;
 }
+export async function deleteCampaign(id: string): Promise<void> {
+  const db = admin();
+  // submissions cascade to view_snapshots + fraud_flags, but xp_events and the
+  // ledger don't (xp_events has no ON DELETE cascade; ledger has no FK at all).
+  // Clear those by hand first so the campaign delete can't hit a FK error.
+  const { data: subs } = await db.from("submissions").select("id").eq("campaign_id", id);
+  const subIds = (subs ?? []).map((s: { id: string }) => s.id);
+  await db.from("xp_events").delete().eq("campaign_id", id);
+  if (subIds.length) await db.from("xp_events").delete().in("submission_id", subIds);
+  await db.from("ledger_entries").delete().eq("campaign_id", id);
+  const { error } = await db.from("campaigns").delete().eq("id", id);
+  if (error) throw error;
+}
 
 /* ── Submissions ── */
 export async function listSubmissions(filter?: {
@@ -535,6 +551,46 @@ export async function updateFraudFlag(
     .from("fraud_flags").update(snakePatch(patch)).eq("id", id).select("*").maybeSingle();
   if (error) throw error;
   return data ? toFraudFlag(data) : undefined;
+}
+
+/* ── Notifications ── */
+const toNotification = (r: {
+  id: string;
+  profile_id: string;
+  kind: Notification["kind"];
+  title: string;
+  body: string;
+  read_at: string | null;
+  created_at: string;
+}): Notification => ({
+  id: r.id, profileId: r.profile_id, kind: r.kind, title: r.title, body: r.body,
+  readAt: r.read_at ?? undefined, createdAt: r.created_at,
+});
+export async function createNotification(n: Notification): Promise<Notification> {
+  const { error } = await admin().from("notifications").insert({
+    id: n.id, profile_id: n.profileId, kind: n.kind, title: n.title, body: n.body,
+    read_at: n.readAt ?? null, created_at: n.createdAt,
+  });
+  if (error) throw error;
+  return n;
+}
+export async function listNotifications(profileId: string): Promise<Notification[]> {
+  const { data } = await admin()
+    .from("notifications").select("*").eq("profile_id", profileId)
+    .order("created_at", { ascending: false });
+  return (data ?? []).map(toNotification);
+}
+export async function markNotificationRead(id: string, profileId: string): Promise<void> {
+  const { error } = await admin()
+    .from("notifications").update({ read_at: new Date().toISOString() })
+    .eq("id", id).eq("profile_id", profileId).is("read_at", null);
+  if (error) throw error;
+}
+export async function markAllNotificationsRead(profileId: string): Promise<void> {
+  const { error } = await admin()
+    .from("notifications").update({ read_at: new Date().toISOString() })
+    .eq("profile_id", profileId).is("read_at", null);
+  if (error) throw error;
 }
 
 /* ── Leaderboard ── */

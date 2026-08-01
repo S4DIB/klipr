@@ -100,3 +100,9 @@ export function endOfDhakaDay(dateStr: string): string {
   const endLocal = Date.UTC(y, m - 1, d, 23, 59, 59, 999);
   return new Date(endLocal - DHAKA_OFFSET_MS).toISOString();
 }
+
+/** ISO → the Dhaka calendar date as a `YYYY-MM-DD` `<input type="date">` value. */
+export function dhakaDateInput(iso: string): string {
+  // en-CA renders ISO-style YYYY-MM-DD; the tz pins it to the Dhaka day.
+  return new Date(iso).toLocaleDateString("en-CA", { timeZone: DHAKA_TZ });
+}

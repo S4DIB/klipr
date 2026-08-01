@@ -4,11 +4,13 @@ import type { Metadata } from "next";
 import { getCampaign, getProfile } from "@/lib/db";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
+import { DeleteCampaignButton } from "@/components/app/delete-campaign-button";
 import { BudgetBar } from "@/components/ui/budget-bar";
 import { IconChevronLeft } from "@/components/icons";
 import { PLATFORMS } from "@/lib/platforms";
 import { takaFromPoisha, dhakaDate, dhakaDateTime } from "@/lib/format";
 import { approveCampaign, rejectCampaign, markCampaignFunded, cancelCampaign } from "../actions";
+import { clearDeletionRequest } from "@/app/brand/campaigns/new/actions";
 
 export const metadata: Metadata = { title: "Campaign · Admin" };
 
@@ -45,6 +47,39 @@ export default async function AdminCampaignDetail({
           {brand?.email ? ` · ${brand.email}` : ""}
         </p>
       </header>
+
+      {/* Brand's deletion request — approve to remove, or dismiss to keep */}
+      {c.deletionRequestedAt ? (
+        <GlassPanel className="border border-[rgba(255,123,192,0.35)] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="eyebrow text-danger-600">Deletion requested</p>
+              <p className="mt-1 text-[14.5px] font-bold text-text-hi">
+                {brandName} asked to delete this campaign · {dhakaDateTime(c.deletionRequestedAt)}
+              </p>
+              <p className="mt-0.5 max-w-md text-[12.5px] leading-relaxed text-text-mid">
+                Approve to remove it and all its clips/records, or dismiss to keep the campaign.
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2.5">
+              <DeleteCampaignButton
+                campaignId={c.id}
+                label="Approve deletion"
+                className="py-2.5 text-[13.5px]"
+              />
+              <form action={clearDeletionRequest}>
+                <input type="hidden" name="campaignId" value={c.id} />
+                <button
+                  type="submit"
+                  className="rounded-full border border-line px-4 py-2.5 text-[13.5px] font-semibold text-text-hi transition-colors hover:border-volt-400 hover:text-volt-600"
+                >
+                  Dismiss
+                </button>
+              </form>
+            </div>
+          </div>
+        </GlassPanel>
+      ) : null}
 
       {/* Funding — the SEPARATE money step */}
       <GlassPanel className="p-5">
@@ -142,6 +177,12 @@ export default async function AdminCampaignDetail({
                 Approve — make public
               </button>
             </form>
+            <Link
+              href={`/admin/campaigns/${c.id}/edit`}
+              className="rounded-full border border-line px-4 py-2.5 text-[13.5px] font-semibold text-text-hi transition-colors hover:border-volt-400 hover:text-volt-600"
+            >
+              Edit
+            </Link>
             <form action={rejectCampaign}>
               <input type="hidden" name="campaignId" value={c.id} />
               <button
@@ -163,6 +204,7 @@ export default async function AdminCampaignDetail({
             </button>
           </form>
         ) : null}
+        <DeleteCampaignButton campaignId={c.id} label="Delete" className="py-2.5 text-[13.5px]" />
       </div>
     </div>
   );

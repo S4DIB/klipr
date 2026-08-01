@@ -162,6 +162,8 @@ export interface Campaign {
   endDate: string;
   status: CampaignStatus;
   fundedAt?: string;
+  /** Set when the owning brand asks an admin to delete it; cleared on dismiss. */
+  deletionRequestedAt?: string;
   createdAt: string;
 }
 
@@ -267,6 +269,19 @@ export interface FraudFlag {
   createdAt: string;
 }
 
+/** An in-app notice delivered to one profile — survives the thing it's about. */
+export interface Notification {
+  id: string;
+  /** Recipient profile. */
+  profileId: string;
+  kind: "campaign_deleted" | "general";
+  title: string;
+  body: string;
+  /** Set once the recipient has seen/dismissed it. */
+  readAt?: string;
+  createdAt: string;
+}
+
 export interface DB {
   profiles: Profile[];
   applications: Application[];
@@ -279,6 +294,7 @@ export interface DB {
   ledgerEntries: LedgerEntry[];
   payoutBatches: PayoutBatch[];
   fraudFlags: FraudFlag[];
+  notifications: Notification[];
   /** Sweep overlap-guard keys (`sweep:{bucket}`). */
   sweepLocks: string[];
   /** Stub-store reseed trigger. */

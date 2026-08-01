@@ -15,7 +15,6 @@ import { getAdapter } from "@/lib/verify";
 import { submissionCap } from "@/lib/xp";
 import {
   acceptsSubmissions,
-  isEarlyAccessLocked,
   remainingBudgetPoisha,
   submissionWindowEnd,
 } from "@/lib/campaign-rules";
@@ -24,7 +23,7 @@ export type SubmitState = { error?: string; ok?: boolean };
 
 /**
  * The submit action. Every check the flows demand, in order:
- * active clipper → campaign accepting → early-access tier → submission cap →
+ * active clipper → campaign accepting → submission cap →
  * URL parses → global URL dedup → per-campaign media dedup → account is
  * theirs, right platform, vetted-by-construction → ownership via adapter →
  * baseline snapshot → tracking.
@@ -46,9 +45,6 @@ export async function submitClip(_prev: SubmitState, formData: FormData): Promis
   if (!campaign) return { error: "Campaign not found." };
   if (!acceptsSubmissions(campaign, now)) {
     return { error: "This campaign is no longer accepting submissions." };
-  }
-  if (isEarlyAccessLocked(campaign, user.tier, now)) {
-    return { error: "This campaign is in early access for higher tiers right now." };
   }
   if (remainingBudgetPoisha(campaign) <= 0) {
     return { error: "This campaign's budget is fully committed." };

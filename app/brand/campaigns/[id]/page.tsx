@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
@@ -5,10 +6,12 @@ import { getCampaign, listSubmissions } from "@/lib/db";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatTile } from "@/components/app/stat-tile";
 import { StatusChip } from "@/components/app/status-chip";
+import { RequestDeletionButton } from "@/components/app/delete-campaign-button";
 import { BudgetBar } from "@/components/ui/budget-bar";
 import { PLATFORMS } from "@/lib/platforms";
 import { poishaToTaka } from "@/lib/money";
 import { takaFromPoisha, dhakaDate, views as fmtViews } from "@/lib/format";
+import { clearDeletionRequest } from "../new/actions";
 
 export const metadata: Metadata = { title: "Campaign" };
 
@@ -34,6 +37,11 @@ export default async function BrandCampaignPage({
     .sort((a, b) => (b.lockedViews ?? 0) - (a.lockedViews ?? 0))
     .slice(0, 5);
 
+  // Edit only before it goes live. Deletion is a request an admin approves —
+  // brands never delete their own campaigns directly.
+  const canEdit = campaign.status === "pending_funding" || campaign.status === "draft";
+  const deletionRequested = Boolean(campaign.deletionRequestedAt);
+
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
@@ -43,8 +51,45 @@ export default async function BrandCampaignPage({
           </p>
           <h1 className="display-1 mt-1 text-[30px] text-text-hi">{campaign.name}</h1>
         </div>
-        <StatusChip status={campaign.status} />
+        <div className="flex flex-wrap items-center gap-2.5">
+          <StatusChip status={campaign.status} />
+          {canEdit ? (
+            <Link
+              href={`/brand/campaigns/${id}/edit`}
+              className="rounded-full bg-volt-600 px-4 py-2 text-[13px] font-bold text-white transition-colors hover:bg-volt-500"
+            >
+              Edit
+            </Link>
+          ) : null}
+          {deletionRequested ? (
+            <>
+              <span className="inline-flex items-center rounded-full bg-danger-bg px-3 py-1.5 text-[12px] font-semibold text-danger-600">
+                Deletion requested
+              </span>
+              <form action={clearDeletionRequest}>
+                <input type="hidden" name="campaignId" value={id} />
+                <button
+                  type="submit"
+                  className="rounded-full border border-line px-4 py-2 text-[13px] font-semibold text-text-hi transition-colors hover:border-volt-400 hover:text-volt-600"
+                >
+                  Cancel request
+                </button>
+              </form>
+            </>
+          ) : (
+            <RequestDeletionButton campaignId={id} label="Request deletion" />
+          )}
+        </div>
       </header>
+
+      {deletionRequested && (
+        <GlassPanel className="p-4">
+          <p className="text-[13px] leading-relaxed text-text-mid">
+            You’ve requested to delete this campaign. An admin will review it and either remove it
+            or dismiss the request. You can cancel the request any time until then.
+          </p>
+        </GlassPanel>
+      )}
 
       {campaign.status === "pending_funding" && (
         <GlassPanel variant="ink" className="p-6">

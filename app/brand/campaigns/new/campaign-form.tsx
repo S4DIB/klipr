@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { IconUpload } from "@/components/icons";
 import { NICHES, PLATFORMS, PLATFORM_ORDER } from "@/lib/platforms";
 import { cn } from "@/lib/cn";
-import { createCampaign, type NewCampaignState } from "./actions";
-import type { Platform } from "@/lib/db/types";
+import { poishaToTaka } from "@/lib/money";
+import { dhakaDateInput } from "@/lib/format";
+import { createCampaign, editCampaign, type NewCampaignState } from "./actions";
+import type { Campaign, Platform } from "@/lib/db/types";
 
 const STEPS = ["Basics", "Budget & rules", "Creative & review"];
 const MIN_OPTIONS = [2000, 3000, 4000];
@@ -22,25 +24,41 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 /**
  * The 3-step campaign wizard: Basics → Budget & rules → Creative & review.
  * One form, client-side steps; the server action validates everything and
- * moves the campaign to PENDING FUNDING.
+ * moves the campaign to PENDING FUNDING. Pass `campaign` to edit an existing
+ * one (owning brand or admin) — fields prefill and it saves in place.
  */
-export function CampaignForm({ brandName }: { brandName: string }) {
-  const [state, action, pending] = useActionState<NewCampaignState, FormData>(createCampaign, {});
+export function CampaignForm({
+  brandName,
+  campaign,
+}: {
+  brandName: string;
+  campaign?: Campaign;
+}) {
+  const editing = Boolean(campaign);
+  const [state, action, pending] = useActionState<NewCampaignState, FormData>(
+    editing ? editCampaign : createCampaign,
+    {},
+  );
   const [step, setStep] = useState(1);
-  const [platforms, setPlatforms] = useState<Set<Platform>>(new Set(["tiktok", "youtube"]));
-  const [minViews, setMinViews] = useState(2000);
-  const [earlyAccess, setEarlyAccess] = useState(true);
-  const [budget, setBudget] = useState("60000");
+  const [platforms, setPlatforms] = useState<Set<Platform>>(
+    new Set(campaign?.allowedPlatforms ?? ["tiktok", "youtube"]),
+  );
+  const [minViews, setMinViews] = useState(campaign?.minQualifyViews ?? 2000);
+  const [budget, setBudget] = useState(
+    campaign ? String(poishaToTaka(campaign.budgetPoisha)) : "60000",
+  );
   // Controlled so values in the hidden step panels still submit (React's form
   // action captures controlled values but drops uncontrolled ones off-step).
-  const [name, setName] = useState("");
-  const [niche, setNiche] = useState("Fashion");
-  const [endDate, setEndDate] = useState("");
-  const [maxPerClipper, setMaxPerClipper] = useState("5000");
-  const [subCap, setSubCap] = useState("1");
-  const [brief, setBrief] = useState("");
-  const [guidelines, setGuidelines] = useState("");
-  const [sourceUrl, setSourceUrl] = useState("");
+  const [name, setName] = useState(campaign?.name ?? "");
+  const [niche, setNiche] = useState(campaign?.niche ?? "Fashion");
+  const [endDate, setEndDate] = useState(campaign ? dhakaDateInput(campaign.endDate) : "");
+  const [maxPerClipper, setMaxPerClipper] = useState(
+    campaign ? String(poishaToTaka(campaign.maxPayoutPerClipperPoisha)) : "5000",
+  );
+  const [subCap, setSubCap] = useState(campaign ? String(campaign.submissionCapBase) : "1");
+  const [brief, setBrief] = useState(campaign?.brief ?? "");
+  const [guidelines, setGuidelines] = useState(campaign?.guidelines ?? "");
+  const [sourceUrl, setSourceUrl] = useState(campaign?.sourceUrl ?? "");
 
   const togglePlatform = (p: Platform) =>
     setPlatforms((prev) => {
@@ -54,6 +72,7 @@ export function CampaignForm({ brandName }: { brandName: string }) {
 
   return (
     <form action={action} className="mx-auto flex max-w-[760px] flex-col gap-5">
+      {editing ? <input type="hidden" name="campaignId" value={campaign!.id} /> : null}
       {/* stepper */}
       <div className="flex items-center gap-2.5">
         {STEPS.map((label, i) => {
@@ -213,28 +232,6 @@ export function CampaignForm({ brandName }: { brandName: string }) {
             <input type="hidden" name="minQualifyViews" value={minViews} />
           </div>
 
-          <label className="glass-well flex cursor-pointer items-center justify-between gap-4 p-3.5">
-            <span>
-              <span className="block text-[13.5px] font-bold text-ink-900">
-                Early access for Pro+ clippers
-              </span>
-              <span className="mt-[2px] block text-[12px] text-ink-500">
-                A head-start window before it opens to everyone.
-              </span>
-            </span>
-            <input
-              type="checkbox"
-              checked={earlyAccess}
-              onChange={(e) => setEarlyAccess(e.target.checked)}
-              className="peer sr-only"
-            />
-            <span className="relative h-[28px] w-[46px] shrink-0 rounded-full bg-ink-200 transition-colors peer-checked:bg-violet-600 peer-focus-visible:outline-2 peer-focus-visible:outline-violet-500 [&>span]:absolute [&>span]:left-[3px] [&>span]:top-[3px] [&>span]:h-[22px] [&>span]:w-[22px] [&>span]:rounded-full [&>span]:bg-white [&>span]:shadow-[var(--shadow-sm)] [&>span]:transition-transform peer-checked:[&>span]:translate-x-[18px]">
-              <span />
-            </span>
-          </label>
-          <input type="hidden" name="earlyAccess" value={earlyAccess ? "pro" : "none"} />
-          {earlyAccess ? <input type="hidden" name="earlyAccessDays" value="3" /> : null}
-
           <div className="flex flex-col gap-3.5 sm:flex-row">
             <div className="flex-1">
               <FieldLabel>Tracking window</FieldLabel>
@@ -349,8 +346,18 @@ export function CampaignForm({ brandName }: { brandName: string }) {
             </div>
           </div>
           <p className="mt-3.5 border-t border-[rgba(255,255,244,0.12)] pt-3 text-[12px] leading-[1.5] text-[rgba(255,255,244,0.65)]">
-            On create, the campaign moves to <b className="text-yellow">Pending funding</b>. It goes
-            live once an admin confirms your escrow deposit.
+            {editing ? (
+              <>
+                Changes save immediately. The campaign stays in{" "}
+                <b className="text-yellow">Pending funding</b> until an admin confirms your escrow
+                deposit.
+              </>
+            ) : (
+              <>
+                On create, the campaign moves to <b className="text-yellow">Pending funding</b>. It
+                goes live once an admin confirms your escrow deposit.
+              </>
+            )}
           </p>
         </GlassPanel>
       </div>
@@ -381,7 +388,13 @@ export function CampaignForm({ brandName }: { brandName: string }) {
           </Button>
         ) : (
           <Button type="submit" disabled={pending} className="h-11 px-6 text-[14px]">
-            {pending ? "Creating…" : "Create → send to funding"}
+            {editing
+              ? pending
+                ? "Saving…"
+                : "Save changes"
+              : pending
+                ? "Creating…"
+                : "Create → send to funding"}
           </Button>
         )}
       </div>

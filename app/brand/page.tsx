@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
-import { listCampaignsByBrand, listSubmissions } from "@/lib/db";
+import { listCampaignsByBrand, listNotifications, listSubmissions } from "@/lib/db";
+import { dismissNotification } from "@/lib/notifications/actions";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
 import { EmptyState } from "@/components/app/empty-state";
@@ -47,6 +48,8 @@ export default async function BrandOverviewPage() {
   const spent = campaigns.reduce((a, c) => a + c.spentPoisha, 0);
   const reach = [...viewsByCampaign.values()].reduce((a, v) => a + v, 0);
 
+  const unread = (await listNotifications(user.id)).filter((n) => !n.readAt);
+
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -62,6 +65,31 @@ export default async function BrandOverviewPage() {
           New campaign
         </Button>
       </header>
+
+      {unread.length > 0 && (
+        <div className="flex flex-col gap-2.5">
+          {unread.map((n) => (
+            <GlassPanel
+              key={n.id}
+              className="flex flex-wrap items-start justify-between gap-3 border border-[rgba(125,4,215,0.18)] p-4"
+            >
+              <div className="min-w-0">
+                <p className="text-[14px] font-bold text-ink-900">{n.title}</p>
+                <p className="mt-0.5 text-[13px] leading-relaxed text-ink-600">{n.body}</p>
+              </div>
+              <form action={dismissNotification}>
+                <input type="hidden" name="notificationId" value={n.id} />
+                <button
+                  type="submit"
+                  className="shrink-0 rounded-full border border-[rgba(53,5,90,0.14)] px-3.5 py-1.5 text-[12.5px] font-semibold text-ink-600 transition-colors hover:text-ink-900"
+                >
+                  Dismiss
+                </button>
+              </form>
+            </GlassPanel>
+          ))}
+        </div>
+      )}
 
       {/* stat grid. Verified reach is the one ink tile */}
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">

@@ -22,6 +22,7 @@ import type {
   LedgerEntry,
   PayoutBatch,
   FraudFlag,
+  Notification,
   CampaignStatus,
   SubmissionStatus,
 } from "./types.ts";
@@ -54,6 +55,7 @@ function seed(): DB {
     ledgerEntries: [],
     payoutBatches: [],
     fraudFlags: [],
+    notifications: [],
     sweepLocks: [],
     version: 4,
   };
@@ -69,6 +71,7 @@ function load(): DB {
     if (fs.existsSync(DATA_FILE)) {
       const parsed = JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) as DB;
       if (parsed.version === 4) {
+        parsed.notifications ??= []; // additive field on an existing v4 store
         g.__klipr_db = parsed;
         return g.__klipr_db;
       }
@@ -221,6 +224,27 @@ export function updateCampaign(id: string, patch: Partial<Campaign>): Campaign |
   db.campaigns[i] = { ...db.campaigns[i], ...patch };
   save();
   return db.campaigns[i];
+}
+/**
+ * Hard-delete a campaign and everything hanging off it — submissions and their
+ * view snapshots / fraud flags, plus xp events and ledger entries tagged to the
+ * campaign. Mirrors the Supabase cascade so an admin can delete any campaign at
+ * any time without leaving orphans.
+ */
+export function deleteCampaign(id: string): void {
+  const db = load();
+  if (!db.campaigns.some((c) => c.id === id)) return;
+
+  const subIds = new Set(db.submissions.filter((s) => s.campaignId === id).map((s) => s.id));
+  db.viewSnapshots = db.viewSnapshots.filter((v) => !subIds.has(v.submissionId));
+  db.fraudFlags = db.fraudFlags.filter((f) => !subIds.has(f.submissionId));
+  db.xpEvents = db.xpEvents.filter(
+    (e) => e.campaignId !== id && !(e.submissionId && subIds.has(e.submissionId)),
+  );
+  db.ledgerEntries = db.ledgerEntries.filter((l) => l.campaignId !== id);
+  db.submissions = db.submissions.filter((s) => s.campaignId !== id);
+  db.campaigns = db.campaigns.filter((c) => c.id !== id);
+  save();
 }
 
 /* ── Submissions ──────────────────────────────────────── */
@@ -380,6 +404,37 @@ export function updateFraudFlag(id: string, patch: Partial<FraudFlag>): FraudFla
   db.fraudFlags[i] = { ...db.fraudFlags[i], ...patch };
   save();
   return db.fraudFlags[i];
+}
+
+/* ── Notifications ────────────────────────────────────── */
+export function createNotification(n: Notification): Notification {
+  load().notifications.push(n);
+  save();
+  return n;
+}
+export function listNotifications(profileId: string): Notification[] {
+  return load()
+    .notifications.filter((n) => n.profileId === profileId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+export function markNotificationRead(id: string, profileId: string): void {
+  const db = load();
+  const n = db.notifications.find((x) => x.id === id && x.profileId === profileId);
+  if (!n || n.readAt) return;
+  n.readAt = now();
+  save();
+}
+export function markAllNotificationsRead(profileId: string): void {
+  const db = load();
+  const ts = now();
+  let changed = false;
+  for (const n of db.notifications) {
+    if (n.profileId === profileId && !n.readAt) {
+      n.readAt = ts;
+      changed = true;
+    }
+  }
+  if (changed) save();
 }
 
 /* ── Leaderboard ──────────────────────────────────────── */

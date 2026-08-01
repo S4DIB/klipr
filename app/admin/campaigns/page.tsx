@@ -5,10 +5,12 @@ import type { Campaign } from "@/lib/db/types";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
 import { EmptyState } from "@/components/app/empty-state";
+import { DeleteCampaignButton } from "@/components/app/delete-campaign-button";
 import { BudgetBar } from "@/components/ui/budget-bar";
 import { FilterTabs, normalizeFilter, type FilterKey } from "@/components/app/filter-tabs";
-import { takaFromPoisha, dhakaDate } from "@/lib/format";
+import { takaFromPoisha, dhakaDate, dhakaDateTime } from "@/lib/format";
 import { approveCampaign, rejectCampaign } from "./actions";
+import { clearDeletionRequest } from "@/app/brand/campaigns/new/actions";
 
 export const metadata: Metadata = { title: "Campaigns · Admin" };
 
@@ -33,9 +35,10 @@ export default async function AdminCampaignsPage({
   const rejected = all.filter((c) => c.status === "cancelled");
   const counts = { pending: pending.length, approved: approved.length, rejected: rejected.length };
   const list = filter === "approved" ? approved : filter === "rejected" ? rejected : pending;
+  const deletionRequests = all.filter((c) => c.deletionRequestedAt);
 
   const brandNames = new Map<string, string>();
-  for (const c of list) {
+  for (const c of [...deletionRequests, ...list]) {
     if (!brandNames.has(c.brandProfileId)) {
       const p = await getProfile(c.brandProfileId);
       brandNames.set(c.brandProfileId, p?.orgName ?? p?.displayName ?? c.brandProfileId);
@@ -52,6 +55,49 @@ export default async function AdminCampaignsPage({
           separate step you confirm on each campaign.
         </p>
       </header>
+
+      {deletionRequests.length > 0 ? (
+        <GlassPanel className="border border-[rgba(255,123,192,0.35)] p-5">
+          <p className="eyebrow text-danger-600">Deletion requests · {deletionRequests.length}</p>
+          <p className="mt-1 text-[13px] leading-relaxed text-text-mid">
+            Brands asked to delete these. Approve to remove a campaign and its records, or dismiss to
+            keep it.
+          </p>
+          <div className="mt-4 space-y-2.5">
+            {deletionRequests.map((c) => (
+              <div
+                key={c.id}
+                className="glass-well flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <Link
+                    href={`/admin/campaigns/${c.id}`}
+                    className="text-[14px] font-semibold text-text-hi transition-colors hover:text-volt-600"
+                  >
+                    {c.name}
+                  </Link>
+                  <p className="mt-0.5 text-[12px] text-text-mid">
+                    {brandNames.get(c.brandProfileId) ?? ""}
+                    {c.deletionRequestedAt ? ` · ${dhakaDateTime(c.deletionRequestedAt)}` : ""}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2.5">
+                  <DeleteCampaignButton campaignId={c.id} label="Approve deletion" />
+                  <form action={clearDeletionRequest}>
+                    <input type="hidden" name="campaignId" value={c.id} />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-line px-4 py-2 text-[13px] font-semibold text-text-hi transition-colors hover:border-volt-400 hover:text-volt-600"
+                    >
+                      Dismiss
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
+        </GlassPanel>
+      ) : null}
 
       <FilterTabs basePath="/admin/campaigns" current={filter} counts={counts} />
 
@@ -112,6 +158,11 @@ function CampaignRow({
           </p>
           {filter !== "pending" ? <StatusChip status={c.status} /> : null}
           <FundedBadge fundedAt={c.fundedAt} />
+          {c.deletionRequestedAt ? (
+            <span className="shrink-0 rounded-full bg-danger-bg px-2.5 py-0.5 text-[11px] font-bold text-danger-600">
+              Deletion requested
+            </span>
+          ) : null}
         </div>
         <p className="mt-0.5 text-[12.5px] text-text-mid">
           {brandName} · {takaFromPoisha(c.budgetPoisha)} · ends {dhakaDate(c.endDate)}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireActiveClipper } from "@/lib/auth/guards";
 import { getCampaign, listConnectedAccounts, listSubmissions } from "@/lib/db";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { IconCheck, IconChevronLeft, IconClock } from "@/components/icons";
 import { PLATFORMS } from "@/lib/platforms";
 import { takaFromPoisha, views as fmtViews } from "@/lib/format";
-import { isEarlyAccessLocked, remainingBudgetPoisha } from "@/lib/campaign-rules";
+import { remainingBudgetPoisha } from "@/lib/campaign-rules";
 import { submissionCap } from "@/lib/xp";
 
 export const metadata: Metadata = { title: "Campaign" };
@@ -27,7 +27,6 @@ export default async function CampaignDetailPage({
   if (!campaign || campaign.status === "draft" || campaign.status === "pending_funding") notFound();
 
   const now = new Date().toISOString();
-  if (isEarlyAccessLocked(campaign, user.tier, now)) redirect("/campaigns");
 
   const [accounts, mySubs] = await Promise.all([
     listConnectedAccounts(user.id),

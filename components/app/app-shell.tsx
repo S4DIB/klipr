@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { IconBell, IconChevronRight, IconWallet } from "@/components/icons";
 import { signOut } from "@/lib/auth/actions";
-import { dhakaToday } from "@/lib/format";
+import { dismissAllNotifications } from "@/lib/notifications/actions";
+import { dhakaToday, dhakaDate } from "@/lib/format";
+import type { Notification } from "@/lib/db/types";
 import { RailNav, type RailItem } from "@/components/app/rail-nav";
 import { TabBar, type TabItem } from "@/components/app/tab-bar";
 import { PageHeading, type PageTitle } from "@/components/app/page-heading";
@@ -172,6 +174,7 @@ export function AppShell({
   tier,
   xpTotal,
   availablePoisha,
+  notifications,
   children,
 }: {
   role: ShellRole;
@@ -183,8 +186,11 @@ export function AppShell({
   xpTotal?: number;
   /** Clipper/agency available balance, shown in the header. */
   availablePoisha?: number;
+  /** The signed-in user's notices, newest first. Powers the header bell. */
+  notifications?: Notification[];
   children: ReactNode;
 }) {
+  const unread = (notifications ?? []).filter((n) => !n.readAt);
   const homeHref = role === "brand" ? "/brand" : role === "admin" ? "/admin" : "/home";
   // admin has no settings surface — its account menus offer "Sign out" only
   const settingsHref =
@@ -316,24 +322,51 @@ export function AppShell({
               ) : null}
               <details className="group relative">
                 <summary
-                  className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-[rgba(53,5,90,0.12)] text-ink-600 transition-colors hover:bg-[rgba(53,5,90,0.055)] hover:text-ink-900 [&::-webkit-details-marker]:hidden"
-                  aria-label="Notifications"
+                  className="relative flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-[rgba(53,5,90,0.12)] text-ink-600 transition-colors hover:bg-[rgba(53,5,90,0.055)] hover:text-ink-900 [&::-webkit-details-marker]:hidden"
+                  aria-label={unread.length ? `Notifications, ${unread.length} unread` : "Notifications"}
                 >
                   <IconBell size={18} strokeWidth={1.4} />
+                  {unread.length > 0 ? (
+                    <span className="absolute right-[9px] top-[9px] h-[8px] w-[8px] rounded-full bg-violet-600 ring-2 ring-white" />
+                  ) : null}
                 </summary>
-                <div className="absolute right-0 top-12 z-50 w-[300px] rounded-[22px] border border-[rgba(53,5,90,0.05)] bg-white p-6 shadow-[0_16px_48px_-16px_rgba(31,3,53,0.25)]">
-                  <p className="text-[17px] font-extrabold tracking-[-0.01em] text-ink-900">
-                    Notifications
-                  </p>
-                  <div className="flex flex-col items-center py-7 text-center">
-                    <IconBell size={28} strokeWidth={1.2} className="text-ink-300" />
-                    <p className="mt-3 text-[14px] font-bold text-ink-900">
-                      You&rsquo;re all caught up
+                <div className="absolute right-0 top-12 z-50 w-[320px] rounded-[22px] border border-[rgba(53,5,90,0.05)] bg-white p-5 shadow-[0_16px_48px_-16px_rgba(31,3,53,0.25)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[16px] font-extrabold tracking-[-0.01em] text-ink-900">
+                      Notifications
                     </p>
-                    <p className="mt-0.5 text-[12.5px] text-ink-500">
-                      New activity will show up here.
-                    </p>
+                    {unread.length > 0 ? (
+                      <form action={dismissAllNotifications}>
+                        <button
+                          type="submit"
+                          className="text-[12px] font-semibold text-violet-600 transition-colors hover:text-violet-700"
+                        >
+                          Mark all read
+                        </button>
+                      </form>
+                    ) : null}
                   </div>
+                  {unread.length === 0 ? (
+                    <div className="flex flex-col items-center py-7 text-center">
+                      <IconBell size={28} strokeWidth={1.2} className="text-ink-300" />
+                      <p className="mt-3 text-[14px] font-bold text-ink-900">
+                        You&rsquo;re all caught up
+                      </p>
+                      <p className="mt-0.5 text-[12.5px] text-ink-500">
+                        New activity will show up here.
+                      </p>
+                    </div>
+                  ) : (
+                    <ul className="mt-3 flex max-h-[360px] flex-col gap-2 overflow-y-auto">
+                      {unread.map((n) => (
+                        <li key={n.id} className="rounded-[14px] bg-[rgba(53,5,90,0.04)] p-3">
+                          <p className="text-[13px] font-bold text-ink-900">{n.title}</p>
+                          <p className="mt-0.5 text-[12.5px] leading-snug text-ink-600">{n.body}</p>
+                          <p className="mt-1.5 text-[11px] text-ink-400">{dhakaDate(n.createdAt)}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </details>
               {availablePoisha !== undefined ? (
