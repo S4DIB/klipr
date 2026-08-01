@@ -115,8 +115,11 @@ export function ApplyForm() {
                 <TextField
                   label="Page link"
                   name={`url_${i}`}
-                  type="url"
-                  placeholder="https://youtube.com/@yourpage"
+                  type="text"
+                  inputMode="url"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  placeholder="youtube.com/@yourpage"
                   value={row.url}
                   onChange={(e) => setRow(i, { url: e.target.value })}
                   required

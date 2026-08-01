@@ -24,13 +24,7 @@ export default async function EditAdminCampaignPage({
   const brandName = brand?.orgName ?? brand?.displayName ?? campaign.brandName;
 
   return (
-    <div className="mx-auto max-w-[760px] space-y-5">
-      <header>
-        <p className="eyebrow text-volt-600">Edit campaign</p>
-        <h1 className="mt-1 text-[26px] font-extrabold tracking-[-0.02em] text-text-hi">
-          {campaign.name}
-        </h1>
-      </header>
+    <div className="py-2">
       <CampaignForm brandName={brandName} campaign={campaign} />
     </div>
   );

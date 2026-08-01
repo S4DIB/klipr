@@ -21,6 +21,7 @@ import {
 } from "@/lib/db/types";
 import { takaToPoisha } from "@/lib/money";
 import { endOfDhakaDay } from "@/lib/format";
+import { normalizeUrl } from "@/lib/url";
 import { NICHES } from "@/lib/platforms";
 
 const schema = z.object({
@@ -28,7 +29,10 @@ const schema = z.object({
   niche: z.enum(NICHES),
   brief: z.string().trim().min(10, "Write a short brief: what should clippers post?").max(1200),
   guidelines: z.string().trim().max(1200).optional(),
-  sourceUrl: z.string().trim().url("Link the exact clip file clippers will post"),
+  sourceUrl: z.preprocess(
+    (v) => (typeof v === "string" ? normalizeUrl(v) : v),
+    z.string().url("Link the exact clip file clippers will post"),
+  ),
   budgetTaka: z.coerce.number().int().min(5_000, "Minimum budget is ৳5,000").max(10_000_000),
   minQualifyViews: z.coerce.number().int().min(2_000).max(4_000),
   maxPerClipperTaka: z.coerce.number().int().min(500, "At least ৳500 per clipper").max(1_000_000),

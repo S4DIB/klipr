@@ -12,6 +12,7 @@ import {
   newId,
 } from "@/lib/db";
 import { getAdapter } from "@/lib/verify";
+import { normalizeUrl } from "@/lib/url";
 import { submissionCap } from "@/lib/xp";
 import {
   acceptsSubmissions,
@@ -38,7 +39,7 @@ export async function submitClip(_prev: SubmitState, formData: FormData): Promis
 
   const campaignId = String(formData.get("campaignId") ?? "");
   const accountId = String(formData.get("accountId") ?? "");
-  const rawUrl = String(formData.get("postUrl") ?? "").trim();
+  const rawUrl = normalizeUrl(String(formData.get("postUrl") ?? ""));
   const now = new Date().toISOString();
 
   const campaign = await getCampaign(campaignId);

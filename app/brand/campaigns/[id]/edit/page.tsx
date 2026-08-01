@@ -21,13 +21,7 @@ export default async function EditBrandCampaignPage({
   }
 
   return (
-    <div className="mx-auto max-w-[760px] space-y-5">
-      <header>
-        <p className="eyebrow text-violet-600">Edit campaign</p>
-        <h1 className="mt-1 text-[26px] font-extrabold tracking-[-0.02em] text-ink-900">
-          {campaign.name}
-        </h1>
-      </header>
+    <div className="py-2">
       <CampaignForm brandName={campaign.brandName} campaign={campaign} />
     </div>
   );

@@ -113,7 +113,10 @@ export function SubmitSheet({
             <div>
               <p className="eyebrow mb-[7px]">Paste your post URL</p>
               <input
-                type="url"
+                type="text"
+                inputMode="url"
+                autoCapitalize="none"
+                spellCheck={false}
                 name="postUrl"
                 required
                 placeholder={urlHint}

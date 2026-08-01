@@ -336,7 +336,10 @@ export function WaitlistForm({
                     )}
                     <div className="grid gap-2.5 sm:grid-cols-[1.5fr_1fr]">
                       <input
-                        type="url"
+                        type="text"
+                        inputMode="url"
+                        autoCapitalize="none"
+                        spellCheck={false}
                         required
                         maxLength={200}
                         aria-label="Page link"

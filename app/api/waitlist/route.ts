@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { saveLead, type Lead, type LeadPage } from "@/lib/leads";
+import { normalizeUrl } from "@/lib/url";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,7 +68,7 @@ export async function POST(req: Request) {
     }
     const pages: LeadPage[] = [];
     for (const p of raw as Record<string, unknown>[]) {
-      const link = str(p.link, 200);
+      const link = normalizeUrl(str(p.link, 200) ?? "");
       const niche = str(p.niche, 40);
       if (!link) return bad("Paste a link for each page.");
       if (!niche) return bad("Pick a niche for each page.");

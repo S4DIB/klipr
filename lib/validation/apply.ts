@@ -1,11 +1,15 @@
 import { z } from "zod";
 import { NICHES } from "@/lib/platforms";
+import { normalizeUrl } from "@/lib/url";
 
 /** One declared page in an application — information for the reviewer, not a gate. */
 export const declaredPageSchema = z.object({
   platform: z.enum(["facebook", "tiktok", "instagram", "youtube"]),
   handle: z.string().trim().min(2, "Add the page handle").max(60),
-  url: z.string().trim().url("Enter the full page link"),
+  url: z.preprocess(
+    (v) => (typeof v === "string" ? normalizeUrl(v) : v),
+    z.string().url("Enter the full page link"),
+  ),
   selfReportedFollowers: z.coerce
     .number()
     .int()
