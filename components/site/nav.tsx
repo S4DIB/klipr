@@ -15,18 +15,9 @@ const links = [
 ];
 
 /** Floating capsule nav — frosted ivory Klipr Glass over the page, Dark
- *  Amethyst logo + Royal-Violet CTA (matches the product app chrome).
- *  When a session exists, `appHref` is set and the nav swaps the logged-out
- *  Sign in / Join actions for a single "Go to app" entry + avatar. */
-export function Nav({
-  appHref,
-  displayName,
-  avatarUrl,
-}: {
-  appHref?: string;
-  displayName?: string;
-  avatarUrl?: string;
-} = {}) {
+ *  Amethyst logo + Royal-Violet CTA (matches the product app chrome). Only
+ *  logged-out visitors see this; the landing redirects signed-in users. */
+export function Nav() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -88,43 +79,21 @@ export function Nav({
           </div>
 
           <div className="relative z-10 flex items-center gap-2 sm:gap-2.5">
-            {appHref ? (
-              <>
-                <span className="hidden h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-volt-600 font-mono text-[13px] text-yellow sm:flex">
-                  {avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    (displayName || "K").trim().charAt(0).toUpperCase()
-                  )}
-                </span>
-                <Link
-                  href={appHref}
-                  className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full bg-volt-500 px-5 text-sm font-semibold tracking-tight text-white shadow-[0_2px_6px_-2px_rgba(125,4,215,0.35)] transition-all duration-200 hover:bg-violet-700 hover:shadow-[0_4px_12px_-3px_rgba(125,4,215,0.4)] active:scale-[0.98]"
-                >
-                  Go to app
-                  <span aria-hidden>→</span>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-[rgba(125,4,215,0.35)] bg-white/50 px-3.5 text-sm font-semibold tracking-tight text-volt-600 transition-all duration-200 hover:border-volt-500 hover:bg-[rgba(125,4,215,0.07)] hover:text-volt-500 active:scale-[0.98] sm:px-5"
-                >
-                  <IconLogin size={16} strokeWidth={1.4} />
-                  Sign in
-                </Link>
-                <a
-                  href="#waitlist"
-                  className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full bg-volt-500 px-4 text-sm font-semibold tracking-tight text-white shadow-[0_2px_6px_-2px_rgba(125,4,215,0.35)] transition-all duration-200 hover:bg-violet-700 hover:shadow-[0_4px_12px_-3px_rgba(125,4,215,0.4)] active:scale-[0.98] sm:px-5"
-                >
-                  <BoltMark className="h-[0.85em]" />
-                  <span className="sm:hidden">Join</span>
-                  <span className="hidden sm:inline">Join the waitlist</span>
-                </a>
-              </>
-            )}
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-[rgba(125,4,215,0.35)] bg-white/50 px-3.5 text-sm font-semibold tracking-tight text-volt-600 transition-all duration-200 hover:border-volt-500 hover:bg-[rgba(125,4,215,0.07)] hover:text-volt-500 active:scale-[0.98] sm:px-5"
+            >
+              <IconLogin size={16} strokeWidth={1.4} />
+              Sign in
+            </Link>
+            <a
+              href="#waitlist"
+              className="inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-full bg-volt-500 px-4 text-sm font-semibold tracking-tight text-white shadow-[0_2px_6px_-2px_rgba(125,4,215,0.35)] transition-all duration-200 hover:bg-violet-700 hover:shadow-[0_4px_12px_-3px_rgba(125,4,215,0.4)] active:scale-[0.98] sm:px-5"
+            >
+              <BoltMark className="h-[0.85em]" />
+              <span className="sm:hidden">Join</span>
+              <span className="hidden sm:inline">Join the waitlist</span>
+            </a>
           </div>
         </nav>
       </div>

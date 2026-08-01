@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth/session";
 import { routeFor, accessAllowed } from "@/lib/auth/guards";
 import { Nav } from "@/components/site/nav";
@@ -16,17 +17,16 @@ import { Faq } from "@/components/landing/faq";
  * The hero's world IS the page: one continuous Klipr Glass daylight field —
  * frosted ivory over soft brand-color pools — matching the product app. */
 export default async function Home() {
-  // Recognise an existing session so the nav can offer "Go to app" instead of
-  // the logged-out Sign in / Join actions. Only sessions that actually have
-  // access get an app link.
+  // Logged-in users get the product, not the marketing page — straight to their
+  // app home (or onboarding if they haven't finished setup).
   const user = await currentUser();
-  const appHref = user && accessAllowed(user) ? routeFor(user) : undefined;
+  if (user && accessAllowed(user)) redirect(routeFor(user));
 
   return (
     <>
       {/* landing-only: the canvas behind overscroll matches the product's neutral surface */}
       <style>{`html, body { background: #f4f3f7; }`}</style>
-      <Nav appHref={appHref} displayName={user?.displayName} avatarUrl={user?.avatarUrl} />
+      <Nav />
       <Backdrop />
       <div className="landing-surface relative">
         {/* soft violet brand bolts scattered across the whole page, behind the content */}
