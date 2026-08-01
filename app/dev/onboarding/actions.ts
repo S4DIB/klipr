@@ -19,18 +19,25 @@ const PREVIEW_EMAIL = "onboarding-preview@klipr.dev";
  * real /onboarding flow so the design can be reviewed end-to-end. Guarded off
  * whenever Supabase is configured — i.e. it never runs in production.
  */
-export async function startOnboardingPreview() {
+export async function startOnboardingPreview(formData?: FormData) {
   if (hasSupabase) notFound();
 
+  // Clipper/agency share the 4-step flow; brand gets the 3-step business flow.
+  const roleParam = formData?.get("role");
+  const role =
+    roleParam === "agency" ? "agency" : roleParam === "brand" ? "brand" : "clipper";
+  const email = `${role}-${PREVIEW_EMAIL}`;
+  const label =
+    role === "brand" ? "Preview Brand" : role === "agency" ? "Preview Agency" : "Preview Clipper";
   const now = new Date().toISOString();
-  let profile = await getProfileByEmail(PREVIEW_EMAIL);
+  let profile = await getProfileByEmail(email);
 
   if (!profile) {
     profile = await upsertProfile({
       id: newId("usr"),
-      email: PREVIEW_EMAIL,
-      displayName: "Preview Clipper",
-      role: "clipper",
+      email,
+      displayName: label,
+      role,
       access: "active",
       tier: "beginner",
       xpTotal: 120,
@@ -42,12 +49,13 @@ export async function startOnboardingPreview() {
       onboardingStep: 0,
       createdAt: now,
     });
-    const appId = newId("app");
-    await createApplication(
+    if (role !== "brand") {
+      const appId = newId("app");
+      await createApplication(
       {
         id: appId,
         profileId: profile.id,
-        role: "clipper",
+        role,
         note: "Onboarding design preview.",
         status: "approved",
         reviewedAt: now,
@@ -74,21 +82,28 @@ export async function startOnboardingPreview() {
           niche: "Gaming",
           vetStatus: "approved",
         },
-      ],
-    );
+        ],
+      );
+    }
   } else {
-    // Re-entry: rewind to step 0 AND wipe the profile fields so every preview
-    // starts blank (editable username, empty name/location/languages).
+    // Re-entry: rewind to step 0 AND wipe every onboarding field so each preview
+    // starts blank (clipper + brand fields alike).
     await updateProfile(profile.id, {
+      role,
       access: "active",
       profileCompleted: false,
       onboardingStep: 0,
-      displayName: "Preview Clipper",
+      displayName: label,
       firstName: undefined,
       lastName: undefined,
       username: undefined,
       location: undefined,
       postLanguages: undefined,
+      orgName: undefined,
+      website: undefined,
+      industry: undefined,
+      monthlySpend: undefined,
+      campaignExperience: undefined,
     });
   }
 
