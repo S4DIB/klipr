@@ -35,6 +35,7 @@ export default async function AppLayout({
     <AppShell
       role={user.role === "agency" ? "agency" : "clipper"}
       displayName={user.displayName}
+      avatarUrl={user.avatarUrl}
       tier={user.tier}
       xpTotal={user.xpTotal}
       availablePoisha={availablePoisha}

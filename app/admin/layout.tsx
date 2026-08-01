@@ -14,7 +14,7 @@ export default async function AdminLayout({
   if (user.role !== "admin") redirect(routeFor(user));
 
   return (
-    <AppShell role="admin" displayName={user.displayName}>
+    <AppShell role="admin" displayName={user.displayName} avatarUrl={user.avatarUrl}>
       {children}
     </AppShell>
   );

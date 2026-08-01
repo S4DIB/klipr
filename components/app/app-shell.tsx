@@ -92,24 +92,35 @@ const TITLES: Record<ShellRole, PageTitle[]> = {
 };
 
 /** Shared account dropdown (header avatar). */
+/** Avatar fill — the Google photo when we have one, else the mono initial. */
+function AvatarFill({ avatarUrl, initial }: { avatarUrl?: string; initial: string }) {
+  if (avatarUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />;
+  }
+  return <>{initial}</>;
+}
+
 function AccountMenu({
   displayName,
   role,
   settingsHref,
   initial,
+  avatarUrl,
 }: {
   displayName: string;
   role: ShellRole;
   settingsHref?: string;
   initial: string;
+  avatarUrl?: string;
 }) {
   return (
     <details className="group relative">
       <summary
-        className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full bg-volt-600 font-mono text-[13px] text-yellow [&::-webkit-details-marker]:hidden"
+        className="flex h-9 w-9 cursor-pointer list-none items-center justify-center overflow-hidden rounded-full bg-volt-600 font-mono text-[13px] text-yellow [&::-webkit-details-marker]:hidden"
         aria-label="Account menu"
       >
-        {initial}
+        <AvatarFill avatarUrl={avatarUrl} initial={initial} />
       </summary>
       <div className="glass-strong absolute right-0 top-11 z-50 w-56 rounded-[--radius-control] p-2">
         <p className="truncate px-3 py-2 text-[13px] font-medium text-text-hi">{displayName}</p>
@@ -157,6 +168,7 @@ function takaWithDecimals(poisha: number): string {
 export function AppShell({
   role,
   displayName,
+  avatarUrl,
   tier,
   xpTotal,
   availablePoisha,
@@ -164,6 +176,7 @@ export function AppShell({
 }: {
   role: ShellRole;
   displayName: string;
+  avatarUrl?: string;
   /** Clipper/agency only. Rendered under the name in the sidebar. */
   tier?: TierName;
   /** Clipper/agency lifetime XP, rendered beside the tier. */
@@ -224,6 +237,7 @@ export function AppShell({
               role={role}
               settingsHref={settingsHref}
               initial={initial}
+              avatarUrl={avatarUrl}
             />
           </div>
         </div>
@@ -254,8 +268,8 @@ export function AppShell({
           <div className="mt-auto border-t border-[rgba(53,5,90,0.08)] pt-3">
             <details className="group relative">
               <summary className="flex cursor-pointer list-none items-center gap-2.5 rounded-[12px] px-1.5 py-2 transition-colors hover:bg-[rgba(53,5,90,0.045)] [&::-webkit-details-marker]:hidden">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-volt-600 font-mono text-[13px] text-yellow">
-                  {initial}
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-volt-600 font-mono text-[13px] text-yellow">
+                  <AvatarFill avatarUrl={avatarUrl} initial={initial} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[13px] font-bold text-ink-900">

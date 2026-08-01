@@ -15,7 +15,7 @@ export default async function BrandLayout({
   if (!user.profileCompleted) redirect("/apply");
 
   return (
-    <AppShell role="brand" displayName={user.orgName || user.displayName}>
+    <AppShell role="brand" displayName={user.orgName || user.displayName} avatarUrl={user.avatarUrl}>
       {children}
     </AppShell>
   );
