@@ -120,7 +120,6 @@ export default async function BrandOverviewPage() {
         {campaigns.length === 0 ? (
           <EmptyState
             title="No campaigns yet"
-            line="Fund a budget, upload your clip, and vetted pages distribute it. You pay ৳60 per 1,000 verified views. Nothing else."
             action={
               <Button
                 href="/brand/campaigns/new"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState, type ReactNode } from "react";
+import { BoltMark } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { IconCheckCircle, IconUpload } from "@/components/icons";
 import { NICHES, PLATFORMS, PLATFORM_ORDER } from "@/lib/platforms";
@@ -94,6 +95,9 @@ export function CampaignForm({
   return (
     <div className="w-full rounded-[28px] bg-[#7d04d7] px-6 py-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_2px_6px_rgba(53,5,90,0.2),0_44px_90px_-30px_rgba(125,4,215,0.55)] sm:px-10 sm:py-12">
       <div className="mx-auto w-full max-w-[680px]">
+        <div className="mb-4 flex justify-center">
+          <BoltMark className="h-9 w-auto text-ivory" />
+        </div>
         <h1 className="mb-6 text-center font-display text-[24px] font-bold leading-[1.1] tracking-[-0.02em] text-ivory">
           {editing ? "Edit campaign" : "New campaign"}
         </h1>

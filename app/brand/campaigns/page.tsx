@@ -85,11 +85,7 @@ export default async function BrandCampaignsPage({
         <GlassPanel className="p-5">
           <EmptyState
             title={current === "all" ? "No campaigns yet" : `No ${current} campaigns`}
-            line={
-              current === "all"
-                ? "Fund a budget, upload your clip, and vetted pages distribute it. You pay ৳60 per 1,000 verified views."
-                : "Nothing here right now. Try another filter."
-            }
+            line={current === "all" ? undefined : "Nothing here right now. Try another filter."}
             action={
               current === "all" ? (
                 <Button
