@@ -5,30 +5,7 @@ import { Button, ArrowEast } from "@/components/ui/button";
 import { BrandPreviewCard } from "./brand-preview-card";
 import { VSelect } from "./violet-field";
 import { saveCompanyDetails, type BrandDetailsState } from "./actions";
-import { COUNTRIES } from "./options";
-
-const INDUSTRIES = [
-  "Beauty & Personal Care",
-  "Fashion & Apparel",
-  "Food & Beverage",
-  "Tech & Software",
-  "Gaming",
-  "Health & Fitness",
-  "Education",
-  "Entertainment & Media",
-  "Finance",
-  "Travel & Hospitality",
-  "E-commerce",
-  "Other",
-];
-
-const SPEND = [
-  "Under ৳50,000",
-  "৳50,000 – ৳2,00,000",
-  "৳2,00,000 – ৳5,00,000",
-  "৳5,00,000 – ৳10,00,000",
-  "Over ৳10,00,000",
-];
+import { COUNTRIES, INDUSTRIES, SPEND } from "./options";
 
 /** Brand step 2 — Company details. */
 export function DetailsStep({
