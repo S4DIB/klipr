@@ -123,8 +123,8 @@ export default async function BrandOverviewPage() {
             action={
               <Button
                 href="/brand/campaigns/new"
-                variant="secondary"
-                className="h-10 px-5 text-[13.5px]"
+                variant="primary"
+                className="h-11 px-6 text-[14px]"
               >
                 Create your first campaign
               </Button>
