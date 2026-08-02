@@ -51,12 +51,6 @@ export default async function BrandCampaignsPage({
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex justify-end">
-        <Button href="/brand/campaigns/new" className="h-11 px-6 text-[14px]">
-          New campaign
-        </Button>
-      </header>
-
       {/* status filter pills */}
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => {
