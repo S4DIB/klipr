@@ -53,9 +53,9 @@ export default async function BrandOverviewPage() {
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-[28px] font-extrabold tracking-[-0.02em] text-ink-900">Overview</h1>
-        </div>
+        <h1 className="text-[28px] font-extrabold tracking-[-0.02em] text-ink-900">
+          Welcome back, {user.orgName || user.displayName}
+        </h1>
         <Button href="/brand/campaigns/new" className="h-11 px-6 text-[14px]">
           New campaign
         </Button>

@@ -8,10 +8,6 @@ export default async function BrandSettingsPage() {
   const user = await requireRole("brand");
   return (
     <div className="max-w-xl space-y-6">
-      <header>
-        <p className="eyebrow">01 / Settings</p>
-        <h1 className="display-1 mt-1 text-[32px] text-text-hi">Your organisation.</h1>
-      </header>
       <GlassPanel className="space-y-4 p-6">
         <div>
           <p className="eyebrow mb-1">Company</p>

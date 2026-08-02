@@ -30,10 +30,6 @@ export default async function BrandBillingPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="display-1 text-[32px] text-text-hi">The escrow ledger.</h1>
-      </header>
-
       {sections.length === 0 ? (
         <GlassPanel>
           <EmptyState title="No campaigns yet" line="Billing history appears once a campaign is funded." />
