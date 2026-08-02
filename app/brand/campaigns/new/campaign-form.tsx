@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useState, type ReactNode } from "react";
-import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { IconCheckCircle, IconUpload } from "@/components/icons";
 import { NICHES, PLATFORMS, PLATFORM_ORDER } from "@/lib/platforms";
@@ -16,7 +15,7 @@ const MIN_OPTIONS = [2000, 3000, 4000];
 
 /** Field control tuned for the Royal Violet card — translucent white on violet. */
 const control =
-  "w-full rounded-[14px] border border-white/25 bg-white/12 px-3.5 py-2.5 text-[14.5px] text-white placeholder:text-white/45 outline-none transition-colors focus:border-white/60 focus:bg-white/18";
+  "w-full rounded-[14px] border border-white/50 bg-white/12 px-3.5 py-2.5 text-[14.5px] text-white placeholder:text-white/70 outline-none transition-colors focus:border-white focus:bg-white/18";
 
 function VLabel({ children }: { children: ReactNode }) {
   return <label className="mb-1.5 block text-[13px] font-medium text-white">{children}</label>;
@@ -27,7 +26,7 @@ function VReadout({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
       <VLabel>{label}</VLabel>
-      <div className="rounded-[14px] border border-white/15 bg-white/[0.06] px-3.5 py-2.5 text-[14.5px] text-white/80">
+      <div className="rounded-[14px] border border-white/40 bg-white/[0.06] px-3.5 py-2.5 text-[14.5px] text-white">
         {children}
       </div>
     </div>
@@ -89,21 +88,18 @@ export function CampaignForm({
       "rounded-[12px] px-3.5 py-[9px] text-[13px] transition-colors",
       on
         ? "bg-white font-bold text-violet-900"
-        : cn("border border-white/25 bg-white/12 font-semibold text-white hover:bg-white/18", extra),
+        : cn("border border-white/50 bg-white/12 font-semibold text-white hover:bg-white/18", extra),
     );
 
   return (
     <div className="w-full rounded-[28px] bg-[#7d04d7] px-6 py-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_2px_6px_rgba(53,5,90,0.2),0_44px_90px_-30px_rgba(125,4,215,0.55)] sm:px-10 sm:py-12">
       <div className="mx-auto w-full max-w-[680px]">
-        <div className="mb-5 flex justify-center [&_svg]:text-ivory">
-          <Logo className="text-[16px]" />
-        </div>
         <h1 className="mb-6 text-center font-display text-[24px] font-bold leading-[1.1] tracking-[-0.02em] text-ivory">
           {editing ? "Edit campaign" : "New campaign"}
         </h1>
 
         <Stepper current={step - 1} labels={STEPS} onStep={(i) => setStep(i + 1)} />
-        <p className="mt-3 text-center text-[12px] font-semibold text-white/70">
+        <p className="mt-3 text-center text-[12px] font-semibold text-white">
           Step {step} of {STEPS.length} · {STEPS[step - 1]}
         </p>
 
@@ -184,7 +180,7 @@ export function CampaignForm({
                   onChange={(e) => setBudget(e.target.value.replace(/\D/g, ""))}
                   className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
                 />
-                <p className="mt-1.5 text-[11.5px] text-white/65">
+                <p className="mt-1.5 text-[11.5px] text-white">
                   {budgetNum >= 5000
                     ? `≈ ${Math.floor((budgetNum / 60) * 1000).toLocaleString("en-US")} verified views`
                     : "min ৳5,000"}
@@ -211,7 +207,7 @@ export function CampaignForm({
                     {v.toLocaleString("en-US")}
                   </button>
                 ))}
-                <span className="text-[11.5px] text-white/65">
+                <span className="text-[11.5px] text-white">
                   Clips below this settle at ৳0 and earn no XP.
                 </span>
               </div>
@@ -287,8 +283,8 @@ export function CampaignForm({
             </div>
             <div>
               <VLabel>Clip asset</VLabel>
-              <div className="flex flex-col items-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-white/30 p-5 text-center">
-                <span className="text-ivory/80">
+              <div className="flex flex-col items-center gap-2 rounded-[14px] border-[1.5px] border-dashed border-white/60 p-5 text-center">
+                <span className="text-ivory">
                   <IconUpload size={22} strokeWidth={1.4} />
                 </span>
                 <input
@@ -306,33 +302,33 @@ export function CampaignForm({
             </div>
 
             {/* review */}
-            <div className="rounded-[18px] border border-white/15 bg-white/[0.08] p-5">
-              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-white/60">
+            <div className="rounded-[18px] border border-white/40 bg-white/[0.08] p-5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-white">
                 Review
               </span>
               <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3.5 text-[13px] text-white sm:grid-cols-2">
                 <div className="flex justify-between">
-                  <span className="text-white/60">Budget</span>
+                  <span className="text-white">Budget</span>
                   <span className="font-mono [font-variant-numeric:tabular-nums]">
                     ৳{budgetNum.toLocaleString("en-US")}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/60">Rate</span>
+                  <span className="text-white">Rate</span>
                   <span className="font-mono">৳60 / 1k</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/60">Min views</span>
+                  <span className="text-white">Min views</span>
                   <span className="font-mono [font-variant-numeric:tabular-nums]">
                     {minViews.toLocaleString("en-US")}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/60">Window</span>
+                  <span className="text-white">Window</span>
                   <span className="font-mono">7 days</span>
                 </div>
               </div>
-              <p className="mt-3.5 border-t border-white/15 pt-3 text-[12px] leading-[1.5] text-white/70">
+              <p className="mt-3.5 border-t border-white/40 pt-3 text-[12px] leading-[1.5] text-white">
                 {editing ? (
                   <>
                     Changes save immediately. The campaign stays in{" "}
@@ -361,7 +357,7 @@ export function CampaignForm({
               type="button"
               onClick={() => setStep((s) => Math.max(1, s - 1))}
               className={cn(
-                "rounded-full border border-white/30 px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-white/10",
+                "rounded-full border border-white/60 px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-white/10",
                 step === 1 && "invisible",
               )}
             >
@@ -424,7 +420,7 @@ function Stepper({
                 <span
                   className={cn(
                     "flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[11px]",
-                    active ? "step-blink bg-white font-bold text-violet-900" : "bg-white/15 text-white",
+                    active ? "step-blink bg-white font-bold text-violet-900" : "border-2 border-white text-white",
                   )}
                 >
                   {i + 1}
