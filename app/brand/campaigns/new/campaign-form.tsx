@@ -93,18 +93,14 @@ export function CampaignForm({
     );
 
   return (
-    <div className="mx-auto w-full max-w-[600px]">
-      <div className="rounded-[28px] bg-[#7d04d7] px-6 py-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_2px_6px_rgba(53,5,90,0.2),0_44px_90px_-30px_rgba(125,4,215,0.55)] sm:px-9 sm:py-10">
+    <div className="w-full rounded-[28px] bg-[#7d04d7] px-6 py-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_2px_6px_rgba(53,5,90,0.2),0_44px_90px_-30px_rgba(125,4,215,0.55)] sm:px-10 sm:py-12">
+      <div className="mx-auto w-full max-w-[680px]">
         <div className="mb-5 flex justify-center [&_svg]:text-ivory">
           <Logo className="text-[16px]" />
         </div>
-        <h1 className="text-center font-display text-[24px] font-bold leading-[1.1] tracking-[-0.02em] text-ivory">
+        <h1 className="mb-6 text-center font-display text-[24px] font-bold leading-[1.1] tracking-[-0.02em] text-ivory">
           {editing ? "Edit campaign" : "New campaign"}
         </h1>
-        <p className="mx-auto mt-2 mb-6 max-w-[36ch] text-center text-[13px] leading-relaxed text-ivory/75">
-          You pay ৳60 per 1,000 verified views — nothing else. It goes live once an admin confirms
-          your escrow.
-        </p>
 
         <Stepper current={step - 1} labels={STEPS} onStep={(i) => setStep(i + 1)} />
         <p className="mt-3 text-center text-[12px] font-semibold text-white/70">

@@ -23,9 +23,5 @@ export default async function EditAdminCampaignPage({
   const brand = await getProfile(campaign.brandProfileId);
   const brandName = brand?.orgName ?? brand?.displayName ?? campaign.brandName;
 
-  return (
-    <div className="py-2">
-      <CampaignForm brandName={brandName} campaign={campaign} />
-    </div>
-  );
+  return <CampaignForm brandName={brandName} campaign={campaign} />;
 }

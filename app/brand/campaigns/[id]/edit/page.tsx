@@ -20,9 +20,5 @@ export default async function EditBrandCampaignPage({
     redirect(`/brand/campaigns/${id}`);
   }
 
-  return (
-    <div className="py-2">
-      <CampaignForm brandName={campaign.brandName} campaign={campaign} />
-    </div>
-  );
+  return <CampaignForm brandName={campaign.brandName} campaign={campaign} />;
 }

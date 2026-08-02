@@ -7,9 +7,5 @@ export const metadata: Metadata = { title: "New campaign" };
 export default async function NewCampaignPage() {
   const user = await requireRole("brand");
 
-  return (
-    <div className="py-2">
-      <CampaignForm brandName={user.orgName || user.displayName} />
-    </div>
-  );
+  return <CampaignForm brandName={user.orgName || user.displayName} />;
 }
