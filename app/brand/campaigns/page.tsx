@@ -53,10 +53,7 @@ export default async function BrandCampaignsPage({
     <div className="flex flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow text-violet-600">Brand console · {user.orgName || user.displayName}</p>
-          <h1 className="mt-1 text-[28px] font-extrabold tracking-[-0.02em] text-ink-900">
-            Campaigns
-          </h1>
+          <h1 className="text-[28px] font-extrabold tracking-[-0.02em] text-ink-900">Campaigns</h1>
         </div>
         <Button href="/brand/campaigns/new" className="h-11 px-6 text-[14px]">
           New campaign

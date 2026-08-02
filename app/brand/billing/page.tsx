@@ -31,12 +31,7 @@ export default async function BrandBillingPage() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="eyebrow">01 / Billing</p>
-        <h1 className="display-1 mt-1 text-[32px] text-text-hi">The escrow ledger.</h1>
-        <p className="mt-1 max-w-lg text-[13.5px] leading-relaxed text-text-mid">
-          Funding in, verified views out, remainder back. Double-entry. The
-          books always balance.
-        </p>
+        <h1 className="display-1 text-[32px] text-text-hi">The escrow ledger.</h1>
       </header>
 
       {sections.length === 0 ? (
