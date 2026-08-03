@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { requireActiveClipper } from "@/lib/auth/guards";
-import { getCampaign, listConnectedAccounts, listSubmissions } from "@/lib/db";
+import { getCampaignsByIds, listConnectedAccounts, listSubmissions } from "@/lib/db";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
 import { EmptyState } from "@/components/app/empty-state";
@@ -21,13 +21,9 @@ export default async function ClipsPage() {
   subs.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
   const accountById = new Map(accounts.map((a) => [a.id, a]));
 
-  const campaignNames = new Map<string, string>();
-  for (const s of subs) {
-    if (!campaignNames.has(s.campaignId)) {
-      const c = await getCampaign(s.campaignId);
-      campaignNames.set(s.campaignId, c?.name ?? s.campaignId);
-    }
-  }
+  // One query for every referenced campaign, instead of a serial getCampaign per clip.
+  const campaignRows = await getCampaignsByIds([...new Set(subs.map((s) => s.campaignId))]);
+  const campaignNames = new Map(campaignRows.map((c) => [c.id, c.name] as const));
 
   const isAgency = user.role === "agency";
 

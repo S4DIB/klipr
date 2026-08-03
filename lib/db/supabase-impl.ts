@@ -226,6 +226,12 @@ export async function listProfiles(role?: Profile["role"]): Promise<Profile[]> {
   const { data } = await q;
   return (data ?? []).map(toProfile);
 }
+/** Fetch many profiles by id in ONE query (avoids per-row N+1 in admin lists). */
+export async function getProfilesByIds(ids: string[]): Promise<Profile[]> {
+  if (!ids.length) return [];
+  const { data } = await admin().from("profiles").select("*").in("id", ids);
+  return (data ?? []).map(toProfile);
+}
 export async function upsertProfile(p: Profile): Promise<Profile> {
   const { error } = await (await sb()).from("profiles").upsert(fromProfile(p));
   if (error) throw error;
@@ -356,6 +362,12 @@ export async function updateCampaign(id: string, patch: Partial<Campaign>): Prom
   if (error) throw error;
   return data ? toCampaign(data) : undefined;
 }
+/** Fetch many campaigns by id in ONE query (avoids per-submission N+1). */
+export async function getCampaignsByIds(ids: string[]): Promise<Campaign[]> {
+  if (!ids.length) return [];
+  const { data } = await (await sb()).from("campaigns").select("*").in("id", ids);
+  return (data ?? []).map(toCampaign);
+}
 export async function deleteCampaign(id: string): Promise<void> {
   const db = admin();
   // submissions cascade to view_snapshots + fraud_flags, but xp_events and the
@@ -381,6 +393,12 @@ export async function listSubmissions(filter?: {
   if (filter?.profileId) q = q.eq("profile_id", filter.profileId);
   if (filter?.status) q = q.eq("status", filter.status);
   const { data } = await q;
+  return (data ?? []).map(toSubmission);
+}
+/** All submissions for a set of campaigns in ONE query (avoids per-campaign N+1). */
+export async function listSubmissionsForCampaigns(campaignIds: string[]): Promise<Submission[]> {
+  if (!campaignIds.length) return [];
+  const { data } = await admin().from("submissions").select("*").in("campaign_id", campaignIds);
   return (data ?? []).map(toSubmission);
 }
 export async function getSubmission(id: string): Promise<Submission | undefined> {
@@ -497,8 +515,13 @@ export async function listLedger(filter?: {
   return (data ?? []).map(toLedgerEntry);
 }
 export async function ledgerBalance(account: string): Promise<number> {
-  const { data } = await admin().from("ledger_entries").select("amount_poisha").eq("account", account);
-  return (data ?? []).reduce((acc, r) => acc + (r.amount_poisha as number), 0);
+  // Fast path: SQL-side sum (migration 0012). Falls back to summing rows in Node
+  // if the function isn't deployed yet, so a code-before-migration deploy is safe.
+  const { data, error } = await admin().rpc("ledger_balance", { p_account: account });
+  if (!error && data != null) return Number(data);
+  const { data: rows } = await admin()
+    .from("ledger_entries").select("amount_poisha").eq("account", account);
+  return (rows ?? []).reduce((acc, r) => acc + (r.amount_poisha as number), 0);
 }
 
 /* ── Payout batches ── */
@@ -578,6 +601,14 @@ export async function listNotifications(profileId: string): Promise<Notification
   const { data } = await admin()
     .from("notifications").select("*").eq("profile_id", profileId)
     .order("created_at", { ascending: false });
+  return (data ?? []).map(toNotification);
+}
+/** Unread only, newest first, capped — powers the header bell without shipping
+ *  the whole history. Backed by the `notifications_unread_idx` partial index. */
+export async function listUnreadNotifications(profileId: string): Promise<Notification[]> {
+  const { data } = await admin()
+    .from("notifications").select("*").eq("profile_id", profileId)
+    .is("read_at", null).order("created_at", { ascending: false }).limit(20);
   return (data ?? []).map(toNotification);
 }
 export async function markNotificationRead(id: string, profileId: string): Promise<void> {

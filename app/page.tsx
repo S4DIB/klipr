@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth/session";
 import { routeFor, accessAllowed } from "@/lib/auth/guards";
@@ -18,9 +19,17 @@ import { Faq } from "@/components/landing/faq";
  * frosted ivory over soft brand-color pools — matching the product app. */
 export default async function Home() {
   // Logged-in users get the product, not the marketing page — straight to their
-  // app home (or onboarding if they haven't finished setup).
-  const user = await currentUser();
-  if (user && accessAllowed(user)) redirect(routeFor(user));
+  // app home (or onboarding if they haven't finished setup). Anonymous visitors
+  // (most landing traffic) skip the auth chain entirely — only pay it if an auth
+  // cookie is present.
+  const jar = await cookies();
+  const mightBeLoggedIn = jar
+    .getAll()
+    .some((c) => (c.name.startsWith("sb-") && c.name.includes("-auth-token")) || c.name === "klipr_uid");
+  if (mightBeLoggedIn) {
+    const user = await currentUser();
+    if (user && accessAllowed(user)) redirect(routeFor(user));
+  }
 
   return (
     <>

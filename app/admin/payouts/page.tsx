@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getProfile, listPayoutBatches } from "@/lib/db";
+import { getProfilesByIds, listPayoutBatches } from "@/lib/db";
 import { maskTail } from "@/lib/crypto";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
@@ -16,12 +16,9 @@ export default async function AdminPayoutsPage() {
   const blocked = all.filter((b) => b.status === "blocked_nid");
   const paid = all.filter((b) => b.status === "paid").slice(0, 10);
 
-  const names = new Map<string, string>();
-  for (const b of all) {
-    if (!names.has(b.profileId)) {
-      names.set(b.profileId, (await getProfile(b.profileId))?.displayName ?? b.profileId);
-    }
-  }
+  // One query for every payee, instead of a serial getProfile per batch.
+  const payeeProfiles = await getProfilesByIds([...new Set(all.map((b) => b.profileId))]);
+  const names = new Map(payeeProfiles.map((p) => [p.id, p.displayName] as const));
 
   return (
     <div className="space-y-8">

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth/session";
 import { routeFor } from "@/lib/auth/guards";
-import { listNotifications } from "@/lib/db";
+import { listUnreadNotifications } from "@/lib/db";
 import { AppShell } from "@/components/app/app-shell";
 
 /** The brand console shell. Role === "brand" only. */
@@ -15,7 +15,7 @@ export default async function BrandLayout({
   if (user.role !== "brand") redirect(routeFor(user));
   if (!user.profileCompleted) redirect("/apply");
 
-  const notifications = await listNotifications(user.id);
+  const notifications = await listUnreadNotifications(user.id);
 
   return (
     <AppShell

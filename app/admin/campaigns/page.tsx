@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getProfile, listCampaigns } from "@/lib/db";
+import { getProfilesByIds, listCampaigns } from "@/lib/db";
 import type { Campaign } from "@/lib/db/types";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
@@ -37,13 +37,12 @@ export default async function AdminCampaignsPage({
   const list = filter === "approved" ? approved : filter === "rejected" ? rejected : pending;
   const deletionRequests = all.filter((c) => c.deletionRequestedAt);
 
-  const brandNames = new Map<string, string>();
-  for (const c of [...deletionRequests, ...list]) {
-    if (!brandNames.has(c.brandProfileId)) {
-      const p = await getProfile(c.brandProfileId);
-      brandNames.set(c.brandProfileId, p?.orgName ?? p?.displayName ?? c.brandProfileId);
-    }
-  }
+  // One query for every brand shown, instead of a serial getProfile per row.
+  const brandIds = [...new Set([...deletionRequests, ...list].map((c) => c.brandProfileId))];
+  const brandProfiles = await getProfilesByIds(brandIds);
+  const brandNames = new Map(
+    brandProfiles.map((p) => [p.id, p.orgName ?? p.displayName ?? p.id] as const),
+  );
 
   return (
     <div className="space-y-6">

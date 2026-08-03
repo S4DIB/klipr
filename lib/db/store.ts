@@ -106,6 +106,10 @@ export function listProfiles(role?: Profile["role"]): Profile[] {
   const all = load().profiles;
   return role ? all.filter((p) => p.role === role) : all;
 }
+export function getProfilesByIds(ids: string[]): Profile[] {
+  const set = new Set(ids);
+  return load().profiles.filter((p) => set.has(p.id));
+}
 export function upsertProfile(p: Profile): Profile {
   const db = load();
   const i = db.profiles.findIndex((x) => x.id === p.id);
@@ -209,6 +213,10 @@ export function listCampaignsByBrand(brandProfileId: string): Campaign[] {
 export function getCampaign(id: string): Campaign | undefined {
   return load().campaigns.find((c) => c.id === id);
 }
+export function getCampaignsByIds(ids: string[]): Campaign[] {
+  const set = new Set(ids);
+  return load().campaigns.filter((c) => set.has(c.id));
+}
 export function upsertCampaign(c: Campaign): Campaign {
   const db = load();
   const i = db.campaigns.findIndex((x) => x.id === c.id);
@@ -258,6 +266,10 @@ export function listSubmissions(filter?: {
   if (filter?.profileId) rows = rows.filter((s) => s.profileId === filter.profileId);
   if (filter?.status) rows = rows.filter((s) => s.status === filter.status);
   return rows;
+}
+export function listSubmissionsForCampaigns(campaignIds: string[]): Submission[] {
+  const set = new Set(campaignIds);
+  return load().submissions.filter((s) => set.has(s.campaignId));
 }
 export function getSubmission(id: string): Submission | undefined {
   return load().submissions.find((s) => s.id === id);
@@ -416,6 +428,12 @@ export function listNotifications(profileId: string): Notification[] {
   return load()
     .notifications.filter((n) => n.profileId === profileId)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+export function listUnreadNotifications(profileId: string): Notification[] {
+  return load()
+    .notifications.filter((n) => n.profileId === profileId && !n.readAt)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 20);
 }
 export function markNotificationRead(id: string, profileId: string): void {
   const db = load();

@@ -34,6 +34,8 @@ export const getProfileByEmail = (email: string): Promise<Profile | undefined> =
   hasSupabase ? remote.getProfileByEmail(email) : Promise.resolve(local.getProfileByEmail(email));
 export const listProfiles = (role?: Profile["role"]): Promise<Profile[]> =>
   hasSupabase ? remote.listProfiles(role) : Promise.resolve(local.listProfiles(role));
+export const getProfilesByIds = (ids: string[]): Promise<Profile[]> =>
+  hasSupabase ? remote.getProfilesByIds(ids) : Promise.resolve(local.getProfilesByIds(ids));
 export const upsertProfile = (p: Profile): Promise<Profile> =>
   hasSupabase ? remote.upsertProfile(p) : Promise.resolve(local.upsertProfile(p));
 export const updateProfile = (id: string, patch: Partial<Profile>): Promise<Profile | undefined> =>
@@ -97,6 +99,8 @@ export const listCampaignsByBrand = (brandProfileId: string): Promise<Campaign[]
     : Promise.resolve(local.listCampaignsByBrand(brandProfileId));
 export const getCampaign = (id: string): Promise<Campaign | undefined> =>
   hasSupabase ? remote.getCampaign(id) : Promise.resolve(local.getCampaign(id));
+export const getCampaignsByIds = (ids: string[]): Promise<Campaign[]> =>
+  hasSupabase ? remote.getCampaignsByIds(ids) : Promise.resolve(local.getCampaignsByIds(ids));
 export const upsertCampaign = (c: Campaign): Promise<Campaign> =>
   hasSupabase ? remote.upsertCampaign(c) : Promise.resolve(local.upsertCampaign(c));
 export const updateCampaign = (id: string, patch: Partial<Campaign>): Promise<Campaign | undefined> =>
@@ -111,6 +115,10 @@ export const listSubmissions = (filter?: {
   status?: SubmissionStatus;
 }): Promise<Submission[]> =>
   hasSupabase ? remote.listSubmissions(filter) : Promise.resolve(local.listSubmissions(filter));
+export const listSubmissionsForCampaigns = (campaignIds: string[]): Promise<Submission[]> =>
+  hasSupabase
+    ? remote.listSubmissionsForCampaigns(campaignIds)
+    : Promise.resolve(local.listSubmissionsForCampaigns(campaignIds));
 export const getSubmission = (id: string): Promise<Submission | undefined> =>
   hasSupabase ? remote.getSubmission(id) : Promise.resolve(local.getSubmission(id));
 export const getSubmissionByUrl = (postUrl: string): Promise<Submission | undefined> =>
@@ -196,6 +204,10 @@ export const createNotification = (n: Notification): Promise<Notification> =>
   hasSupabase ? remote.createNotification(n) : Promise.resolve(local.createNotification(n));
 export const listNotifications = (profileId: string): Promise<Notification[]> =>
   hasSupabase ? remote.listNotifications(profileId) : Promise.resolve(local.listNotifications(profileId));
+export const listUnreadNotifications = (profileId: string): Promise<Notification[]> =>
+  hasSupabase
+    ? remote.listUnreadNotifications(profileId)
+    : Promise.resolve(local.listUnreadNotifications(profileId));
 export const markNotificationRead = (id: string, profileId: string): Promise<void> =>
   hasSupabase
     ? remote.markNotificationRead(id, profileId)
