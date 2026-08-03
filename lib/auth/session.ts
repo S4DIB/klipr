@@ -3,6 +3,7 @@
  * user (Google OAuth) and joins to the profile row. Without it, a cookie-based
  * stub identity so dev runs with no OAuth setup.
  */
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { hasSupabase } from "@/lib/env";
 import { getProfile, getProfileByEmail, upsertProfile, newId } from "@/lib/db";
@@ -12,7 +13,13 @@ import type { Profile } from "@/lib/db/types";
 
 const COOKIE = "klipr_uid";
 
-export async function currentUser(): Promise<Profile | null> {
+/**
+ * Wrapped in React `cache()` so the layout, the page, and any server action on
+ * the SAME request share one Auth round-trip + one profile query instead of
+ * repeating the whole chain each time `requireX()` is called. Request-scoped —
+ * the next request re-fetches, so there's no staleness.
+ */
+export const currentUser = cache(async (): Promise<Profile | null> => {
   if (hasSupabase) {
     const sb = await createSupabaseServer();
     const {
@@ -26,7 +33,7 @@ export async function currentUser(): Promise<Profile | null> {
   const id = jar.get(COOKIE)?.value;
   if (!id) return null;
   return (await getProfile(id)) ?? null;
-}
+});
 
 /** Stub-only: set the demo session cookie. */
 export async function setSession(profileId: string): Promise<void> {

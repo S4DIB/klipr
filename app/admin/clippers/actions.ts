@@ -16,9 +16,7 @@ export async function verifyNid(formData: FormData): Promise<void> {
 
   await updateProfile(profileId, { nidStatus: "verified" });
   const blocked = await listPayoutBatches({ profileId, status: "blocked_nid" });
-  for (const b of blocked) {
-    await updatePayoutBatch(b.id, { status: "queued" });
-  }
+  await Promise.all(blocked.map((b) => updatePayoutBatch(b.id, { status: "queued" })));
   revalidatePath("/admin/clippers");
   revalidatePath("/admin/payouts");
   revalidatePath("/wallet");

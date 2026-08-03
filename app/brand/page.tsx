@@ -1,7 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
-import { listCampaignsByBrand, listNotifications, listSubmissions } from "@/lib/db";
+import {
+  listCampaignsByBrand,
+  listSubmissionsForCampaigns,
+  listUnreadNotifications,
+} from "@/lib/db";
 import { dismissNotification } from "@/lib/notifications/actions";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
@@ -29,26 +33,25 @@ export default async function BrandOverviewPage() {
     b.createdAt.localeCompare(a.createdAt),
   );
 
-  // aggregates. No clipper identities, just performance
+  // aggregates. No clipper identities, just performance. One query for all
+  // campaigns' submissions instead of a serial query per campaign.
+  const subsAll = await listSubmissionsForCampaigns(campaigns.map((c) => c.id));
   const viewsByCampaign = new Map<string, number>();
-  for (const c of campaigns) {
-    const subs = await listSubmissions({ campaignId: c.id });
-    viewsByCampaign.set(
-      c.id,
-      subs
-        .filter((s) => s.status === "settled")
-        .reduce((a, s) => a + (s.lockedViews ?? 0), 0) +
-        subs
-          .filter((s) => s.status === "tracking" || s.status === "held")
-          .reduce((a, s) => a + s.countedViews, 0),
-    );
+  for (const s of subsAll) {
+    const add =
+      s.status === "settled"
+        ? (s.lockedViews ?? 0)
+        : s.status === "tracking" || s.status === "held"
+          ? s.countedViews
+          : 0;
+    viewsByCampaign.set(s.campaignId, (viewsByCampaign.get(s.campaignId) ?? 0) + add);
   }
   const active = campaigns.filter((c) => c.status === "active" || c.status === "settling");
   const escrowed = active.reduce((a, c) => a + (c.budgetPoisha - c.spentPoisha), 0);
   const spent = campaigns.reduce((a, c) => a + c.spentPoisha, 0);
   const reach = [...viewsByCampaign.values()].reduce((a, v) => a + v, 0);
 
-  const unread = (await listNotifications(user.id)).filter((n) => !n.readAt);
+  const unread = await listUnreadNotifications(user.id);
 
   return (
     <div className="flex flex-col gap-5">
