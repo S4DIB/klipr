@@ -1,7 +1,3 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { currentUser } from "@/lib/auth/session";
-import { routeFor, accessAllowed } from "@/lib/auth/guards";
 import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
 import { WaitlistModal } from "@/components/site/waitlist-modal";
@@ -17,20 +13,11 @@ import { Faq } from "@/components/landing/faq";
  * Every chapter ends pointing at the next; every CTA points at #waitlist.
  * The hero's world IS the page: one continuous Klipr Glass daylight field —
  * frosted ivory over soft brand-color pools — matching the product app. */
-export default async function Home() {
-  // Logged-in users get the product, not the marketing page — straight to their
-  // app home (or onboarding if they haven't finished setup). Anonymous visitors
-  // (most landing traffic) skip the auth chain entirely — only pay it if an auth
-  // cookie is present.
-  const jar = await cookies();
-  const mightBeLoggedIn = jar
-    .getAll()
-    .some((c) => (c.name.startsWith("sb-") && c.name.includes("-auth-token")) || c.name === "klipr_uid");
-  if (mightBeLoggedIn) {
-    const user = await currentUser();
-    if (user && accessAllowed(user)) redirect(routeFor(user));
-  }
-
+export default function Home() {
+  // Fully static — no request APIs, so this renders once at build time and the
+  // server just streams the cached HTML (ad traffic never pays an SSR render).
+  // Logged-in visitors are bounced to the app by the proxy (see proxy.ts),
+  // which hands them to /login's routeFor dispatch.
   return (
     <>
       {/* landing-only: the canvas behind overscroll matches the product's neutral surface */}

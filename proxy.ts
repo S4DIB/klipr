@@ -18,6 +18,21 @@ function toLogin(req: NextRequest) {
 }
 
 export async function proxy(req: NextRequest) {
+  // Landing page: inverse gate. `/` is fully static, so anonymous visitors
+  // (virtually all ad/landing traffic) must pass through untouched with zero
+  // auth work. Only a request carrying a session cookie pays a verification,
+  // and a live session bounces to /login, whose routeFor dispatch places the
+  // user in the app. Stale cookies fall through to the landing page.
+  const isLanding = req.nextUrl.pathname === "/";
+  if (isLanding) {
+    const hasSessionCookie = hasSupabase
+      ? req.cookies
+          .getAll()
+          .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"))
+      : Boolean(req.cookies.get(COOKIE)?.value);
+    if (!hasSessionCookie) return NextResponse.next();
+  }
+
   if (hasSupabase) {
     let res = NextResponse.next({ request: req });
     const supabase = createServerClient(
@@ -41,15 +56,20 @@ export async function proxy(req: NextRequest) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    if (isLanding) {
+      return user ? NextResponse.redirect(new URL("/login", req.url)) : res;
+    }
     return user ? res : toLogin(req);
   }
 
   // stub mode
+  if (isLanding) return NextResponse.redirect(new URL("/login", req.url));
   return req.cookies.get(COOKIE)?.value ? NextResponse.next() : toLogin(req);
 }
 
 export const config = {
   matcher: [
+    "/",
     "/apply/:path*",
     "/home/:path*",
     "/campaigns/:path*",

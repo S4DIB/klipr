@@ -1,5 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { currentUser } from "@/lib/auth/session";
+import { routeFor, accessAllowed } from "@/lib/auth/guards";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { GoogleGlyph } from "@/components/ui/google-glyph";
@@ -22,6 +25,13 @@ export default async function LoginPage({
 }) {
   const { error } = await searchParams;
   const message = error ? ERRORS[error] : undefined;
+
+  // Already signed in with access? Straight to the app — this also serves as
+  // the dispatch target for the proxy's landing-page bounce, which keeps `/`
+  // itself fully static. Not-approved sessions fall through to the form
+  // (routeFor would send them back here anyway, just with the error banner).
+  const user = await currentUser();
+  if (user && accessAllowed(user)) redirect(routeFor(user));
 
   return (
     <div className="relative min-h-dvh overflow-x-clip">
