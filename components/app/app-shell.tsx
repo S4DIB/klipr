@@ -391,7 +391,7 @@ export function AppShell({
           </header>
 
           <div className="app-canvas" data-lenis-prevent>
-            <main className="mx-auto w-full max-w-[1220px] px-5 pb-[96px] pt-6 md:px-8 md:py-8">
+            <main className="mx-auto w-full max-w-[1440px] px-5 pb-[96px] pt-6 md:px-8 md:py-8">
               {children}
             </main>
           </div>
