@@ -11,6 +11,7 @@ import {
 } from "@/lib/db";
 import { Sparkline } from "@/components/ui/sparkline";
 import { StatusChip } from "@/components/app/status-chip";
+import { TierBadge } from "@/components/app/tier-badge";
 import { clipperAccount } from "@/lib/ledger";
 import { nextTier } from "@/lib/xp";
 import { GlassPanel } from "@/components/app/glass-panel";
@@ -152,10 +153,17 @@ export default async function HomePage() {
 
   const upcoming = nextTier(user.tier);
   const xpPct = upcoming ? Math.min(100, Math.round((user.xpTotal / upcoming.threshold) * 100)) : 100;
-  const tierLabel = user.tier.charAt(0).toUpperCase() + user.tier.slice(1);
   const nextLabel = upcoming
     ? upcoming.tier.charAt(0).toUpperCase() + upcoming.tier.slice(1)
     : undefined;
+
+  const firstName = (user.firstName ?? user.displayName).trim().split(/\s+/)[0] || "there";
+  const initial = (user.displayName || "K").trim().charAt(0).toUpperCase();
+  const joined = new Date(user.createdAt).toLocaleDateString("en-US", {
+    timeZone: "Asia/Dhaka",
+    month: "short",
+    year: "numeric",
+  });
 
   const stats = [
     { label: "Pages", value: String(activePages) },
@@ -167,42 +175,97 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-col gap-5 lg:max-w-none">
+      {/* profile header — cover · avatar · greeting · XP · stats */}
+      <GlassPanel className="overflow-hidden">
+        <div className="field-cover relative h-[112px] sm:h-[148px]">
+          <div className="dot-grid absolute inset-0" aria-hidden="true" />
+        </div>
+
+        <div className="relative px-5 pb-5 sm:px-7 sm:pb-6">
+          {/* avatar — straddles the cover edge */}
+          <span className="absolute -top-[44px] left-5 flex h-[88px] w-[88px] items-center justify-center overflow-hidden rounded-full bg-volt-600 font-mono text-[32px] text-yellow shadow-[0_12px_28px_-10px_rgba(31,3,53,0.35)] ring-4 ring-white sm:-top-[52px] sm:left-7 sm:h-[104px] sm:w-[104px] sm:text-[38px]">
+            {user.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
+            ) : (
+              initial
+            )}
+          </span>
+
+          {/* spacer row beside the avatar — the quiet action lives here */}
+          <div className="flex min-h-[44px] items-start justify-end sm:min-h-[52px]">
+            <Button href="/settings" variant="ghost" className="mt-2.5 h-9 px-4 text-[13px] sm:mt-3 sm:h-10 sm:px-5 sm:text-[13.5px]">
+              Edit profile
+            </Button>
+          </div>
+
+          <h1 className="mt-2 text-[22px] font-extrabold leading-[1.15] tracking-[-0.02em] text-ink-900 sm:text-[26px]">
+            Welcome back, <span className="text-violet-600">{firstName}</span>
+          </h1>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <TierBadge tier={user.tier} />
+            {user.streakWeeks > 0 ? (
+              <span className="flex items-center gap-1.5 text-[12px] font-bold text-warning-600">
+                <span className="flame" aria-hidden="true">
+                  <IconFire size={15} strokeWidth={1.4} />
+                </span>
+                {user.streakWeeks}-week streak
+              </span>
+            ) : null}
+            <span className="text-[12.5px] text-ink-500">Joined {joined}</span>
+          </div>
+
+          {/* tier progress */}
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div
+              className="glass-well h-2 min-w-[140px] flex-1 overflow-hidden rounded-full"
+              role="progressbar"
+              aria-valuenow={user.xpTotal}
+              aria-valuemin={0}
+              aria-valuemax={upcoming?.threshold ?? user.xpTotal}
+              aria-label={nextLabel ? `XP progress to ${nextLabel}` : "XP"}
+            >
+              <div
+                className="h-full rounded-full bg-[linear-gradient(90deg,var(--yellow),#ecf230)]"
+                style={{ width: `${xpPct}%` }}
+              />
+            </div>
+            <span className="font-mono text-[12px] text-ink-500 [font-variant-numeric:tabular-nums]">
+              <span className="font-semibold text-ink-900">
+                {user.xpTotal.toLocaleString("en-US")}
+              </span>
+              {upcoming ? (
+                <> / {upcoming.threshold.toLocaleString("en-US")} XP to {nextLabel}</>
+              ) : (
+                <> XP</>
+              )}
+            </span>
+          </div>
+
+          {/* stats strip */}
+          <div className="mt-5 grid grid-cols-3 gap-y-4 border-t border-[rgba(53,5,90,0.07)] pt-4 sm:grid-cols-5">
+            {stats.map((s, i) => (
+              <div
+                key={s.label}
+                className={
+                  "px-2 text-center sm:border-l sm:border-[rgba(53,5,90,0.07)]" +
+                  (i === 0 ? " sm:border-l-0" : "")
+                }
+              >
+                <p className="font-mono text-[19px] font-bold tracking-[-0.02em] text-ink-900 [font-variant-numeric:tabular-nums] sm:text-[21px]">
+                  {s.value}
+                </p>
+                <p className="mt-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-400">
+                  {s.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </GlassPanel>
+
       {/* getting-started checklist — new accounts only, hides when complete */}
       <SetupChecklist steps={setupSteps} />
-
-      {/* xp strip. Thin tier progress bar */}
-      <GlassPanel className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
-        <span className="text-[15px] font-extrabold tracking-[-0.01em] text-ink-900">
-          {tierLabel}
-        </span>
-        <div
-          className="glass-well h-2 min-w-[140px] flex-1 overflow-hidden rounded-full"
-          role="progressbar"
-          aria-valuenow={user.xpTotal}
-          aria-valuemin={0}
-          aria-valuemax={upcoming?.threshold ?? user.xpTotal}
-          aria-label={nextLabel ? `XP progress to ${nextLabel}` : "XP"}
-        >
-          <div
-            className="h-full rounded-full bg-[linear-gradient(90deg,var(--yellow),#ecf230)]"
-            style={{ width: `${xpPct}%` }}
-          />
-        </div>
-        <span className="font-mono text-[12px] text-ink-500 [font-variant-numeric:tabular-nums]">
-          <span className="font-semibold text-ink-900">
-            {user.xpTotal.toLocaleString("en-US")}
-          </span>
-          {upcoming ? <> / {upcoming.threshold.toLocaleString("en-US")} XP</> : <> XP</>}
-        </span>
-        {user.streakWeeks > 0 ? (
-          <span className="flex items-center gap-1.5 text-[12px] font-bold text-warning-600">
-            <span className="flame" aria-hidden="true">
-              <IconFire size={15} strokeWidth={1.4} />
-            </span>
-            {user.streakWeeks}-week streak
-          </span>
-        ) : null}
-      </GlassPanel>
 
       {/* quick actions */}
       <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
@@ -218,31 +281,6 @@ export default async function HomePage() {
           </Link>
         ))}
       </div>
-
-      {/* my stats */}
-      <section>
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-[20px] font-extrabold tracking-[-0.02em] text-ink-900">
-              My stats
-            </h2>
-            <p className="text-[13px] text-ink-500">Post clips and watch your stats grow</p>
-          </div>
-          <Button href="/connections" variant="secondary" className="h-10 px-5 text-[13.5px]">
-            Connect accounts
-          </Button>
-        </div>
-        <div className="mt-3.5 grid grid-cols-2 gap-[14px] sm:grid-cols-3 lg:grid-cols-5">
-          {stats.map((s) => (
-            <GlassPanel key={s.label} className="p-4">
-              <p className="text-[13.5px] font-semibold text-ink-700">{s.label}</p>
-              <p className="mt-5 text-right font-mono text-[24px] font-bold text-ink-900 [font-variant-numeric:tabular-nums]">
-                {s.value}
-              </p>
-            </GlassPanel>
-          ))}
-        </div>
-      </section>
 
       {/* video analytics — real snapshot curves, never fabricated */}
       <section>

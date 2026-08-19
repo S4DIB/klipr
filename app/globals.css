@@ -455,6 +455,18 @@ body {
     #fffff4;
 }
 
+/* Profile cover — the field-app colour pools condensed into a header band.
+   Sits behind the avatar on the /home profile header. */
+.field-cover {
+  background:
+    radial-gradient(40rem 22rem at 8% -30%,  rgba(255, 123, 192, 0.55), transparent 60%),
+    radial-gradient(36rem 20rem at 46% -25%, rgba(167, 255, 219, 0.5),  transparent 58%),
+    radial-gradient(34rem 20rem at 90% -12%, rgba(152, 52, 226, 0.45),  transparent 58%),
+    radial-gradient(30rem 18rem at 70% 135%, rgba(20, 249, 197, 0.42),  transparent 56%),
+    radial-gradient(24rem 16rem at 12% 125%, rgba(250, 255, 71, 0.5),   transparent 52%),
+    #efe8f6;
+}
+
 /* e1 — standard glass card */
 .glass {
   background: var(--glass-bg);
