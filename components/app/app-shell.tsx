@@ -382,7 +382,7 @@ export function AppShell({
               {cta ? (
                 <Link
                   href={cta.href}
-                  className="flex h-10 items-center rounded-full border border-[rgba(125,4,215,0.3)] bg-white px-5 text-[14px] font-bold text-violet-700 transition-colors hover:bg-[rgba(125,4,215,0.06)]"
+                  className="flex h-10 items-center whitespace-nowrap rounded-full border border-[rgba(125,4,215,0.3)] bg-white px-5 text-[14px] font-bold text-violet-700 transition-colors hover:bg-[rgba(125,4,215,0.06)]"
                 >
                   {cta.label}
                 </Link>

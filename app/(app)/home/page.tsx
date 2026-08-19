@@ -174,7 +174,7 @@ export default async function HomePage() {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-[480px] flex-col gap-5 lg:max-w-none">
+    <div className="mx-auto flex w-full max-w-[480px] flex-col gap-5 sm:max-w-none">
       {/* profile header — cover · avatar · greeting · XP · stats */}
       <GlassPanel className="overflow-hidden">
         <div className="field-cover relative h-[112px] sm:h-[148px]">
@@ -252,7 +252,7 @@ export default async function HomePage() {
                   (i === 0 ? " sm:border-l-0" : "")
                 }
               >
-                <p className="font-mono text-[19px] font-bold tracking-[-0.02em] text-ink-900 [font-variant-numeric:tabular-nums] sm:text-[21px]">
+                <p className="font-mono text-[17px] font-bold tracking-[-0.02em] text-ink-900 [font-variant-numeric:tabular-nums] sm:text-[19px] xl:text-[21px]">
                   {s.value}
                 </p>
                 <p className="mt-0.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-400">
