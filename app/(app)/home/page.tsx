@@ -15,6 +15,7 @@ import { TierBadge } from "@/components/app/tier-badge";
 import { clipperAccount } from "@/lib/ledger";
 import { nextTier } from "@/lib/xp";
 import { GlassPanel } from "@/components/app/glass-panel";
+import { CoverControls } from "./cover-controls";
 import { SetupChecklist } from "@/components/app/setup-checklist";
 import { Button } from "@/components/ui/button";
 import {
@@ -178,7 +179,7 @@ export default async function HomePage() {
       {/* profile header — cover · avatar · greeting · XP · stats */}
       <GlassPanel className="overflow-hidden">
         <div className="field-cover relative h-[112px] sm:h-[148px]">
-          <div className="dot-grid absolute inset-0" aria-hidden="true" />
+          <CoverControls coverUrl={user.coverUrl} />
         </div>
 
         <div className="relative px-5 pb-5 sm:px-7 sm:pb-6">

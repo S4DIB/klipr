@@ -31,6 +31,7 @@ import type { LedgerDraft } from "@/lib/ledger";
 
 const toProfile = (r: any): Profile => ({
   id: r.id, email: r.email, displayName: r.display_name, avatarUrl: r.avatar_url ?? undefined,
+  coverUrl: r.cover_url ?? undefined,
   firstName: r.first_name ?? undefined, lastName: r.last_name ?? undefined,
   username: r.username ?? undefined, location: r.location ?? undefined,
   postLanguages: r.post_languages ?? undefined,
@@ -46,6 +47,7 @@ const toProfile = (r: any): Profile => ({
 });
 const fromProfile = (p: Profile) => ({
   id: p.id, email: p.email, display_name: p.displayName, avatar_url: p.avatarUrl ?? null,
+  cover_url: p.coverUrl ?? null,
   first_name: p.firstName ?? null, last_name: p.lastName ?? null,
   username: p.username ?? null, location: p.location ?? null,
   post_languages: p.postLanguages ?? null,

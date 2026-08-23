@@ -26,6 +26,8 @@ export interface Profile {
   email: string;
   displayName: string;
   avatarUrl?: string;
+  /** Custom /home profile-header cover photo; unset falls back to the gradient. */
+  coverUrl?: string;
   /** Personal details (settings). displayName is kept as `${firstName} ${lastName}`. */
   firstName?: string;
   lastName?: string;
