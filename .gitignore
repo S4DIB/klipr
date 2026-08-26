@@ -43,6 +43,9 @@ next-env.d.ts
 # local file store
 .data/
 
+# stub-mode uploads (real ones live in Supabase Storage)
+/public/uploads/
+
 # brand source + business docs (kept out of the code repo; app assets live in public/brand/)
 /Klipr/
 /*.pdf

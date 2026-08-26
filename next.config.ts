@@ -17,6 +17,14 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      // Campaign covers (and profile covers) upload through a server action, so
+      // the default 1 MB action body would reject anything but a tiny image.
+      // Ceiling sits just above the 30 MB video cap enforced in lib/media/cover.
+      bodySizeLimit: "32mb",
+    },
+  },
   images: {
     // Remote avatars/thumbnails read via the verification engine.
     remotePatterns: [

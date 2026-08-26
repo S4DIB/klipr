@@ -8,6 +8,7 @@ import { NICHES, PLATFORMS, PLATFORM_ORDER } from "@/lib/platforms";
 import { cn } from "@/lib/cn";
 import { poishaToTaka } from "@/lib/money";
 import { dhakaDateInput } from "@/lib/format";
+import { CoverPicker } from "./cover-picker";
 import { createCampaign, editCampaign, type NewCampaignState } from "./actions";
 import type { Campaign, Platform } from "@/lib/db/types";
 
@@ -284,6 +285,10 @@ export function CampaignForm({
                 placeholder={"Keep the supplied audio\nNo political or edited-price claims"}
                 className={cn(control, "min-h-[72px] resize-y leading-[1.5]")}
               />
+            </div>
+            <div>
+              <VLabel>Cover · picture or video</VLabel>
+              <CoverPicker control={control} existingUrl={campaign?.coverUrl} />
             </div>
             <div>
               <VLabel>Clip asset</VLabel>
