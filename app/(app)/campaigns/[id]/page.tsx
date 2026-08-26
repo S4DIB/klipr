@@ -60,11 +60,12 @@ export default async function CampaignDetailPage({
 
       <div className="mt-[14px] flex flex-col gap-[14px] lg:grid lg:grid-cols-[1fr_360px] lg:items-start lg:gap-5">
         <div className="flex min-w-0 flex-col gap-[14px]">
-      {/* cover — the supplied clip's art (placeholder until a brand uploads real media) */}
+      {/* cover — the brand's uploaded still or clip (placeholder until there is one) */}
       <CampaignCover
         coverUrl={campaign.coverUrl}
         seed={campaign.id}
         rounded="all"
+        autoPlay
         className="shadow-[var(--shadow-md)]"
       />
 

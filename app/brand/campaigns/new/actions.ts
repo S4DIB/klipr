@@ -22,6 +22,7 @@ import {
 import { takaToPoisha } from "@/lib/money";
 import { endOfDhakaDay } from "@/lib/format";
 import { normalizeUrl } from "@/lib/url";
+import { resolveCoverPatch } from "@/lib/storage/campaign-cover";
 import { NICHES } from "@/lib/platforms";
 
 const schema = z.object({
@@ -140,6 +141,10 @@ export async function createCampaign(
     createdAt: now.toISOString(),
   });
 
+  // after upsert: the cover path is namespaced by the campaign id
+  const cover = await resolveCoverPatch(formData, id);
+  if (cover) await updateCampaign(id, cover);
+
   revalidatePath("/brand");
   revalidatePath("/admin/campaigns");
   redirect(`/brand/campaigns/${id}`);
@@ -168,7 +173,10 @@ export async function editCampaign(
   if (!parsed.ok) return { error: parsed.error };
   const { data: d, platforms, endIso } = parsed;
 
+  const cover = await resolveCoverPatch(formData, id);
+
   await updateCampaign(id, {
+    ...cover,
     name: d.name,
     brief: d.brief,
     guidelines: d.guidelines ?? "",
@@ -184,6 +192,8 @@ export async function editCampaign(
 
   revalidatePath("/brand");
   revalidatePath("/admin/campaigns");
+  revalidatePath("/campaigns");
+  revalidatePath(`/campaigns/${id}`);
   revalidatePath(`/brand/campaigns/${id}`);
   revalidatePath(`/admin/campaigns/${id}`);
   redirect(auth.user.role === "admin" ? `/admin/campaigns/${id}` : `/brand/campaigns/${id}`);
