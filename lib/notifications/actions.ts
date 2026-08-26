@@ -7,7 +7,7 @@ import { markAllNotificationsRead, markNotificationRead } from "@/lib/db";
 function refresh() {
   // The bell lives in every shell; refresh each role's landing surface.
   revalidatePath("/brand");
-  revalidatePath("/home");
+  revalidatePath("/dashboard");
   revalidatePath("/admin");
 }
 

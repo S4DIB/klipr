@@ -36,7 +36,7 @@ export async function settleClip(
   revalidatePath("/admin/clips");
   revalidatePath("/admin");
   revalidatePath("/clips");
-  revalidatePath("/home");
+  revalidatePath("/dashboard");
   return {
     ok: outcome.zero
       ? "Settled at ৳0 — below the campaign minimum."

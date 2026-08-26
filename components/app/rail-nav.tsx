@@ -17,6 +17,7 @@ import {
   IconClock,
   IconFlag,
   IconSend,
+  IconProfile,
   type IconProps,
 } from "@/components/icons";
 
@@ -37,7 +38,8 @@ export interface RailItem {
     | "gear"
     | "clock"
     | "flag"
-    | "send";
+    | "send"
+    | "profile";
 }
 
 const ICONS: Record<RailItem["icon"], (p: IconProps) => React.ReactNode> = {
@@ -54,6 +56,7 @@ const ICONS: Record<RailItem["icon"], (p: IconProps) => React.ReactNode> = {
   clock: IconClock,
   flag: IconFlag,
   send: IconSend,
+  profile: IconProfile,
 };
 
 /**

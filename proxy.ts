@@ -71,7 +71,8 @@ export const config = {
   matcher: [
     "/",
     "/apply/:path*",
-    "/home/:path*",
+    "/dashboard/:path*",
+    "/profile/:path*",
     "/campaigns/:path*",
     "/clips/:path*",
     "/wallet/:path*",

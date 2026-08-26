@@ -201,7 +201,7 @@ export default function StyleguidePage() {
       {/* Mobile tab bar demo */}
       <TabBar
         items={[
-          { href: "/home", label: "Home", icon: "home" },
+          { href: "/dashboard", label: "Dash", icon: "home" },
           { href: "/campaigns", label: "Drops", icon: "campaigns" },
           { href: "/styleguide", label: "Submit", icon: "upload", center: true },
           { href: "/wallet", label: "Wallet", icon: "wallet" },
