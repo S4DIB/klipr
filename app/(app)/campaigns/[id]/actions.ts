@@ -128,6 +128,6 @@ export async function submitClip(_prev: SubmitState, formData: FormData): Promis
 
   revalidatePath(`/campaigns/${campaignId}`);
   revalidatePath("/clips");
-  revalidatePath("/home");
+  revalidatePath("/dashboard");
   return { ok: true };
 }

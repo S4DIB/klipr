@@ -48,6 +48,6 @@ export async function markPaid(
 
   revalidatePath("/admin/payouts");
   revalidatePath("/wallet");
-  revalidatePath("/home");
+  revalidatePath("/dashboard");
   return {};
 }

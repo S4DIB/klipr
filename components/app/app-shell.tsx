@@ -17,19 +17,21 @@ type ShellRole = "clipper" | "agency" | "brand" | "admin";
 
 const RAIL: Record<ShellRole, RailItem[]> = {
   clipper: [
-    { href: "/home", label: "Home", icon: "home" },
+    { href: "/dashboard", label: "Dashboard", icon: "home" },
     { href: "/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/clips", label: "My clips", icon: "graph" },
     { href: "/wallet", label: "Wallet", icon: "wallet" },
     { href: "/leaderboard", label: "Leaderboard", icon: "trophy" },
     { href: "/connections", label: "Connected accounts", icon: "users" },
+    { href: "/profile", label: "Profile", icon: "profile" },
   ],
   agency: [
-    { href: "/home", label: "Home", icon: "home" },
+    { href: "/dashboard", label: "Dashboard", icon: "home" },
     { href: "/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/clips", label: "Clips", icon: "graph" },
     { href: "/wallet", label: "Wallet", icon: "wallet" },
     { href: "/connections", label: "Network", icon: "users" },
+    { href: "/profile", label: "Profile", icon: "profile" },
   ],
   brand: [
     { href: "/brand", label: "Overview", icon: "chart" },
@@ -54,18 +56,18 @@ const RAIL: Record<ShellRole, RailItem[]> = {
 /* Mobile tab bars. Admin has none — desktop-first ops; mobile gets a nav strip. */
 const TABS: Record<ShellRole, TabItem[]> = {
   clipper: [
-    { href: "/home", label: "Home", icon: "home" },
+    { href: "/dashboard", label: "Dash", icon: "home" },
     { href: "/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/campaigns", label: "Submit", icon: "upload", center: true },
     { href: "/clips", label: "Clips", icon: "graph" },
-    { href: "/wallet", label: "Wallet", icon: "wallet" },
+    { href: "/profile", label: "Profile", icon: "profile" },
   ],
   agency: [
-    { href: "/home", label: "Home", icon: "home" },
+    { href: "/dashboard", label: "Dash", icon: "home" },
     { href: "/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/campaigns", label: "Submit", icon: "upload", center: true },
     { href: "/connections", label: "Network", icon: "users" },
-    { href: "/wallet", label: "Wallet", icon: "wallet" },
+    { href: "/profile", label: "Profile", icon: "profile" },
   ],
   brand: [
     { href: "/brand", label: "Overview", icon: "chart" },
@@ -189,7 +191,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   const unread = (notifications ?? []).filter((n) => !n.readAt);
-  const homeHref = role === "brand" ? "/brand" : role === "admin" ? "/admin" : "/home";
+  const homeHref = role === "brand" ? "/brand" : role === "admin" ? "/admin" : "/dashboard";
   // admin has no settings surface — its account menus offer "Sign out" only
   const settingsHref =
     role === "brand" ? "/brand/settings" : role === "admin" ? undefined : "/settings";

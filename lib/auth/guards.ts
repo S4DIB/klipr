@@ -55,6 +55,6 @@ export function routeFor(user: Profile): string {
   if (user.role === "admin") return "/admin";
   if (user.role === "brand") return user.profileCompleted ? "/brand" : "/onboarding";
   // clipper / agency — active only (anyone else is refused at sign-in)
-  if (user.access === "active") return user.profileCompleted ? "/home" : "/onboarding";
+  if (user.access === "active") return user.profileCompleted ? "/dashboard" : "/onboarding";
   return "/login?error=not_approved";
 }

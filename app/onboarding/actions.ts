@@ -221,7 +221,7 @@ export async function saveBkash(
     profileCompleted: true,
     onboardingStep: 99,
   });
-  redirect("/home");
+  redirect("/dashboard");
 }
 
 /* ── Brand onboarding: 0 business · 1 details · 2 finish ── */

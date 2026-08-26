@@ -28,6 +28,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  async redirects() {
+    // /home split into /dashboard (the working surface) and /profile (identity).
+    // Keeps old bookmarks and any shared links alive.
+    return [{ source: "/home", destination: "/dashboard", permanent: true }];
+  },
 };
 
 export default nextConfig;

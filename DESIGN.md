@@ -69,9 +69,13 @@ untouched; its redesign plan lives in `LANDING-REDESIGN.md`.
 - `/` landing · `/login` (Google or 5 stub identities) · `/apply` + `/apply/status`
   (the application) · `/onboarding` (post-approval: connect vetted pages →
   bKash → tier welcome)
-- `(app)/`: `/home`, `/campaigns`, `/campaigns/[id]`, `/clips`, `/clips/[id]`,
-  `/wallet`, `/connections`, `/settings`, `/leaderboard` — clipper + agency
-  (gated: role ∈ {clipper, agency} AND access === "active")
+- `(app)/`: `/dashboard` (the working surface: checklist, quick actions,
+  analytics, wallet, top clips), `/profile` (cover · avatar · tier · stats +
+  personal info), `/campaigns`, `/campaigns/[id]`, `/clips`, `/clips/[id]`,
+  `/wallet`, `/connections`, `/settings` (payouts · notifications · identity ·
+  close), `/leaderboard` — clipper + agency
+  (gated: role ∈ {clipper, agency} AND access === "active").
+  `/home` 308s to `/dashboard` for old links.
 - `/brand`: overview, `campaigns/new` (wizard), `campaigns/[id]`, `billing`,
   `settings`
 - `/admin`: ops home + sweep trigger, `applications` (vetting console),

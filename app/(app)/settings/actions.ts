@@ -39,6 +39,7 @@ export async function updateProfileInfo(
     postLanguages,
   });
   revalidatePath("/settings");
+  revalidatePath("/profile");
   revalidatePath("/leaderboard");
   return { ok: true };
 }
@@ -70,6 +71,7 @@ export async function updateNotifications(
     leaderboardOptOut: formData.get("leaderboardOptOut") === "on",
   });
   revalidatePath("/settings");
+  revalidatePath("/profile");
   revalidatePath("/leaderboard");
   return { ok: true };
 }
