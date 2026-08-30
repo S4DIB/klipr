@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { IconUpload, IconX } from "@/components/icons";
-import { removeCover, updateCover } from "./actions";
+import { removeCover, updateCover } from "@/lib/profile/cover-actions";
 
 const chip =
   "flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-[rgba(255,255,255,0.78)] px-3 text-[12.5px] font-semibold text-ink-700 shadow-[0_4px_14px_-6px_rgba(31,3,53,0.35)] ring-1 ring-[rgba(53,5,90,0.12)] backdrop-blur transition-colors hover:bg-white";

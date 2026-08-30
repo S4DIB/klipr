@@ -39,6 +39,7 @@ const RAIL: Record<ShellRole, RailItem[]> = {
     { href: "/brand/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/brand/billing", label: "Billing", icon: "bkash" },
     { href: "/brand/settings", label: "Settings", icon: "gear" },
+    { href: "/brand/profile", label: "Profile", icon: "profile" },
   ],
   admin: [
     { href: "/admin", label: "Ops home", icon: "home" },
@@ -74,7 +75,7 @@ const TABS: Record<ShellRole, TabItem[]> = {
     { href: "/brand/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/brand/campaigns/new", label: "New", icon: "upload", center: true },
     { href: "/brand/billing", label: "Billing", icon: "bkash" },
-    { href: "/brand/settings", label: "Settings", icon: "gear" },
+    { href: "/brand/profile", label: "Profile", icon: "profile" },
   ],
   admin: [],
 };

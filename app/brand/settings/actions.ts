@@ -51,6 +51,7 @@ export async function updateBrandCompany(
   });
 
   revalidatePath("/brand/settings");
+  revalidatePath("/brand/profile");
   revalidatePath("/brand");
   return { ok: true };
 }
@@ -74,6 +75,7 @@ export async function updateBrandContact(
   });
 
   revalidatePath("/brand/settings");
+  revalidatePath("/brand/profile");
   revalidatePath("/brand");
   return { ok: true };
 }

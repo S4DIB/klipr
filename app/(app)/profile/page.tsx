@@ -10,7 +10,7 @@ import { TierBadge } from "@/components/app/tier-badge";
 import { clipperAccount } from "@/lib/ledger";
 import { nextTier } from "@/lib/xp";
 import { GlassPanel } from "@/components/app/glass-panel";
-import { CoverControls } from "./cover-controls";
+import { CoverControls } from "@/components/app/cover-controls";
 import { PersonalPanel } from "@/app/(app)/settings/personal-form";
 import { Button } from "@/components/ui/button";
 import { IconFire } from "@/components/icons";
