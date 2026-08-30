@@ -46,6 +46,8 @@ export function buildFundingEvent(campaignId: string, budgetPoisha: number): Led
  * A submission settles: escrow −brandCost · clipper +earn · margin +spread.
  * eventId `settle:{submissionId}` — re-running a sweep is a no-op.
  * Returns [] for a ৳0 settlement (below minimum / caps) — nothing to book.
+ * Gated on `paid`, not on views: a per-video settlement pays a flat amount and
+ * books zero payable views.
  */
 export function buildSettlementEvent(args: {
   submissionId: string;
@@ -55,7 +57,7 @@ export function buildSettlementEvent(args: {
   memo?: string;
 }): LedgerDraft[] {
   const { submissionId, campaignId, profileId, math, memo } = args;
-  if (math.payableViews === 0) return [];
+  if (!math.paid) return [];
   return event(`settle:${submissionId}`, "settlement", [
     {
       account: escrowAccount(campaignId),

@@ -16,6 +16,13 @@ export type Access = "none" | "waitlisted" | "active" | "declined";
 
 export type Tier = "beginner" | "hustler" | "pro" | "elite";
 
+/**
+ * How a campaign pays. "views" is the original model — a per-1,000-verified-
+ * views rate. "per_video" pays a flat amount for each accepted video that
+ * clears minQualifyViews, so the brand's cost per clip is known up front.
+ */
+export type PayoutModel = "views" | "per_video";
+
 /** ৳50 per 1,000 verified views — identical at every tier, forever. */
 export const RATE_CLIPPER_PER_1K = 5000; // poisha
 /** ৳60 per 1,000 verified views (campaigns snapshot this; future tiered client rates change the snapshot, never the clipper rate). */
@@ -143,6 +150,14 @@ export interface Campaign {
   allowedPlatforms: Platform[];
   sourceUrl: string;
   coverUrl?: string;
+  /** Pre-per-video campaigns read back as "views". */
+  payoutModel: PayoutModel;
+  /**
+   * per_video only — flat amounts snapshotted at create time, exactly like the
+   * per-1k rates, so editing platform pricing never re-prices a live campaign.
+   */
+  perVideoClipperPoisha?: number;
+  perVideoBrandPoisha?: number;
   /** Escrow ceiling. */
   budgetPoisha: number;
   /** Brand-side accrual, updated at each settlement. */

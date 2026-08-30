@@ -17,9 +17,10 @@ import {
   RATE_CLIPPER_PER_1K,
   type Campaign,
   type CampaignStatus,
+  type PayoutModel,
   type Platform,
 } from "@/lib/db/types";
-import { takaToPoisha } from "@/lib/money";
+import { brandCostForClipperPayout, takaToPoisha } from "@/lib/money";
 import { endOfDhakaDay } from "@/lib/format";
 import { normalizeUrl } from "@/lib/url";
 import { resolveCoverPatch } from "@/lib/storage/campaign-cover";
@@ -34,6 +35,9 @@ const schema = z.object({
     (v) => (typeof v === "string" ? normalizeUrl(v) : v),
     z.string().url("Link the exact clip file clippers will post"),
   ),
+  payoutModel: z.enum(["views", "per_video"]),
+  /** per_video only — what a clipper earns for one accepted video. */
+  perVideoTaka: z.coerce.number().int().min(50, "At least ৳50 per video").max(1_000_000).optional(),
   budgetTaka: z.coerce.number().int().min(5_000, "Minimum budget is ৳5,000").max(10_000_000),
   minQualifyViews: z.coerce.number().int().min(2_000).max(4_000),
   maxPerClipperTaka: z.coerce.number().int().min(500, "At least ৳500 per clipper").max(1_000_000),
@@ -60,6 +64,8 @@ function parseCampaignForm(
   const parsed = schema.safeParse({
     name: formData.get("name"),
     niche: formData.get("niche"),
+    payoutModel: formData.get("payoutModel") || "views",
+    perVideoTaka: formData.get("perVideoTaka") || undefined,
     brief: formData.get("brief"),
     guidelines: formData.get("guidelines") || undefined,
     sourceUrl: formData.get("sourceUrl"),
@@ -73,11 +79,31 @@ function parseCampaignForm(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
   }
 
+  if (parsed.data.payoutModel === "per_video" && !parsed.data.perVideoTaka) {
+    return { ok: false, error: "Set what one accepted video pays." };
+  }
+
   const endIso = endOfDhakaDay(parsed.data.endDate);
   if (endIso <= new Date().toISOString()) {
     return { ok: false, error: "End date must be in the future." };
   }
   return { ok: true, data: parsed.data, platforms, endIso };
+}
+
+/**
+ * The payout fields to store. Views campaigns carry no flat amounts; per-video
+ * campaigns snapshot both sides of the platform margin at create/edit time.
+ */
+function payoutFields(d: { payoutModel: PayoutModel; perVideoTaka?: number }) {
+  if (d.payoutModel !== "per_video") {
+    return { payoutModel: "views" as const, perVideoClipperPoisha: undefined, perVideoBrandPoisha: undefined };
+  }
+  const perVideoClipperPoisha = takaToPoisha(d.perVideoTaka!);
+  return {
+    payoutModel: "per_video" as const,
+    perVideoClipperPoisha,
+    perVideoBrandPoisha: brandCostForClipperPayout(perVideoClipperPoisha),
+  };
 }
 
 /** Only the owning brand or a SaaS admin may manage a campaign. */
@@ -127,6 +153,7 @@ export async function createCampaign(
     niche: d.niche,
     allowedPlatforms: platforms,
     sourceUrl: d.sourceUrl,
+    ...payoutFields(d),
     budgetPoisha: takaToPoisha(d.budgetTaka),
     spentPoisha: 0,
     rateClipperPer1k: RATE_CLIPPER_PER_1K,
@@ -183,6 +210,7 @@ export async function editCampaign(
     niche: d.niche,
     allowedPlatforms: platforms,
     sourceUrl: d.sourceUrl,
+    ...payoutFields(d),
     budgetPoisha: takaToPoisha(d.budgetTaka),
     minQualifyViews: d.minQualifyViews,
     maxPayoutPerClipperPoisha: takaToPoisha(d.maxPerClipperTaka),

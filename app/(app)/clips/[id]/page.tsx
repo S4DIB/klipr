@@ -64,11 +64,17 @@ export default async function ClipDetailPage({
 
   const rate = campaign?.rateClipperPer1k ?? 5000;
   const minViews = campaign?.minQualifyViews ?? 2000;
+  // per-video campaigns pay one flat fee once the clip clears the minimum —
+  // views past that point change the XP, never the money
+  const byVideo = campaign?.payoutModel === "per_video";
+  const perVideoPoisha = campaign?.perVideoClipperPoisha ?? 0;
   const displayViews = settled ? (sub.lockedViews ?? 0) : sub.countedViews;
   const estPoisha = settled
     ? (sub.earnedPoisha ?? 0)
     : displayViews >= minViews
-      ? clipperEarningsPoisha(displayViews, rate)
+      ? byVideo
+        ? perVideoPoisha
+        : clipperEarningsPoisha(displayViews, rate)
       : 0;
 
   type Step = { label: string; note: string; state: "done" | "active" | "todo" };
@@ -218,12 +224,16 @@ export default async function ClipDetailPage({
           {settled
             ? estPoisha === 0
               ? `Below the ${minViews.toLocaleString("en-US")}-view minimum, or the budget was already spent. Shown honestly, never silently.`
-              : `${(sub.lockedViews ?? 0).toLocaleString("en-US")} locked views × ${takaFromPoisha(rate)}/1,000.`
+              : byVideo
+                ? `Flat ${takaFromPoisha(perVideoPoisha)} for one accepted video.`
+                : `${(sub.lockedViews ?? 0).toLocaleString("en-US")} locked views × ${takaFromPoisha(rate)}/1,000.`
             : manual
               ? `Verified and settled by our team. Below ${minViews.toLocaleString("en-US")} views a clip settles at ৳0.`
               : displayViews < minViews
                 ? `Qualifies at ${minViews.toLocaleString("en-US")} views. Below that a clip settles at ৳0.`
-                : "Settles at window end, clamped to remaining budget."}
+                : byVideo
+                  ? `Qualified — settles at ${takaFromPoisha(perVideoPoisha)} at window end, if budget remains.`
+                  : "Settles at window end, clamped to remaining budget."}
         </p>
       </GlassPanel>
         </div>
