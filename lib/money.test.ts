@@ -6,6 +6,7 @@ import {
   perViewPoisha,
   clipperEarningsPoisha,
   brandCostPoisha,
+  brandCostForClipperPayout,
   settlementMath,
 } from "./money.ts";
 
@@ -85,4 +86,92 @@ test("settlement: negative inputs are treated as empty, not exploitable", () => 
   });
   assert.equal(m.payableViews, 0);
   assert.throws(() => settlementMath({ ...base, lockedViews: -1 }));
+});
+
+/* ── per-video payout model ───────────────────────────── */
+
+test("per-video brand cost carries the same 5:6 platform margin", () => {
+  assert.equal(brandCostForClipperPayout(50_000), 60_000); // ৳500 → ৳600
+  assert.equal(brandCostForClipperPayout(100), 120); // ৳1 → ৳1.20
+  assert.throws(() => brandCostForClipperPayout(0));
+  assert.throws(() => brandCostForClipperPayout(-100));
+  assert.throws(() => brandCostForClipperPayout(1)); // not a multiple of 5 poisha
+});
+
+const perVideo = {
+  ...base,
+  payoutModel: "per_video" as const,
+  perVideoClipperPoisha: 50_000, // ৳500
+  perVideoBrandPoisha: 60_000, // ৳600
+};
+
+test("per-video: a qualifying clip pays the flat amount, whatever the views", () => {
+  const m = settlementMath({ ...perVideo, lockedViews: 4200 });
+  assert.equal(m.paid, true);
+  assert.equal(m.paidVideos, 1);
+  assert.equal(m.payableViews, 0); // views are not what's being bought
+  assert.equal(m.clipperEarnPoisha, 50_000);
+  assert.equal(m.brandCostPoisha, 60_000);
+  assert.equal(m.marginPoisha, 10_000);
+
+  // 10x the views, identical money
+  const big = settlementMath({ ...perVideo, lockedViews: 42_000 });
+  assert.equal(big.clipperEarnPoisha, 50_000);
+  assert.equal(big.brandCostPoisha, 60_000);
+});
+
+test("per-video: below the view minimum still settles at ৳0 with no XP gate open", () => {
+  const m = settlementMath({ ...perVideo, lockedViews: 1999 });
+  assert.equal(m.belowMinimum, true);
+  assert.equal(m.paid, false);
+  assert.equal(m.paidVideos, 0);
+  assert.equal(m.clipperEarnPoisha, 0);
+  assert.equal(m.brandCostPoisha, 0);
+});
+
+test("per-video is atomic — a video the escrow can't fully cover pays nothing", () => {
+  const short = settlementMath({
+    ...perVideo,
+    lockedViews: 4200,
+    remainingEscrowPoisha: 59_999, // one poisha short of the brand cost
+  });
+  assert.equal(short.paid, false);
+  assert.equal(short.clipperEarnPoisha, 0);
+  assert.equal(short.brandCostPoisha, 0);
+
+  const exact = settlementMath({ ...perVideo, lockedViews: 4200, remainingEscrowPoisha: 60_000 });
+  assert.equal(exact.paid, true);
+  assert.equal(exact.brandCostPoisha, 60_000);
+});
+
+test("per-video: the clipper cap blocks a video it can't fully cover", () => {
+  const capped = settlementMath({
+    ...perVideo,
+    lockedViews: 4200,
+    clipperCapRemainingPoisha: 49_999,
+  });
+  assert.equal(capped.paid, false);
+  assert.equal(capped.clipperEarnPoisha, 0);
+});
+
+test("brandCost never exceeds the escrow in either model", () => {
+  for (const escrow of [0, 1, 59_999, 60_000, 4_000_000]) {
+    for (const model of ["views", "per_video"] as const) {
+      const m = settlementMath({
+        ...perVideo,
+        payoutModel: model,
+        lockedViews: 42_000,
+        remainingEscrowPoisha: escrow,
+      });
+      assert.ok(m.brandCostPoisha <= escrow, `${model} @ ${escrow}`);
+    }
+  }
+});
+
+test("omitting payoutModel keeps the original views behaviour", () => {
+  const implicit = settlementMath({ ...base, lockedViews: 4200 });
+  const explicit = settlementMath({ ...base, lockedViews: 4200, payoutModel: "views" });
+  assert.deepEqual(implicit, explicit);
+  assert.equal(implicit.paid, true);
+  assert.equal(implicit.paidVideos, 0);
 });

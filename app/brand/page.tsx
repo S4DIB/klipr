@@ -202,7 +202,11 @@ export default async function BrandOverviewPage() {
                         funded ? "text-ink-900" : "text-ink-400",
                       )}
                     >
-                      {funded ? takaFromPoisha(c.rateBrandPer1k) : "—"}
+                      {funded
+                        ? c.payoutModel === "per_video"
+                          ? takaFromPoisha(c.perVideoBrandPoisha ?? 0)
+                          : takaFromPoisha(c.rateBrandPer1k)
+                        : "—"}
                     </span>
                     <span
                       className={cn(

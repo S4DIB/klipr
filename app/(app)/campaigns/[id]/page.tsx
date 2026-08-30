@@ -93,9 +93,13 @@ export default async function CampaignDetailPage({
       <GlassPanel className="flex justify-between p-4">
         <div>
           <p className="font-mono text-[18px] font-semibold text-ink-900 [font-variant-numeric:tabular-nums]">
-            {takaFromPoisha(campaign.rateClipperPer1k)}
+            {campaign.payoutModel === "per_video"
+              ? takaFromPoisha(campaign.perVideoClipperPoisha ?? 0)
+              : takaFromPoisha(campaign.rateClipperPer1k)}
           </p>
-          <p className="text-[11px] text-ink-500">per 1,000 views</p>
+          <p className="text-[11px] text-ink-500">
+            {campaign.payoutModel === "per_video" ? "per accepted video" : "per 1,000 views"}
+          </p>
         </div>
         <div className="w-px bg-[rgba(53,5,90,0.1)]" />
         <div>

@@ -122,7 +122,18 @@ export default async function AdminCampaignDetail({
             label="Platforms"
             value={c.allowedPlatforms.map((p) => PLATFORMS[p].label).join(", ") || "—"}
           />
-          <Row label="Clipper rate" value={`${takaFromPoisha(c.rateClipperPer1k)} / 1k views`} />
+          <Row
+            label="Payout model"
+            value={c.payoutModel === "per_video" ? "Per video" : "Per views"}
+          />
+          <Row
+            label="Clipper rate"
+            value={
+              c.payoutModel === "per_video"
+                ? `${takaFromPoisha(c.perVideoClipperPoisha ?? 0)} / accepted video`
+                : `${takaFromPoisha(c.rateClipperPer1k)} / 1k views`
+            }
+          />
           <Row label="Starts" value={dhakaDate(c.startDate)} />
           <Row label="Ends" value={dhakaDate(c.endDate)} />
           <Row label="Tracking window" value={`${c.trackingWindowDays} days`} />

@@ -249,12 +249,15 @@ async function settleOne(
     minQualifyViews: campaign.minQualifyViews,
     remainingEscrowPoisha: remainingBudgetPoisha(campaign),
     clipperCapRemainingPoisha: Math.max(0, campaign.maxPayoutPerClipperPoisha - alreadyEarned),
+    payoutModel: campaign.payoutModel,
+    perVideoClipperPoisha: campaign.perVideoClipperPoisha,
+    perVideoBrandPoisha: campaign.perVideoBrandPoisha,
     rateClipperPer1k: campaign.rateClipperPer1k,
     rateBrandPer1k: campaign.rateBrandPer1k,
   });
 
   // money — unique event id makes re-runs no-ops
-  if (math.payableViews > 0) {
+  if (math.paid) {
     const { inserted } = await appendLedgerEvent(
       buildSettlementEvent({
         submissionId: sub.id,
@@ -273,7 +276,7 @@ async function settleOne(
   // XP — only for qualifying settlements
   let xpTotalAwarded = 0;
   let tierUpgraded = false;
-  if (math.payableViews > 0) {
+  if (math.paid) {
     const profile = await getProfile(sub.profileId);
     if (profile) {
       const completionBonusEligible =
@@ -335,7 +338,7 @@ async function settleOne(
     settledAt: nowIso,
   });
 
-  return { zero: math.payableViews === 0, xp: xpTotalAwarded, tierUpgraded };
+  return { zero: !math.paid, xp: xpTotalAwarded, tierUpgraded };
 }
 
 /**

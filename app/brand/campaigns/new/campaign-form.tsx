@@ -10,7 +10,7 @@ import { poishaToTaka } from "@/lib/money";
 import { dhakaDateInput } from "@/lib/format";
 import { CoverPicker } from "./cover-picker";
 import { createCampaign, editCampaign, type NewCampaignState } from "./actions";
-import type { Campaign, Platform } from "@/lib/db/types";
+import type { Campaign, PayoutModel, Platform } from "@/lib/db/types";
 
 const STEPS = ["Basics", "Budget & rules", "Creative & review"];
 const MIN_OPTIONS = [2000, 3000, 4000];
@@ -70,6 +70,10 @@ export function CampaignForm({
     campaign ? String(poishaToTaka(campaign.maxPayoutPerClipperPoisha)) : "5000",
   );
   const [subCap, setSubCap] = useState(campaign ? String(campaign.submissionCapBase) : "1");
+  const [payoutModel, setPayoutModel] = useState<PayoutModel>(campaign?.payoutModel ?? "views");
+  const [perVideo, setPerVideo] = useState(
+    campaign?.perVideoClipperPoisha ? String(poishaToTaka(campaign.perVideoClipperPoisha)) : "500",
+  );
   const [brief, setBrief] = useState(campaign?.brief ?? "");
   const [guidelines, setGuidelines] = useState(campaign?.guidelines ?? "");
   const [sourceUrl, setSourceUrl] = useState(campaign?.sourceUrl ?? "");
@@ -83,6 +87,11 @@ export function CampaignForm({
     });
 
   const budgetNum = Number(budget) || 0;
+  const perVideoNum = Number(perVideo) || 0;
+  const byVideo = payoutModel === "per_video";
+  // brand cost carries the platform's fixed 5:6 margin, same as the per-1k rates
+  const perVideoCost = perVideoNum * 1.2;
+  const taka = (n: number) => `৳${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 
   /** Pill toggle styling shared by the platform + min-view choices. */
   const pill = (on: boolean, extra?: string) =>
@@ -175,6 +184,65 @@ export function CampaignForm({
 
           {/* step 2. Budget & rules */}
           <div className={cn("flex-col gap-4", step === 2 ? "flex" : "hidden")}>
+            <div>
+              <VLabel>How this campaign pays</VLabel>
+              <div className="flex flex-wrap gap-[9px]">
+                {(
+                  [
+                    { key: "views" as const, label: "Per views", line: "৳50 / 1,000 verified views" },
+                    { key: "per_video" as const, label: "Per video", line: "A flat fee per accepted video" },
+                  ]
+                ).map((m) => (
+                  <button
+                    key={m.key}
+                    type="button"
+                    aria-pressed={payoutModel === m.key}
+                    onClick={() => setPayoutModel(m.key)}
+                    className={cn(pill(payoutModel === m.key), "text-left")}
+                  >
+                    <span className="block">{m.label}</span>
+                    <span
+                      className={cn(
+                        "block text-[11px] font-normal",
+                        payoutModel === m.key ? "text-violet-900/70" : "text-white/70",
+                      )}
+                    >
+                      {m.line}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <input type="hidden" name="payoutModel" value={payoutModel} />
+              <p className="mt-2 text-[11.5px] text-white">
+                {byVideo
+                  ? "Every video that clears the qualification minimum earns the same flat fee, however far it travels."
+                  : "Clippers earn on every verified view their clip brings in."}
+              </p>
+            </div>
+
+            {byVideo ? (
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="flex-1">
+                  <VLabel>Clipper earns per video (৳)</VLabel>
+                  <input
+                    name="perVideoTaka"
+                    inputMode="numeric"
+                    value={perVideo}
+                    onChange={(e) => setPerVideo(e.target.value.replace(/\D/g, ""))}
+                    className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
+                  />
+                  <p className="mt-1.5 text-[11.5px] text-white">
+                    {perVideoNum >= 50 ? `You pay ${taka(perVideoCost)} per video` : "min ৳50"}
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <VReadout label="You pay · per accepted video">
+                    <span className="font-mono text-white">{taka(perVideoCost)}</span> / video
+                  </VReadout>
+                </div>
+              </div>
+            ) : null}
+
             <div className="flex flex-col gap-4 sm:flex-row">
               <div className="flex-1">
                 <VLabel>Budget (ceiling)</VLabel>
@@ -186,14 +254,26 @@ export function CampaignForm({
                   className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
                 />
                 <p className="mt-1.5 text-[11.5px] text-white">
-                  {budgetNum >= 5000
-                    ? `≈ ${Math.floor((budgetNum / 60) * 1000).toLocaleString("en-US")} verified views`
-                    : "min ৳5,000"}
+                  {budgetNum < 5000
+                    ? "min ৳5,000"
+                    : byVideo
+                      ? perVideoCost > 0
+                        ? `≈ ${Math.floor(budgetNum / perVideoCost).toLocaleString("en-US")} paid videos`
+                        : "set a per-video fee"
+                      : `≈ ${Math.floor((budgetNum / 60) * 1000).toLocaleString("en-US")} verified views`}
                 </p>
               </div>
               <div className="flex-1">
                 <VReadout label="You pay · fixed">
-                  <span className="font-mono text-white">৳60</span> / 1,000 verified views
+                  {byVideo ? (
+                    <>
+                      <span className="font-mono text-white">{taka(perVideoCost)}</span> / accepted video
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-mono text-white">৳60</span> / 1,000 verified views
+                    </>
+                  )}
                 </VReadout>
               </div>
             </div>
@@ -324,7 +404,9 @@ export function CampaignForm({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white">Rate</span>
-                  <span className="font-mono">৳60 / 1k</span>
+                  <span className="font-mono">
+                    {byVideo ? `${taka(perVideoCost)} / video` : "৳60 / 1k"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white">Min views</span>

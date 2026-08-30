@@ -171,10 +171,12 @@ export default async function CampaignsPage({
                   </div>
                   <div className="text-right">
                     <p className="font-mono text-[22px] font-bold leading-none text-ink-900 [font-variant-numeric:tabular-nums]">
-                      {takaFromPoisha(c.rateClipperPer1k * 1000)}
+                      {c.payoutModel === "per_video"
+                        ? takaFromPoisha(c.perVideoClipperPoisha ?? 0)
+                        : takaFromPoisha(c.rateClipperPer1k * 1000)}
                     </p>
                     <p className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.08em] text-ink-400">
-                      per 1M views
+                      {c.payoutModel === "per_video" ? "per video" : "per 1M views"}
                     </p>
                   </div>
                 </div>
