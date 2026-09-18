@@ -8,7 +8,7 @@ import { cn } from "@/lib/cn";
 /**
  * Campaign cover picker — a picture OR a video. The chosen file rides along in
  * the wizard's FormData as `cover`; the server action uploads it and stores the
- * public URL on the campaign. Preview is local (object URL), so the brand sees
+ * public URL on the campaign. Preview is local (object URL), so the agency sees
  * exactly what clippers will see before anything is saved.
  *
  * When editing, clearing the cover sets `removeCover` so the action knows the
@@ -63,7 +63,7 @@ export function CoverPicker({
 
   return (
     <div>
-      {/* only sent when the brand explicitly cleared an existing cover */}
+      {/* only sent when the agency explicitly cleared an existing cover */}
       {removed && existingUrl ? <input type="hidden" name="removeCover" value="1" /> : null}
 
       <div

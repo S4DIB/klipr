@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/guards";
 import { getCampaign, getProfile } from "@/lib/db";
-import { CampaignForm } from "@/app/brand/campaigns/new/campaign-form";
+import { CampaignForm } from "@/app/agency/campaigns/new/campaign-form";
 
 export const metadata: Metadata = { title: "Edit campaign · Admin" };
 
@@ -20,8 +20,8 @@ export default async function EditAdminCampaignPage({
     redirect(`/admin/campaigns/${id}`);
   }
 
-  const brand = await getProfile(campaign.brandProfileId);
-  const brandName = brand?.orgName ?? brand?.displayName ?? campaign.brandName;
+  const agency = await getProfile(campaign.agencyProfileId);
+  const agencyName = agency?.orgName ?? agency?.displayName ?? campaign.agencyName;
 
-  return <CampaignForm brandName={brandName} campaign={campaign} />;
+  return <CampaignForm agencyName={agencyName} campaign={campaign} />;
 }

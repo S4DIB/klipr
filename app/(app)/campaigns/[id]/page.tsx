@@ -60,7 +60,7 @@ export default async function CampaignDetailPage({
 
       <div className="mt-[14px] flex flex-col gap-[14px] lg:grid lg:grid-cols-[1fr_360px] lg:items-start lg:gap-5">
         <div className="flex min-w-0 flex-col gap-[14px]">
-      {/* cover — the brand's uploaded still or clip (placeholder until there is one) */}
+      {/* cover — the agency's uploaded still or clip (placeholder until there is one) */}
       <CampaignCover
         coverUrl={campaign.coverUrl}
         seed={campaign.id}
@@ -69,9 +69,9 @@ export default async function CampaignDetailPage({
         className="shadow-[var(--shadow-md)]"
       />
 
-      {/* the one ink surface. Brand + campaign header */}
+      {/* the one ink surface. Agency + campaign header */}
       <GlassPanel variant="ink" className="p-[18px]">
-        <p className="eyebrow text-[rgba(255,255,244,0.6)]">{campaign.brandName}</p>
+        <p className="eyebrow text-[rgba(255,255,244,0.6)]">{campaign.agencyName}</p>
         <h1 className="mt-1 text-[22px] font-extrabold tracking-[-0.02em]">{campaign.name}</h1>
         <div className="mt-2.5 flex flex-wrap gap-[7px]">
           {campaign.allowedPlatforms.map((p) => (
@@ -165,7 +165,7 @@ export default async function CampaignDetailPage({
             </Button>
             <SubmitSheet
               campaignId={campaign.id}
-              campaignName={`${campaign.brandName} · ${campaign.name}`}
+              campaignName={`${campaign.agencyName} · ${campaign.name}`}
               accounts={eligibleAccounts}
               urlHint={urlHint}
             />

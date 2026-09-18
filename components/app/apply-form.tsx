@@ -9,7 +9,7 @@ import { IconAdd, IconX } from "@/components/icons";
 import { PLATFORMS, PLATFORM_ORDER, NICHES } from "@/lib/platforms";
 import { submitApplication, type ApplyState } from "@/app/apply/actions";
 
-type Kind = "clipper" | "agency";
+type Kind = "clipper" | "network";
 
 interface PageRow {
   platform: string;
@@ -27,10 +27,13 @@ const emptyRow = (): PageRow => ({
   niche: "Memes",
 });
 
-const KINDS: { id: Kind; label: string }[] = [
+/* "network" (the old clipper-side agency role) is dormant: kept in code, hidden
+ * from the UI. With one visible kind the toggle doesn't render at all. */
+const KINDS: { id: Kind; label: string; hidden?: boolean }[] = [
   { id: "clipper", label: "Clipper" },
-  { id: "agency", label: "Agency" },
+  { id: "network", label: "Network", hidden: true },
 ];
+const VISIBLE_KINDS = KINDS.filter((k) => !k.hidden);
 
 export function ApplyForm() {
   const [kind, setKind] = useState<Kind>("clipper");
@@ -55,10 +58,10 @@ export function ApplyForm() {
   return (
     <div className="flex flex-col gap-[14px]">
       {/* role toggle */}
-      <div>
+      <div hidden={VISIBLE_KINDS.length < 2}>
         <p className="eyebrow mb-2">You are a</p>
         <div className="flex gap-2" role="radiogroup" aria-label="Account type">
-          {KINDS.map(({ id, label }) => (
+          {VISIBLE_KINDS.map(({ id, label }) => (
             <button
               key={id}
               type="button"
@@ -82,9 +85,9 @@ export function ApplyForm() {
           <input type="hidden" name="role" value={kind} />
           <input type="hidden" name="pages" value={pagesJson} />
 
-          {kind === "agency" ? (
+          {kind === "network" ? (
             <TextField
-              label="Agency / network name"
+              label="Network name"
               name="orgName"
               placeholder="What your network is called"
               required

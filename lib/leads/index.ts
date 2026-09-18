@@ -21,13 +21,13 @@ export type LeadReviewStatus = "pending" | "approved" | "declined";
 
 export type Lead = {
   email: string;
-  role: "clipper" | "brand";
+  role: "clipper" | "agency";
   name?: string;
   phone?: string;
   pages?: LeadPage[]; // clipper
   postFrequency?: string; // clipper
-  company?: string; // brand
-  designation?: string; // brand
+  company?: string; // agency
+  designation?: string; // agency
   source?: string;
   at: string; // ISO timestamp
   /** Vetting decision from /admin/applications. Absent = pending. */

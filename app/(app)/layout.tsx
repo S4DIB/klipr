@@ -6,7 +6,7 @@ import { clipperAccount } from "@/lib/ledger";
 import { AppShell } from "@/components/app/app-shell";
 
 /**
- * The clipper/agency shell. Gate order matters:
+ * The clipper/network shell. Gate order matters:
  * signed in → correct role → ACTIVE access (the vetted gate) → onboarded.
  */
 export default async function AppLayout({
@@ -16,7 +16,7 @@ export default async function AppLayout({
 }) {
   const user = await currentUser();
   if (!user) redirect("/login");
-  if (user.role === "brand") redirect("/brand");
+  if (user.role === "agency") redirect("/agency");
   if (user.role === "admin") redirect("/admin");
   if (user.access !== "active") redirect(routeFor(user));
   if (!user.profileCompleted) redirect("/onboarding");
@@ -33,7 +33,7 @@ export default async function AppLayout({
 
   return (
     <AppShell
-      role={user.role === "agency" ? "agency" : "clipper"}
+      role={user.role === "network" ? "network" : "clipper"}
       displayName={user.displayName}
       avatarUrl={user.avatarUrl}
       tier={user.tier}

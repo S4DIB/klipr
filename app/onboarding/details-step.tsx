@@ -2,12 +2,12 @@
 
 import { useActionState, useState } from "react";
 import { Button, ArrowEast } from "@/components/ui/button";
-import { BrandPreviewCard } from "./brand-preview-card";
+import { AgencyPreviewCard } from "./agency-preview-card";
 import { VSelect } from "./violet-field";
-import { saveCompanyDetails, type BrandDetailsState } from "./actions";
+import { saveCompanyDetails, type AgencyDetailsState } from "./actions";
 import { COUNTRIES, INDUSTRIES, SPEND } from "./options";
 
-/** Brand step 2 — Company details. */
+/** Agency step 2 — Company details. */
 export function DetailsStep({
   businessName,
   website,
@@ -25,7 +25,7 @@ export function DetailsStep({
   monthlySpend: string;
   onBack: React.ReactNode;
 }) {
-  const [state, action, pending] = useActionState<BrandDetailsState, FormData>(
+  const [state, action, pending] = useActionState<AgencyDetailsState, FormData>(
     saveCompanyDetails,
     {},
   );
@@ -43,7 +43,7 @@ export function DetailsStep({
       </p>
 
       <div className="mt-5">
-        <BrandPreviewCard
+        <AgencyPreviewCard
           businessName={businessName}
           website={website}
           logoUrl={logoUrl}

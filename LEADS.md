@@ -26,7 +26,7 @@ how to download the list to email everyone.
 3. New query again, paste **`supabase/migrations/0002_waitlist_leads.sql`**,
    click **Run**. (This creates the locked-down `waitlist_leads` table.)
 4. New query again, paste **`supabase/migrations/0003_waitlist_lead_fields.sql`**,
-   click **Run**. (Adds the brand `company`/`designation` and clipper
+   click **Run**. (Adds the agency `company`/`designation` and clipper
    `post_frequency` columns used by the v2 signup forms.) The signup form keeps
    working even before you run this — those three fields just start saving once
    you do.

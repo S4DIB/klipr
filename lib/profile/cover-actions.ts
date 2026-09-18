@@ -6,7 +6,7 @@ import { updateProfile } from "@/lib/db";
 import { uploadProfileCover } from "@/lib/storage/profile-cover";
 
 /** Swap a profile header cover for an uploaded photo. Shared by the clipper
- *  profile and the brand profile — both are rows in `profiles`. A failed or stub upload
+ *  profile and the agency profile — both are rows in `profiles`. A failed or stub upload
  *  returns null and keeps the previous cover instead of nulling it out. */
 export async function updateCover(formData: FormData): Promise<void> {
   const user = await requireUser();
@@ -29,5 +29,5 @@ export async function removeCover(): Promise<void> {
 /** Both profile surfaces read the same profiles row. */
 function revalidateProfilePaths() {
   revalidatePath("/profile");
-  revalidatePath("/brand/profile");
+  revalidatePath("/agency/profile");
 }

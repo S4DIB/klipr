@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { adminDeleteCampaign, requestCampaignDeletion } from "@/app/brand/campaigns/new/actions";
+import { adminDeleteCampaign, requestCampaignDeletion } from "@/app/agency/campaigns/new/actions";
 import { cn } from "@/lib/cn";
 
 const dangerOutline =
@@ -10,7 +10,7 @@ const dangerOutline =
 /**
  * Admin-only hard delete, after a confirm. The server action enforces admin
  * rights and cascades the campaign's clips/records. Reused for "Approve
- * deletion" on a brand's pending request — same effect.
+ * deletion" on an agency's pending request — same effect.
  */
 export function DeleteCampaignButton({
   campaignId,
@@ -47,7 +47,7 @@ export function DeleteCampaignButton({
 }
 
 /**
- * Brand-side "delete": raises a deletion request for an admin to approve. The
+ * Agency-side "delete": raises a deletion request for an admin to approve. The
  * campaign isn't removed here — it's flagged and surfaced in the admin portal.
  */
 export function RequestDeletionButton({

@@ -1,6 +1,6 @@
 /**
  * Campaign cover media rules — shared by the client picker (which validates
- * before upload so the brand gets an instant message) and the server upload
+ * before upload so the agency gets an instant message) and the server upload
  * (which is the one that actually decides). Isomorphic on purpose: no
  * server-only imports here.
  */

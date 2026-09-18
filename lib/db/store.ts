@@ -3,7 +3,7 @@
  * external accounts (stub mode). Same async-ish surface as the Supabase
  * implementation; selected by lib/db/index.ts. Server-only.
  *
- * Reseeds automatically when the on-disk version ≠ 4 (dev data is disposable).
+ * Reseeds automatically when the on-disk version ≠ 5 (dev data is disposable).
  * The stub boots an EMPTY store — no demo data (see GO-LIVE-PLAN.md).
  */
 import fs from "node:fs";
@@ -57,7 +57,7 @@ function seed(): DB {
     fraudFlags: [],
     notifications: [],
     sweepLocks: [],
-    version: 4,
+    version: 5,
   };
 }
 
@@ -70,12 +70,12 @@ function load(): DB {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const parsed = JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) as DB;
-      if (parsed.version === 4) {
-        parsed.notifications ??= []; // additive field on an existing v4 store
+      if (parsed.version === 5) {
+        parsed.notifications ??= []; // additive field on an existing v5 store
         g.__klipr_db = parsed;
         return g.__klipr_db;
       }
-      console.warn("[store] .data/db.json is not v4 — reseeding (dev data is disposable)");
+      console.warn("[store] .data/db.json is not v5 — reseeding (dev data is disposable)");
     }
   } catch {
     // fall through to seed
@@ -207,8 +207,8 @@ export function listCampaigns(status?: CampaignStatus): Campaign[] {
   const all = load().campaigns;
   return status ? all.filter((c) => c.status === status) : all;
 }
-export function listCampaignsByBrand(brandProfileId: string): Campaign[] {
-  return load().campaigns.filter((c) => c.brandProfileId === brandProfileId);
+export function listCampaignsByAgency(agencyProfileId: string): Campaign[] {
+  return load().campaigns.filter((c) => c.agencyProfileId === agencyProfileId);
 }
 export function getCampaign(id: string): Campaign | undefined {
   return load().campaigns.find((c) => c.id === id);
@@ -328,7 +328,7 @@ export function appendXpEvents(rows: XpEvent[]): void {
 export function listXpEvents(profileId: string): XpEvent[] {
   return load().xpEvents.filter((e) => e.profileId === profileId);
 }
-/** Per-connected-account XP totals — the agency portfolio view. */
+/** Per-connected-account XP totals — the network portfolio view. */
 export function xpByAccount(profileId: string): Record<string, number> {
   const out: Record<string, number> = {};
   for (const e of load().xpEvents) {
@@ -474,7 +474,7 @@ export function leaderboard(limit = 20): LeaderboardRow[] {
   for (const [profileId, settledViews] of byProfile) {
     const p = db.profiles.find((x) => x.id === profileId);
     if (!p || p.leaderboardOptOut || p.accountStatus !== "active") continue;
-    if (p.role !== "clipper" && p.role !== "agency") continue;
+    if (p.role !== "clipper" && p.role !== "network") continue;
     rows.push({ profileId, displayName: p.displayName, tier: p.tier, settledViews });
   }
   return rows.sort((a, b) => b.settledViews - a.settledViews).slice(0, limit);

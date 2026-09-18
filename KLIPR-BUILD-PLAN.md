@@ -1,5 +1,15 @@
 # KLIPR — Full Product Build Plan (V2.1)
 
+> **Naming note (2026-09-18).** This plan predates the rebrand and keeps its
+> original wording. Read it with this map:
+> - **"brand"** (the client that funds campaigns) is now **"agency"** — role
+>   `agency`, console at `/agency`, `agencyName`, `RATE_AGENCY_PER_1K`, …
+> - **"agency"** (the clipper-side Network Manager) is now the **dormant
+>   `network` role** — kept in code and data, hidden from every screen.
+> - Klipr's own brand identity (`public/brand/*`, brand colors) is unchanged.
+>
+> See `supabase/migrations/0016_brand_to_agency.sql`.
+
 > The executable plan for building the complete Klipr product: gated clipper
 > access (apply → vet → let in), tiers & XP, brand console, agency ("Network
 > Manager") support, admin ops, automatic view verification, and the money

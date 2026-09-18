@@ -5,7 +5,7 @@ import { WaitlistQueue } from "./waitlist-queue";
 export const metadata: Metadata = { title: "Applications" };
 
 /**
- * The vetting console: landing-waitlist clippers + brands awaiting manual
+ * The vetting console: landing-waitlist clippers + agencies awaiting manual
  * vetting, filtered into Pending / Approved / Rejected.
  */
 export default async function AdminApplicationsPage({

@@ -251,9 +251,9 @@ async function settleOne(
     clipperCapRemainingPoisha: Math.max(0, campaign.maxPayoutPerClipperPoisha - alreadyEarned),
     payoutModel: campaign.payoutModel,
     perVideoClipperPoisha: campaign.perVideoClipperPoisha,
-    perVideoBrandPoisha: campaign.perVideoBrandPoisha,
+    perVideoAgencyPoisha: campaign.perVideoAgencyPoisha,
     rateClipperPer1k: campaign.rateClipperPer1k,
-    rateBrandPer1k: campaign.rateBrandPer1k,
+    rateAgencyPer1k: campaign.rateAgencyPer1k,
   });
 
   // money — unique event id makes re-runs no-ops
@@ -268,7 +268,7 @@ async function settleOne(
     );
     if (inserted) {
       await updateCampaign(sub.campaignId, {
-        spentPoisha: campaign.spentPoisha + math.brandCostPoisha,
+        spentPoisha: campaign.spentPoisha + math.agencyCostPoisha,
       });
     }
   }

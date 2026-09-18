@@ -15,15 +15,15 @@ import { clearDeletionRequest } from "../new/actions";
 
 export const metadata: Metadata = { title: "Campaign" };
 
-export default async function BrandCampaignPage({
+export default async function AgencyCampaignPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await requireRole("brand");
+  const user = await requireRole("agency");
   const { id } = await params;
   const campaign = await getCampaign(id);
-  if (!campaign || campaign.brandProfileId !== user.id) notFound();
+  if (!campaign || campaign.agencyProfileId !== user.id) notFound();
 
   // aggregate performance. Clipper identities stay private
   const subs = await listSubmissions({ campaignId: id });
@@ -38,7 +38,7 @@ export default async function BrandCampaignPage({
     .slice(0, 5);
 
   // Edit only before it goes live. Deletion is a request an admin approves —
-  // brands never delete their own campaigns directly.
+  // agencies never delete their own campaigns directly.
   const canEdit = campaign.status === "pending_funding" || campaign.status === "draft";
   const deletionRequested = Boolean(campaign.deletionRequestedAt);
 
@@ -55,7 +55,7 @@ export default async function BrandCampaignPage({
           <StatusChip status={campaign.status} />
           {canEdit ? (
             <Link
-              href={`/brand/campaigns/${id}/edit`}
+              href={`/agency/campaigns/${id}/edit`}
               className="rounded-full bg-volt-600 px-4 py-2 text-[13px] font-bold text-white transition-colors hover:bg-volt-500"
             >
               Edit

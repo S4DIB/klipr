@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
-import { BrandSettingsTabs } from "./settings-form";
+import { AgencySettingsTabs } from "./settings-form";
 
-export const metadata: Metadata = { title: "Brand settings" };
+export const metadata: Metadata = { title: "Agency settings" };
 
-export default async function BrandSettingsPage() {
-  const user = await requireRole("brand");
+export default async function AgencySettingsPage() {
+  const user = await requireRole("agency");
   return (
-    <BrandSettingsTabs
-      brand={{
+    <AgencySettingsTabs
+      agency={{
         orgName: user.orgName ?? "",
         website: user.website,
         industry: user.industry,

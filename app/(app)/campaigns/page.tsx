@@ -27,7 +27,7 @@ const PLATFORM_ICON: Partial<Record<Platform, (p: { className?: string }) => Rea
   instagram: InstagramIcon,
 };
 
-/** Deterministic brand-avatar fill so cards don't all look identical. */
+/** Deterministic agency-avatar fill so cards don't all look identical. */
 const AVATAR_FILLS = ["bg-violet-600", "bg-violet-900", "bg-[#b3117d]", "bg-[#0b7a5e]"];
 function avatarFill(seed: string): string {
   let n = 0;
@@ -45,7 +45,7 @@ function timeAgo(iso: string): string {
 
 /**
  * The marketplace — a clean "discover" feed of live campaigns. Every clip
- * earns the same fixed rate; cards lead with the brand and the per-1M
+ * earns the same fixed rate; cards lead with the agency and the per-1M
  * headline. Every active campaign is open to all tiers.
  */
 export default async function CampaignsPage({
@@ -62,7 +62,7 @@ export default async function CampaignsPage({
   const campaigns = (await listCampaigns("active")).filter(
     (c) =>
       !needle ||
-      [c.name, c.brandName, c.niche].some((s) => s.toLowerCase().includes(needle)),
+      [c.name, c.agencyName, c.niche].some((s) => s.toLowerCase().includes(needle)),
   );
   campaigns.sort((a, b) => {
     if (sort === "budget") return b.budgetPoisha - b.spentPoisha - (a.budgetPoisha - a.spentPoisha);
@@ -114,7 +114,7 @@ export default async function CampaignsPage({
             title={q ? `No campaigns match “${q}”` : "No live campaigns right now"}
             line={
               q
-                ? "Try a different campaign name, brand, or niche."
+                ? "Try a different campaign name, agency, or niche."
                 : "New campaigns are announced here first. Check back soon."
             }
           />
@@ -131,19 +131,19 @@ export default async function CampaignsPage({
                   className="-mx-5 -mt-5"
                 />
 
-                {/* brand row */}
+                {/* agency row */}
                 <div className="flex items-center gap-3">
                   <span
                     className={cn(
                       "flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] text-[17px] font-extrabold text-white",
-                      avatarFill(c.brandName),
+                      avatarFill(c.agencyName),
                     )}
                   >
-                    {c.brandName.trim().charAt(0).toUpperCase()}
+                    {c.agencyName.trim().charAt(0).toUpperCase()}
                   </span>
                   <div className="min-w-0">
                     <p className="flex items-center gap-1 text-[15px] font-bold text-ink-900">
-                      <span className="truncate">{c.brandName}</span>
+                      <span className="truncate">{c.agencyName}</span>
                       <IconVerified size={14} strokeWidth={1.6} className="shrink-0 text-violet-500" />
                     </p>
                     <p className="text-[12px] text-ink-500">

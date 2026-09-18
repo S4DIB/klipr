@@ -10,13 +10,13 @@ import { BudgetBar } from "@/components/ui/budget-bar";
 import { FilterTabs, normalizeFilter, type FilterKey } from "@/components/app/filter-tabs";
 import { takaFromPoisha, dhakaDate, dhakaDateTime } from "@/lib/format";
 import { approveCampaign, rejectCampaign } from "./actions";
-import { clearDeletionRequest } from "@/app/brand/campaigns/new/actions";
+import { clearDeletionRequest } from "@/app/agency/campaigns/new/actions";
 
 export const metadata: Metadata = { title: "Campaigns · Admin" };
 
 /**
  * Campaign approvals — the same Pending / Approved / Rejected model as the
- * waitlist. Brands post a campaign (→ pending); Approve makes it public to
+ * waitlist. Agencies post a campaign (→ pending); Approve makes it public to
  * clippers. Money is a SEPARATE step on each campaign's detail page.
  */
 export default async function AdminCampaignsPage({
@@ -37,11 +37,11 @@ export default async function AdminCampaignsPage({
   const list = filter === "approved" ? approved : filter === "rejected" ? rejected : pending;
   const deletionRequests = all.filter((c) => c.deletionRequestedAt);
 
-  // One query for every brand shown, instead of a serial getProfile per row.
-  const brandIds = [...new Set([...deletionRequests, ...list].map((c) => c.brandProfileId))];
-  const brandProfiles = await getProfilesByIds(brandIds);
-  const brandNames = new Map(
-    brandProfiles.map((p) => [p.id, p.orgName ?? p.displayName ?? p.id] as const),
+  // One query for every agency shown, instead of a serial getProfile per row.
+  const agencyIds = [...new Set([...deletionRequests, ...list].map((c) => c.agencyProfileId))];
+  const agencyProfiles = await getProfilesByIds(agencyIds);
+  const agencyNames = new Map(
+    agencyProfiles.map((p) => [p.id, p.orgName ?? p.displayName ?? p.id] as const),
   );
 
   return (
@@ -50,7 +50,7 @@ export default async function AdminCampaignsPage({
         <p className="eyebrow">02 / Campaigns</p>
         <h1 className="display-1 mt-1 text-[32px] text-text-hi">Campaign approvals.</h1>
         <p className="mt-1 max-w-xl text-[13.5px] leading-relaxed text-text-mid">
-          Brands post campaigns here. Approve to make one public to clippers — funding is a
+          Agencies post campaigns here. Approve to make one public to clippers — funding is a
           separate step you confirm on each campaign.
         </p>
       </header>
@@ -59,7 +59,7 @@ export default async function AdminCampaignsPage({
         <GlassPanel className="border border-[rgba(255,123,192,0.35)] p-5">
           <p className="eyebrow text-danger-600">Deletion requests · {deletionRequests.length}</p>
           <p className="mt-1 text-[13px] leading-relaxed text-text-mid">
-            Brands asked to delete these. Approve to remove a campaign and its records, or dismiss to
+            Agencies asked to delete these. Approve to remove a campaign and its records, or dismiss to
             keep it.
           </p>
           <div className="mt-4 space-y-2.5">
@@ -76,7 +76,7 @@ export default async function AdminCampaignsPage({
                     {c.name}
                   </Link>
                   <p className="mt-0.5 text-[12px] text-text-mid">
-                    {brandNames.get(c.brandProfileId) ?? ""}
+                    {agencyNames.get(c.agencyProfileId) ?? ""}
                     {c.deletionRequestedAt ? ` · ${dhakaDateTime(c.deletionRequestedAt)}` : ""}
                   </p>
                 </div>
@@ -106,7 +106,7 @@ export default async function AdminCampaignsPage({
             title={`No ${filter} campaigns`}
             line={
               filter === "pending"
-                ? "Campaigns brands post appear here for approval."
+                ? "Campaigns agencies post appear here for approval."
                 : `Campaigns you’ve ${filter === "approved" ? "approved" : "rejected"} show up here.`
             }
           />
@@ -117,7 +117,7 @@ export default async function AdminCampaignsPage({
             <CampaignRow
               key={c.id}
               campaign={c}
-              brandName={brandNames.get(c.brandProfileId) ?? ""}
+              agencyName={agencyNames.get(c.agencyProfileId) ?? ""}
               filter={filter}
             />
           ))}
@@ -141,11 +141,11 @@ function FundedBadge({ fundedAt }: { fundedAt?: string }) {
 
 function CampaignRow({
   campaign: c,
-  brandName,
+  agencyName,
   filter,
 }: {
   campaign: Campaign;
-  brandName: string;
+  agencyName: string;
   filter: FilterKey;
 }) {
   return (
@@ -164,7 +164,7 @@ function CampaignRow({
           ) : null}
         </div>
         <p className="mt-0.5 text-[12.5px] text-text-mid">
-          {brandName} · {takaFromPoisha(c.budgetPoisha)} · ends {dhakaDate(c.endDate)}
+          {agencyName} · {takaFromPoisha(c.budgetPoisha)} · ends {dhakaDate(c.endDate)}
         </p>
         {filter === "approved" ? (
           <BudgetBar spent={c.spentPoisha} total={c.budgetPoisha} className="mt-3 max-w-md" />

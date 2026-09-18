@@ -105,14 +105,14 @@ const fromConnectedAccount = (a: ConnectedAccount) => ({
 });
 
 const toCampaign = (r: any): Campaign => ({
-  id: r.id, brandProfileId: r.brand_profile_id, name: r.name, brandName: r.brand_name,
+  id: r.id, agencyProfileId: r.agency_profile_id, name: r.name, agencyName: r.agency_name,
   brief: r.brief, guidelines: r.guidelines, niche: r.niche,
   allowedPlatforms: r.allowed_platforms ?? [], sourceUrl: r.source_url,
   coverUrl: r.cover_url ?? undefined, budgetPoisha: r.budget_poisha, spentPoisha: r.spent_poisha,
   payoutModel: r.payout_model ?? "views",
   perVideoClipperPoisha: r.per_video_clipper_poisha ?? undefined,
-  perVideoBrandPoisha: r.per_video_brand_poisha ?? undefined,
-  rateClipperPer1k: r.rate_clipper_per_1k, rateBrandPer1k: r.rate_brand_per_1k,
+  perVideoAgencyPoisha: r.per_video_agency_poisha ?? undefined,
+  rateClipperPer1k: r.rate_clipper_per_1k, rateAgencyPer1k: r.rate_agency_per_1k,
   minQualifyViews: r.min_qualify_views, maxPayoutPerClipperPoisha: r.max_payout_per_clipper_poisha,
   submissionCapBase: r.submission_cap_base, earlyAccessTier: r.early_access_tier ?? undefined,
   earlyAccessEndsAt: r.early_access_ends_at ?? undefined, trackingWindowDays: r.tracking_window_days,
@@ -121,13 +121,13 @@ const toCampaign = (r: any): Campaign => ({
   createdAt: r.created_at,
 });
 const fromCampaign = (c: Campaign) => ({
-  id: c.id, brand_profile_id: c.brandProfileId, name: c.name, brand_name: c.brandName,
+  id: c.id, agency_profile_id: c.agencyProfileId, name: c.name, agency_name: c.agencyName,
   brief: c.brief, guidelines: c.guidelines, niche: c.niche,
   allowed_platforms: c.allowedPlatforms, source_url: c.sourceUrl, cover_url: c.coverUrl ?? null,
   budget_poisha: c.budgetPoisha, spent_poisha: c.spentPoisha,
   payout_model: c.payoutModel, per_video_clipper_poisha: c.perVideoClipperPoisha ?? null,
-  per_video_brand_poisha: c.perVideoBrandPoisha ?? null,
-  rate_clipper_per_1k: c.rateClipperPer1k, rate_brand_per_1k: c.rateBrandPer1k,
+  per_video_agency_poisha: c.perVideoAgencyPoisha ?? null,
+  rate_clipper_per_1k: c.rateClipperPer1k, rate_agency_per_1k: c.rateAgencyPer1k,
   min_qualify_views: c.minQualifyViews, max_payout_per_clipper_poisha: c.maxPayoutPerClipperPoisha,
   submission_cap_base: c.submissionCapBase, early_access_tier: c.earlyAccessTier ?? null,
   early_access_ends_at: c.earlyAccessEndsAt ?? null, tracking_window_days: c.trackingWindowDays,
@@ -348,9 +348,9 @@ export async function listCampaigns(status?: CampaignStatus): Promise<Campaign[]
   const { data } = await q;
   return (data ?? []).map(toCampaign);
 }
-export async function listCampaignsByBrand(brandProfileId: string): Promise<Campaign[]> {
+export async function listCampaignsByAgency(agencyProfileId: string): Promise<Campaign[]> {
   const { data } = await (await sb())
-    .from("campaigns").select("*").eq("brand_profile_id", brandProfileId)
+    .from("campaigns").select("*").eq("agency_profile_id", agencyProfileId)
     .order("created_at", { ascending: false });
   return (data ?? []).map(toCampaign);
 }
@@ -647,7 +647,7 @@ export async function leaderboard(limit = 20): Promise<LeaderboardRow[]> {
   const rows: LeaderboardRow[] = [];
   for (const p of profiles ?? []) {
     if (p.leaderboard_opt_out || p.account_status !== "active") continue;
-    if (p.role !== "clipper" && p.role !== "agency") continue;
+    if (p.role !== "clipper" && p.role !== "network") continue;
     rows.push({
       profileId: p.id,
       displayName: p.display_name,

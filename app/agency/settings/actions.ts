@@ -3,21 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/guards";
 import { updateProfile } from "@/lib/db";
-import { uploadBrandLogo } from "@/lib/storage/brand-logo";
+import { uploadAgencyLogo } from "@/lib/storage/agency-logo";
 import { normalizeUrl } from "@/lib/url";
 
 export type SettingsState = { error?: string; ok?: boolean };
 
 /**
- * Company details — brands can edit their own. Existing campaigns keep the
+ * Company details — agencies can edit their own. Existing campaigns keep the
  * name they were created with (it's snapshotted), so this only affects new
  * ones. Logo uploads to Supabase Storage; stub/dev keeps the current logo.
  */
-export async function updateBrandCompany(
+export async function updateAgencyCompany(
   _prev: SettingsState,
   formData: FormData,
 ): Promise<SettingsState> {
-  const user = await requireRole("brand");
+  const user = await requireRole("agency");
 
   const orgName = String(formData.get("orgName") ?? "").trim();
   if (!orgName) return { error: "Company name is required." };
@@ -39,7 +39,7 @@ export async function updateBrandCompany(
 
   const logo = formData.get("logo");
   const logoUrl =
-    logo instanceof File && logo.size > 0 ? await uploadBrandLogo(logo, user.id) : null;
+    logo instanceof File && logo.size > 0 ? await uploadAgencyLogo(logo, user.id) : null;
 
   await updateProfile(user.id, {
     orgName,
@@ -50,18 +50,18 @@ export async function updateBrandCompany(
     ...(logoUrl ? { logoUrl } : {}),
   });
 
-  revalidatePath("/brand/settings");
-  revalidatePath("/brand/profile");
-  revalidatePath("/brand");
+  revalidatePath("/agency/settings");
+  revalidatePath("/agency/profile");
+  revalidatePath("/agency");
   return { ok: true };
 }
 
 /** Contact person — the human the Klipr team reaches. Email is the login, fixed. */
-export async function updateBrandContact(
+export async function updateAgencyContact(
   _prev: SettingsState,
   formData: FormData,
 ): Promise<SettingsState> {
-  const user = await requireRole("brand");
+  const user = await requireRole("agency");
 
   const firstName = String(formData.get("firstName") ?? "").trim();
   const lastName = String(formData.get("lastName") ?? "").trim();
@@ -74,8 +74,8 @@ export async function updateBrandContact(
     displayName: [firstName, lastName].filter(Boolean).join(" "),
   });
 
-  revalidatePath("/brand/settings");
-  revalidatePath("/brand/profile");
-  revalidatePath("/brand");
+  revalidatePath("/agency/settings");
+  revalidatePath("/agency/profile");
+  revalidatePath("/agency");
   return { ok: true };
 }

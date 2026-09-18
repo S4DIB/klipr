@@ -5,7 +5,7 @@ import { IconSearch } from "@/components/icons";
 
 /**
  * Desktop header search — a plain GET form (works without JS) that lands on
- * /campaigns?q=…, where the marketplace filters by name, brand, and niche.
+ * /campaigns?q=…, where the marketplace filters by name, agency, and niche.
  */
 export function HeaderSearch({ placeholder }: { placeholder: string }) {
   const q = useSearchParams().get("q") ?? "";

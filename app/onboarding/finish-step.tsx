@@ -2,9 +2,9 @@
 
 import { useActionState, useState } from "react";
 import { Button, ArrowEast } from "@/components/ui/button";
-import { BrandPreviewCard } from "./brand-preview-card";
+import { AgencyPreviewCard } from "./agency-preview-card";
 import { VField } from "./violet-field";
-import { finishBrandSetup, type BrandFinishState } from "./actions";
+import { finishAgencySetup, type AgencyFinishState } from "./actions";
 
 const EXPERIENCE = [
   { value: "not_yet", label: "Not yet" },
@@ -12,7 +12,7 @@ const EXPERIENCE = [
   { value: "often", label: "Often" },
 ];
 
-/** Brand step 3 — Finish your setup. */
+/** Agency step 3 — Finish your setup. */
 export function FinishStep({
   businessName,
   website,
@@ -38,8 +38,8 @@ export function FinishStep({
   experience: string;
   onBack: React.ReactNode;
 }) {
-  const [state, action, pending] = useActionState<BrandFinishState, FormData>(
-    finishBrandSetup,
+  const [state, action, pending] = useActionState<AgencyFinishState, FormData>(
+    finishAgencySetup,
     {},
   );
   const [first, setFirst] = useState(initialFirst);
@@ -58,7 +58,7 @@ export function FinishStep({
       </p>
 
       <div className="mt-5">
-        <BrandPreviewCard
+        <AgencyPreviewCard
           businessName={businessName}
           website={website}
           logoUrl={logoUrl}

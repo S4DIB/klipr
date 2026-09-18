@@ -19,7 +19,7 @@ export const declaredPageSchema = z.object({
 });
 
 export const applicationSchema = z.object({
-  role: z.enum(["clipper", "agency"]),
+  role: z.enum(["clipper", "network"]),
   orgName: z.string().trim().max(80).optional(),
   note: z
     .string()
@@ -34,7 +34,7 @@ export const applicationSchema = z.object({
 
 export type ApplicationInput = z.infer<typeof applicationSchema>;
 
-export const brandSignupSchema = z.object({
+export const agencySignupSchema = z.object({
   orgName: z.string().trim().min(2, "Company name").max(80),
   contactNumber: z
     .string()

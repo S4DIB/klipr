@@ -9,9 +9,9 @@ import {
   CompanyPanel,
   PanelHeading,
   SaveResult,
-  type BrandInfo,
+  type AgencyInfo,
 } from "./company-form";
-import { updateBrandContact, type SettingsState } from "./actions";
+import { updateAgencyContact, type SettingsState } from "./actions";
 
 type Tab = "company" | "contact" | "close";
 
@@ -21,7 +21,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "close", label: "Close account" },
 ];
 
-export function BrandSettingsTabs({ brand }: { brand: BrandInfo }) {
+export function AgencySettingsTabs({ agency }: { agency: AgencyInfo }) {
   const [tab, setTab] = useState<Tab>("company");
 
   return (
@@ -50,8 +50,8 @@ export function BrandSettingsTabs({ brand }: { brand: BrandInfo }) {
       {/* right panel */}
       <div className="min-w-0 flex-1">
         <div className="rounded-[22px] bg-white p-6 shadow-[0_1px_2px_rgba(31,3,53,0.04)] sm:p-7">
-          {tab === "company" && <CompanyPanel brand={brand} />}
-          {tab === "contact" && <ContactPanel brand={brand} />}
+          {tab === "company" && <CompanyPanel agency={agency} />}
+          {tab === "contact" && <ContactPanel agency={agency} />}
           {tab === "close" && <ClosePanel />}
         </div>
       </div>
@@ -59,12 +59,12 @@ export function BrandSettingsTabs({ brand }: { brand: BrandInfo }) {
   );
 }
 
-function ContactPanel({ brand }: { brand: BrandInfo }) {
-  const [state, action, pending] = useActionState<SettingsState, FormData>(updateBrandContact, {});
+function ContactPanel({ agency }: { agency: AgencyInfo }) {
+  const [state, action, pending] = useActionState<SettingsState, FormData>(updateAgencyContact, {});
   // Seed first/last from displayName the first time (before the user split them).
-  const [first, ...restName] = (brand.displayName || "").trim().split(/\s+/);
-  const seededFirst = brand.firstName ?? first ?? "";
-  const seededLast = brand.lastName ?? restName.join(" ");
+  const [first, ...restName] = (agency.displayName || "").trim().split(/\s+/);
+  const seededFirst = agency.firstName ?? first ?? "";
+  const seededLast = agency.lastName ?? restName.join(" ");
 
   return (
     <form action={action} className="flex flex-col gap-6">
@@ -77,7 +77,7 @@ function ContactPanel({ brand }: { brand: BrandInfo }) {
 
       <div className="border-t border-[rgba(53,5,90,0.08)] pt-5">
         <p className="mb-1.5 text-[13px] font-medium text-ink-900">Email</p>
-        <div className="glass-well px-3.5 py-2.5 text-[14px] text-ink-500">{brand.email}</div>
+        <div className="glass-well px-3.5 py-2.5 text-[14px] text-ink-500">{agency.email}</div>
         <p className="mt-1.5 text-[12px] text-ink-400">
           Your login email. Contact the Klipr team to change it.
         </p>
@@ -98,7 +98,7 @@ function ClosePanel() {
     <div className="flex flex-col gap-4">
       <PanelHeading>Close account</PanelHeading>
       <p className="text-[13px] leading-relaxed text-ink-500">
-        Signing out ends this session. To permanently delete your brand account and data, contact
+        Signing out ends this session. To permanently delete your agency account and data, contact
         the Klipr team — we&rsquo;ll settle any open campaigns first.
       </p>
       <form action={signOut}>

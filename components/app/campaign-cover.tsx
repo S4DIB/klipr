@@ -3,7 +3,7 @@ import { VIDEO_EXT } from "@/lib/media/cover";
 import { cn } from "@/lib/cn";
 
 /**
- * Every campaign leads with a cover — a still or a short clip the brand
+ * Every campaign leads with a cover — a still or a short clip the agency
  * uploads in the wizard. Until real media is there we render an on-brand
  * gradient placeholder so cards never fall back to a blank rectangle. Gradient
  * is deterministic per seed so a feed of covers reads as varied, not repeated.
@@ -31,7 +31,7 @@ export function CampaignCover({
 }: {
   /** Real cover art (image or video). Absent ⇒ placeholder. */
   coverUrl?: string;
-  /** Deterministic seed for the placeholder gradient (brand name works well). */
+  /** Deterministic seed for the placeholder gradient (agency name works well). */
   seed: string;
   /** Muted, desaturated treatment for early-access locked cards. */
   locked?: boolean;

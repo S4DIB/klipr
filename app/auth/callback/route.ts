@@ -7,7 +7,7 @@ import { siteUrl } from "@/lib/env";
 
 /**
  * Google OAuth callback. Invite-only: exchange the code, then allow the session
- * ONLY for admins/brands or a clipper the admin already approved on the waitlist
+ * ONLY for admins/agencies or a clipper the admin already approved on the waitlist
  * (promoteIfPreapproved flips them to "active"). Anyone else is signed straight
  * back out and told to join the waitlist — no self-serve account.
  *

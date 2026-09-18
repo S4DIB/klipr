@@ -78,7 +78,7 @@ export async function QueuePanel({ selectedId }: { selectedId?: string }) {
                   )}
                 </span>
                 <span className="mt-0.5 block text-[11.5px] text-ink-500">
-                  {application.role === "agency" ? "Agency" : "Clipper"} · {pages.length} page
+                  {application.role === "network" ? "Network" : "Clipper"} · {pages.length} page
                   {pages.length === 1 ? "" : "s"} ·{" "}
                   {[...new Set(pages.map((p) => PLATFORMS[p.platform].label))].join(", ")}
                 </span>

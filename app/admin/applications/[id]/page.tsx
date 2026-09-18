@@ -46,7 +46,7 @@ export default async function ReviewApplicationPage({
   const open = application.status === "submitted";
   const approvedCount = pages.filter((p) => p.vetStatus === "approved").length;
   const name = profile?.displayName ?? application.profileId;
-  const roleLabel = application.role === "agency" ? "Agency" : "Clipper";
+  const roleLabel = application.role === "network" ? "Network" : "Clipper";
 
   return (
     <div className="flex flex-col gap-5 lg:flex-row">

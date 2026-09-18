@@ -65,7 +65,7 @@ const ICONS: Record<RailItem["icon"], (p: IconProps) => React.ReactNode> = {
  */
 export function RailNav({ items }: { items: RailItem[] }) {
   const pathname = usePathname();
-  // only the deepest matching route lights up (so "/admin" or "/brand" don't
+  // only the deepest matching route lights up (so "/admin" or "/agency" don't
   // stay active on every child page)
   const best = items.reduce<string | null>((acc, { href }) => {
     const match = pathname === href || pathname.startsWith(`${href}/`);

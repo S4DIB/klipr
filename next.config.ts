@@ -39,7 +39,13 @@ const nextConfig: NextConfig = {
   async redirects() {
     // /home split into /dashboard (the working surface) and /profile (identity).
     // Keeps old bookmarks and any shared links alive.
-    return [{ source: "/home", destination: "/dashboard", permanent: true }];
+    return [
+      { source: "/home", destination: "/dashboard", permanent: true },
+      // The client console moved from /brand to /agency. Only extension-less
+      // paths redirect: /brand/*.svg etc. are the /public/brand landing assets.
+      { source: "/brand", destination: "/agency", permanent: true },
+      { source: "/brand/:path((?!.*\\.).*)", destination: "/agency/:path", permanent: true },
+    ];
   },
 };
 

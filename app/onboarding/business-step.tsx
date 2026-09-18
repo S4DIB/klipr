@@ -3,11 +3,11 @@
 import { useActionState, useState } from "react";
 import { Button, ArrowEast } from "@/components/ui/button";
 import { IconUpload } from "@/components/icons";
-import { BrandPreviewCard } from "./brand-preview-card";
+import { AgencyPreviewCard } from "./agency-preview-card";
 import { VField } from "./violet-field";
-import { saveBusinessProfile, type BrandProfileState } from "./actions";
+import { saveBusinessProfile, type AgencyProfileState } from "./actions";
 
-/** Brand step 1 — Make your business profile. */
+/** Agency step 1 — Make your business profile. */
 export function BusinessStep({
   orgName: initialOrg,
   website: initialWebsite,
@@ -17,7 +17,7 @@ export function BusinessStep({
   website: string;
   logoUrl?: string;
 }) {
-  const [state, action, pending] = useActionState<BrandProfileState, FormData>(
+  const [state, action, pending] = useActionState<AgencyProfileState, FormData>(
     saveBusinessProfile,
     {},
   );
@@ -41,7 +41,7 @@ export function BusinessStep({
       </p>
 
       <div className="mt-5">
-        <BrandPreviewCard businessName={orgName} website={website} logoUrl={logoPreview} />
+        <AgencyPreviewCard businessName={orgName} website={website} logoUrl={logoPreview} />
       </div>
 
       <form action={action} className="mt-5 space-y-4">
@@ -50,7 +50,7 @@ export function BusinessStep({
           name="orgName"
           value={orgName}
           onChange={(e) => setOrgName(e.target.value)}
-          placeholder="Your brand or company"
+          placeholder="Your agency or company"
           error={state.field === "orgName" ? state.error : undefined}
           required
         />
@@ -76,7 +76,7 @@ export function BusinessStep({
           </p>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-[14px] border border-white/25 bg-white/[0.08] px-4 py-2.5 text-[13.5px] font-medium text-white transition-colors hover:bg-white/[0.14]">
             <IconUpload size={16} strokeWidth={1.5} />
-            {logoPreview ? "Change logo" : "Upload brand logo"}
+            {logoPreview ? "Change logo" : "Upload agency logo"}
             <input
               type="file"
               name="logo"

@@ -23,8 +23,8 @@ npm run dev          # http://localhost:3000
 > If a root `.env` holds Supabase values, force stub mode:
 > `NEXT_PUBLIC_SUPABASE_URL="" NEXT_PUBLIC_SUPABASE_ANON_KEY="" SUPABASE_SERVICE_ROLE_KEY="" npm run dev`
 
-**Demo identities** (login page, stub only): active Clipper · Network Manager
-(agency) · waitlisted Applicant · Brand · Admin. Dev-only QA endpoints
+**Demo identities** (login page, stub only): active Clipper · waitlisted Applicant ·
+Agency (formerly "Brand") · Admin. Dev-only QA endpoints
 (404 in production): `/dev-login?as=usr_admin` · `/dev-sweep?at=<iso>`
 (time-travel the settlement sweep) · `/dev-submit` · `/styleguide`.
 

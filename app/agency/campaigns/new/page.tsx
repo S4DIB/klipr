@@ -5,7 +5,7 @@ import { CampaignForm } from "./campaign-form";
 export const metadata: Metadata = { title: "New campaign" };
 
 export default async function NewCampaignPage() {
-  const user = await requireRole("brand");
+  const user = await requireRole("agency");
 
-  return <CampaignForm brandName={user.orgName || user.displayName} />;
+  return <CampaignForm agencyName={user.orgName || user.displayName} />;
 }

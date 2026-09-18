@@ -145,7 +145,7 @@ export default async function ClipDetailPage({
         <div className="flex min-w-0 flex-col gap-[14px]">
       <header>
         <h1 className="text-[20px] font-extrabold tracking-[-0.02em] text-ink-900">
-          {campaign ? `${campaign.brandName} · ${campaign.name}` : "Clip"}
+          {campaign ? `${campaign.agencyName} · ${campaign.name}` : "Clip"}
         </h1>
         <p className="text-[12px] text-ink-500">
           {PLATFORMS[sub.platform].surface}

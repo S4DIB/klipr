@@ -10,7 +10,7 @@ import { IconChevronLeft } from "@/components/icons";
 import { PLATFORMS } from "@/lib/platforms";
 import { takaFromPoisha, dhakaDate, dhakaDateTime } from "@/lib/format";
 import { approveCampaign, rejectCampaign, markCampaignFunded, cancelCampaign } from "../actions";
-import { clearDeletionRequest } from "@/app/brand/campaigns/new/actions";
+import { clearDeletionRequest } from "@/app/agency/campaigns/new/actions";
 
 export const metadata: Metadata = { title: "Campaign · Admin" };
 
@@ -23,8 +23,8 @@ export default async function AdminCampaignDetail({
   const c = await getCampaign(id);
   if (!c) notFound();
 
-  const brand = await getProfile(c.brandProfileId);
-  const brandName = brand?.orgName ?? brand?.displayName ?? c.brandProfileId;
+  const agency = await getProfile(c.agencyProfileId);
+  const agencyName = agency?.orgName ?? agency?.displayName ?? c.agencyProfileId;
   const funded = Boolean(c.fundedAt);
   const isPending = c.status === "pending_funding" || c.status === "draft";
 
@@ -43,19 +43,19 @@ export default async function AdminCampaignDetail({
           <StatusChip status={c.status} />
         </div>
         <p className="mt-1 text-[13.5px] text-text-mid">
-          {brandName}
-          {brand?.email ? ` · ${brand.email}` : ""}
+          {agencyName}
+          {agency?.email ? ` · ${agency.email}` : ""}
         </p>
       </header>
 
-      {/* Brand's deletion request — approve to remove, or dismiss to keep */}
+      {/* Agency's deletion request — approve to remove, or dismiss to keep */}
       {c.deletionRequestedAt ? (
         <GlassPanel className="border border-[rgba(255,123,192,0.35)] p-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="eyebrow text-danger-600">Deletion requested</p>
               <p className="mt-1 text-[14.5px] font-bold text-text-hi">
-                {brandName} asked to delete this campaign · {dhakaDateTime(c.deletionRequestedAt)}
+                {agencyName} asked to delete this campaign · {dhakaDateTime(c.deletionRequestedAt)}
               </p>
               <p className="mt-0.5 max-w-md text-[12.5px] leading-relaxed text-text-mid">
                 Approve to remove it and all its clips/records, or dismiss to keep the campaign.

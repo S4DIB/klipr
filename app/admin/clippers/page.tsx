@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Clippers · Admin" };
 const ONBOARDING_STEPS = ["Connect pages", "Payout", "Your tier"];
 
 /**
- * Where a clipper/agency stands in setup. Only "active" accounts have reached
+ * Where a clipper/network stands in setup. Only "active" accounts have reached
  * onboarding; everyone else is still waiting on marketplace access.
  */
 function onboardingChip(p: Profile): { label: string; className: string } {
@@ -33,7 +33,7 @@ function onboardingChip(p: Profile): { label: string; className: string } {
 export default async function AdminClippersPage() {
   const all = await listProfiles();
   const earners = all
-    .filter((p) => p.role === "clipper" || p.role === "agency")
+    .filter((p) => p.role === "clipper" || p.role === "network")
     .sort((a, b) => b.xpTotal - a.xpTotal);
 
   const onboarded = earners.filter((p) => p.access === "active" && p.profileCompleted).length;
@@ -69,7 +69,7 @@ export default async function AdminClippersPage() {
                   <p className="flex flex-wrap items-center gap-2 text-[14px] font-medium text-text-hi">
                     {p.displayName}
                     <TierBadge tier={p.tier} size="sm" />
-                    {p.role === "agency" && (
+                    {p.role === "network" && (
                       <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-text-low">
                         network manager
                       </span>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
 import {
-  listCampaignsByBrand,
+  listCampaignsByAgency,
   listSubmissionsForCampaigns,
   listUnreadNotifications,
 } from "@/lib/db";
@@ -15,7 +15,7 @@ import { takaFromPoisha, views as fmtViews } from "@/lib/format";
 import { PLATFORMS } from "@/lib/platforms";
 import { cn } from "@/lib/cn";
 
-export const metadata: Metadata = { title: "Brand console" };
+export const metadata: Metadata = { title: "Agency console" };
 
 /** Compact taka for table cells: ৳22.8k / ৳60k / ৳420. */
 function takaCompact(poisha: number): string {
@@ -27,9 +27,9 @@ function takaCompact(poisha: number): string {
   return `৳${Math.round(taka).toLocaleString("en-US")}`;
 }
 
-export default async function BrandOverviewPage() {
-  const user = await requireRole("brand");
-  const campaigns = (await listCampaignsByBrand(user.id)).sort((a, b) =>
+export default async function AgencyOverviewPage() {
+  const user = await requireRole("agency");
+  const campaigns = (await listCampaignsByAgency(user.id)).sort((a, b) =>
     b.createdAt.localeCompare(a.createdAt),
   );
 
@@ -59,7 +59,7 @@ export default async function BrandOverviewPage() {
         <h1 className="text-[28px] font-extrabold tracking-[-0.02em] text-ink-900">
           Welcome back, {user.orgName || user.displayName}
         </h1>
-        <Button href="/brand/campaigns/new" className="h-11 px-6 text-[14px]">
+        <Button href="/agency/campaigns/new" className="h-11 px-6 text-[14px]">
           New campaign
         </Button>
       </header>
@@ -125,7 +125,7 @@ export default async function BrandOverviewPage() {
             title="No campaigns yet"
             action={
               <Button
-                href="/brand/campaigns/new"
+                href="/agency/campaigns/new"
                 variant="primary"
                 className="h-11 px-6 text-[14px]"
               >
@@ -148,7 +148,7 @@ export default async function BrandOverviewPage() {
                 return (
                   <Link
                     key={c.id}
-                    href={`/brand/campaigns/${c.id}`}
+                    href={`/agency/campaigns/${c.id}`}
                     className={cn(
                       "liftrow grid grid-cols-[2.2fr_1fr_1.6fr_1fr_1fr] items-center gap-3 py-3.5",
                       i < campaigns.length - 1 && "border-b border-[rgba(53,5,90,0.06)]",
@@ -204,8 +204,8 @@ export default async function BrandOverviewPage() {
                     >
                       {funded
                         ? c.payoutModel === "per_video"
-                          ? takaFromPoisha(c.perVideoBrandPoisha ?? 0)
-                          : takaFromPoisha(c.rateBrandPer1k)
+                          ? takaFromPoisha(c.perVideoAgencyPoisha ?? 0)
+                          : takaFromPoisha(c.rateAgencyPer1k)
                         : "—"}
                     </span>
                     <span

@@ -113,7 +113,7 @@ function readSource(): string | undefined {
 }
 
 /** Pre-launch capture — ONE step each (spec §8). Clippers paste their page
- *  links + pick a niche per page + say how often they post; brands leave
+ *  links + pick a niche per page + say how often they post; agencies leave
  *  company details. Stored via /api/waitlist. */
 export function WaitlistForm({
   autoFocusFirst,
@@ -122,10 +122,10 @@ export function WaitlistForm({
 }: {
   autoFocusFirst?: boolean;
   variant?: Variant;
-  initialRole?: "clipper" | "brand";
+  initialRole?: "clipper" | "agency";
 }) {
   const t = THEMES[variant];
-  const [role, setRole] = useState<"clipper" | "brand">(initialRole);
+  const [role, setRole] = useState<"clipper" | "agency">(initialRole);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -156,7 +156,7 @@ export function WaitlistForm({
     setState("busy");
     const source = readSource(); // which ad/campaign this signup came from
     const payload =
-      role === "brand"
+      role === "agency"
         ? { role, name, email, phone, company, designation, website, source }
         : { role, name, email, phone, pages, postFrequency, website, source };
     try {
@@ -209,10 +209,10 @@ export function WaitlistForm({
         className="absolute left-[-9999px] h-0 w-0 opacity-0"
       />
 
-      {/* who are you — clipper or brand */}
+      {/* who are you — clipper or agency */}
       <div className="mb-5 flex justify-center">
         <div className={`inline-flex rounded-full p-1 ${t.toggleWrap}`}>
-          {(["clipper", "brand"] as const).map((r) => (
+          {(["clipper", "agency"] as const).map((r) => (
             <button
               key={r}
               type="button"
@@ -224,7 +224,7 @@ export function WaitlistForm({
                 role === r ? t.toggleActive : t.toggleIdle
               }`}
             >
-              {r === "clipper" ? "I'm a clipper" : "I'm a brand"}
+              {r === "clipper" ? "I'm a clipper" : "I'm an agency"}
             </button>
           ))}
         </div>
@@ -281,7 +281,7 @@ export function WaitlistForm({
           </div>
         </div>
 
-        {role === "brand" ? (
+        {role === "agency" ? (
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor={`wl-${variant}-company`} className={t.label}>

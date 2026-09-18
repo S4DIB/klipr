@@ -19,12 +19,12 @@ function PinIcon() {
 }
 
 /**
- * Live business-identity preview for the brand onboarding — the white inset on
- * the violet card (mirrors the clipper PreviewCard). Grows as the brand fills
+ * Live business-identity preview for the agency onboarding — the white inset on
+ * the violet card (mirrors the clipper PreviewCard). Grows as the agency fills
  * in: logo + business name + website, then industry/country chips, then the
  * contact person on the final step.
  */
-export function BrandPreviewCard({
+export function AgencyPreviewCard({
   businessName,
   website,
   logoUrl,

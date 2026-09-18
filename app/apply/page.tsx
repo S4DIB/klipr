@@ -19,7 +19,7 @@ export default async function ApplyPage() {
   // Already routed elsewhere? Never show the form twice.
   if (user.access === "waitlisted") redirect("/apply/status");
   if (user.access === "active") redirect(routeFor(user));
-  if (user.role === "brand" && user.profileCompleted) redirect("/brand");
+  if (user.role === "agency" && user.profileCompleted) redirect("/agency");
   if (user.role === "admin") redirect("/admin");
   // access "none" or "declined" (declined users arrive via the reapply action)
 

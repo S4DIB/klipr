@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/guards";
-import { brandSignupSchema } from "@/lib/validation/apply";
+import { agencySignupSchema } from "@/lib/validation/apply";
 import { updateProfile } from "@/lib/db";
 
 export type ApplyState = { error?: string };
@@ -11,7 +11,7 @@ const INVITE_ONLY =
   "Klipr is invite-only right now. Join the waitlist and we'll email you once you're approved.";
 
 /**
- * Clipper/agency self-application is DISABLED — access is invite-only: join the
+ * Clipper/network self-application is DISABLED — access is invite-only: join the
  * landing waitlist, then an admin approves you (promoteIfPreapproved unlocks the
  * app on sign-in). Kept as a guarded no-op so any stale form just shows the note.
  */
@@ -25,11 +25,11 @@ export async function startReapplication(): Promise<void> {
 }
 
 /**
- * Brand signup. Brands are provisioned by the admin (a fresh Google sign-in
+ * Agency signup. Agencies are provisioned by the admin (a fresh Google sign-in
  * can't self-serve past the invite gate); this just completes their profile and
- * drops them into the brand console. Qualified by funding, not by audience.
+ * drops them into the agency console. Qualified by funding, not by audience.
  */
-export async function submitBrandSignup(
+export async function submitAgencySignup(
   _prev: ApplyState,
   formData: FormData,
 ): Promise<ApplyState> {
@@ -39,9 +39,9 @@ export async function submitBrandSignup(
   } catch {
     redirect("/login");
   }
-  if (user.role === "admin") return { error: "Admins don't need a brand signup." };
+  if (user.role === "admin") return { error: "Admins don't need an agency signup." };
 
-  const parsed = brandSignupSchema.safeParse({
+  const parsed = agencySignupSchema.safeParse({
     orgName: formData.get("orgName"),
     contactNumber: formData.get("contactNumber"),
     designation: formData.get("designation"),
@@ -51,12 +51,12 @@ export async function submitBrandSignup(
   }
 
   await updateProfile(user.id, {
-    role: "brand",
+    role: "agency",
     access: "active",
     orgName: parsed.data.orgName,
     profileCompleted: true,
     onboardingStep: 99,
   });
 
-  redirect("/brand");
+  redirect("/agency");
 }

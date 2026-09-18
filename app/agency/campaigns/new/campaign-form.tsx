@@ -23,7 +23,7 @@ function VLabel({ children }: { children: ReactNode }) {
   return <label className="mb-1.5 block text-[13px] font-medium text-white">{children}</label>;
 }
 
-/** Fixed, read-only value (brand name, fixed rate, tracking window). */
+/** Fixed, read-only value (agency name, fixed rate, tracking window). */
 function VReadout({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
@@ -42,10 +42,10 @@ function VReadout({ label, children }: { label: string; children: ReactNode }) {
  * PENDING FUNDING. Pass `campaign` to edit an existing one — fields prefill.
  */
 export function CampaignForm({
-  brandName,
+  agencyName,
   campaign,
 }: {
-  brandName: string;
+  agencyName: string;
   campaign?: Campaign;
 }) {
   const editing = Boolean(campaign);
@@ -89,7 +89,7 @@ export function CampaignForm({
   const budgetNum = Number(budget) || 0;
   const perVideoNum = Number(perVideo) || 0;
   const byVideo = payoutModel === "per_video";
-  // brand cost carries the platform's fixed 5:6 margin, same as the per-1k rates
+  // agency cost carries the platform's fixed 5:6 margin, same as the per-1k rates
   const perVideoCost = perVideoNum * 1.2;
   const taka = (n: number) => `৳${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 
@@ -134,7 +134,7 @@ export function CampaignForm({
             </div>
             <div className="flex flex-col gap-4 sm:flex-row">
               <div className="flex-1">
-                <VReadout label="Brand">{brandName}</VReadout>
+                <VReadout label="Agency">{agencyName}</VReadout>
               </div>
               <div className="flex-1">
                 <VLabel>Niche</VLabel>
