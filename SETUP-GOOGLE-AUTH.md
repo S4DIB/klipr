@@ -34,7 +34,7 @@ Run `supabase/migrations/0001` → `0006` **in order** on your project — eithe
 
 ## 3. Environment variables (production host)
 
-Set these where you deploy (Vercel/host env, **not** committed):
+Set these where you deploy (the Coolify app's env vars, **not** committed):
 
 | Var | Value |
 |---|---|

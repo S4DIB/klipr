@@ -75,11 +75,18 @@ zero-sum throughout.
      set role='admin', access='active', profile_completed=true
      where email='you@example.com';
    ```
-6. **Deploy (Vercel):** set the same env vars. `vercel.json` schedules
-   `/api/cron/sweep` every 15 min (Vercel sends `Authorization: Bearer
-   $CRON_SECRET` automatically). **Hobby plan allows only daily crons** — use
-   GitHub Actions/cron-job.org to curl the endpoint every 15 min until on Pro.
-   The sweep is idempotent; overlapping pings are harmless.
+6. **Deploy (Coolify):** Build Pack = **Dockerfile**. Set the same env vars on
+   the app; the three `NEXT_PUBLIC_*` values must also be available at build
+   time (they are inlined into the bundle), the rest are runtime-only.
+7. **Schedule the sweep — nothing in the repo does this for you.** In Coolify:
+   app → **Scheduled Tasks** → add one, frequency `*/15 * * * *`, command:
+   ```sh
+   node -e "fetch('http://localhost:3000/api/cron/sweep',{headers:{authorization:'Bearer '+process.env.CRON_SECRET}}).then(r=>r.text()).then(console.log)"
+   ```
+   It runs inside the app container, so it reads the runtime `CRON_SECRET`
+   (the image has no `curl`, hence `node`). Without this task views are never
+   polled and no submission ever settles. The sweep is idempotent; overlapping
+   runs are harmless. Check the task log for a JSON report, not `unauthorized`.
 
 ## Launch policy (per flows v2)
 Real-money campaigns are **YouTube-only** until TikTok/Meta app reviews pass.

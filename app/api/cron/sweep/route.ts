@@ -6,9 +6,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * The verification sweep — hit every ~15 minutes by Vercel cron (Pro) or an
- * external pinger (GitHub Actions / cron-job.org on Hobby). Idempotent, so
- * duplicate or overlapping pings are harmless. Requires CRON_SECRET.
+ * The verification sweep — hit every ~15 minutes by a Coolify Scheduled Task
+ * (see PRODUCTION.md). Nothing in the repo schedules it: if that task is
+ * missing, views are never polled and nothing settles. Idempotent, so duplicate
+ * or overlapping pings are harmless. Requires CRON_SECRET.
  */
 export async function GET(request: Request) {
   const secret = serverEnv.CRON_SECRET;
