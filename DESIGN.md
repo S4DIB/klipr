@@ -122,7 +122,7 @@ split) when configured, else the JSON store (`store.ts`, v3 seed with five
 - Guards in every server action (`lib/auth/guards.ts`) — Next 16 actions
   bypass the proxy matcher by design.
 - Security headers (`next.config.ts`), env validation (`lib/env.ts` +
-  `lib/env.server.ts`), `vercel.json` cron (Hobby needs an external pinger).
+  `lib/env.server.ts`), sweep cron via a Coolify Scheduled Task (see PRODUCTION.md).
 - Verified: `npm test` green · `tsc` clean · `eslint` 0 errors ·
   `next build` passes · full stub-mode E2E (apply → vet → submit → sweep →
   settle → payout) with a global ledger zero-sum of 0.

@@ -738,9 +738,8 @@ simulated."*). Defaults: YouTube `live` when `YOUTUBE_API_KEY` set, else
 - **`app/api/cron/sweep/route.ts`** (GET, Node): 401 unless
   `Bearer ${CRON_SECRET}`. Runs `runSweep()` from `lib/verify/sweep.ts`;
   returns JSON report (polled/settled/held/xpAwarded/tierUpgrades).
-- **Scheduling:** `vercel.json` cron `*/15 * * * *` (Vercel Hobby = daily only —
-  use GitHub Actions schedule or cron-job.org hitting the URL with the secret
-  until on Pro). Dev: **"Run sweep now"** button on `/admin`.
+- **Scheduling:** a Coolify Scheduled Task, `*/15 * * * *`, hitting the URL with
+  the secret (recipe in PRODUCTION.md). Dev: **"Run sweep now"** button on `/admin`.
 - **`runSweep(now)` steps:**
   1. **Baseline:** `pending` → fetch stats → set `baselineViews` → `tracking`
      (retry next run on failure; auto-reject after 24h `not_found`).
@@ -874,7 +873,7 @@ Total ≈ 4.5–5 solo working weeks.
 
 ### Phase 5 — Verification engine + settlement + XP (3–4 days)
 - `lib/verify/{types,index,youtube,simulated,facebook,instagram,tiktok,fraud,sweep}.ts`
-  · `app/api/cron/sweep/route.ts` · `vercel.json` · YouTube OAuth connect
+  · `app/api/cron/sweep/route.ts` · YouTube OAuth connect
   routes · `settle_submission` SQL function · admin "Run sweep now".
 - **Verify:** `npm test` (URL parsing, curve determinism, fraud rules, settle +
   XP idempotency via repeated `runSweep`); stub demo — shrink
@@ -952,7 +951,7 @@ Total ≈ 4.5–5 solo working weeks.
   not a velvet rope.
 - **Timezone:** store UTC ISO; display + end-of-day + **streak week
   boundaries** in `Asia/Dhaka` (`dhakaWeek()` in `lib/format.ts`).
-- **Vercel Hobby cron = daily** — external pinger until Pro; sweep is
+- **The sweep is scheduled outside the repo** (Coolify Scheduled Task); it is
   idempotent so duplicates are harmless.
 - **Simulated-mode honesty:** launch policy — **real-money campaigns are
   YouTube-only** until TikTok/Meta approvals land; simulated platforms visible
