@@ -25,7 +25,7 @@ export const metadata: Metadata = { title: "Accounts" };
 
 /**
  * Clipper: vetted pages + their connection state.
- * Agency: the Network Manager. Per-page XP & tier roster; payouts roll up
+ * Network: the Network Manager. Per-page XP & tier roster; payouts roll up
  * into a single transfer.
  */
 export default async function ConnectionsPage() {
@@ -41,9 +41,9 @@ export default async function ConnectionsPage() {
   const accountByPage = new Map(
     accounts.filter((a) => a.status !== "revoked").map((a) => [a.applicationPageId, a]),
   );
-  const isAgency = user.role === "agency";
+  const isNetwork = user.role === "network";
 
-  if (!isAgency) {
+  if (!isNetwork) {
     /* ── Clipper: simple vetted-pages list ── */
     return (
       <div className="mx-auto flex w-full max-w-[480px] flex-col gap-[14px] lg:max-w-none">
@@ -109,7 +109,7 @@ export default async function ConnectionsPage() {
     );
   }
 
-  /* ── Agency: Network Manager ── */
+  /* ── Network: Network Manager ── */
   const allPages = application ? await listApplicationPages(application.id) : [];
   const pendingPages = allPages.filter((p) => p.vetStatus === "pending");
   const subs = await listSubmissions({ profileId: user.id });
@@ -140,7 +140,7 @@ export default async function ConnectionsPage() {
   return (
     <div className="flex flex-col gap-5">
       <header>
-        <p className="eyebrow text-violet-600">Agency · {user.orgName || user.displayName}</p>
+        <p className="eyebrow text-violet-600">Network · {user.orgName || user.displayName}</p>
         <h1 className="mt-1 text-[28px] font-extrabold tracking-[-0.02em] text-ink-900">
           Network Manager
         </h1>

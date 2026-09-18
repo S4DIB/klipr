@@ -25,7 +25,7 @@ export default async function ClipsPage() {
   const campaignRows = await getCampaignsByIds([...new Set(subs.map((s) => s.campaignId))]);
   const campaignNames = new Map(campaignRows.map((c) => [c.id, c.name] as const));
 
-  const isAgency = user.role === "agency";
+  const isNetwork = user.role === "network";
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-col gap-[14px] lg:max-w-none">
@@ -66,7 +66,7 @@ export default async function ClipsPage() {
                     </span>
                     <span className="block truncate text-[12px] text-ink-500">
                       {PLATFORMS[s.platform].surface}
-                      {isAgency && acc ? ` · ${acc.handle}` : ""}
+                      {isNetwork && acc ? ` · ${acc.handle}` : ""}
                     </span>
                   </span>
                   <span className="flex shrink-0 flex-col items-end gap-1">

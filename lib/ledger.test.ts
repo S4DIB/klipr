@@ -32,7 +32,7 @@ test("settlement event: escrow → clipper + margin, zero-sum, idempotency key",
     remainingEscrowPoisha: 4_000_000,
     clipperCapRemainingPoisha: 500_000,
     rateClipperPer1k: 5000,
-    rateBrandPer1k: 6000,
+    rateAgencyPer1k: 6000,
   });
   const e = buildSettlementEvent({
     submissionId: "sub_1",
@@ -55,7 +55,7 @@ test("৳0 settlement books nothing", () => {
     remainingEscrowPoisha: 1_000_000,
     clipperCapRemainingPoisha: 500_000,
     rateClipperPer1k: 5000,
-    rateBrandPer1k: 6000,
+    rateAgencyPer1k: 6000,
   });
   assert.deepEqual(
     buildSettlementEvent({ submissionId: "s", campaignId: "c", profileId: "p", math }),
@@ -83,7 +83,7 @@ test("a full campaign lifecycle nets to zero across all accounts", () => {
     remainingEscrowPoisha: 4_000_000,
     clipperCapRemainingPoisha: 500_000,
     rateClipperPer1k: 5000,
-    rateBrandPer1k: 6000,
+    rateAgencyPer1k: 6000,
   });
   const all = [
     ...buildFundingEvent("cmp_1", 4_000_000),

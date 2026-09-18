@@ -21,8 +21,8 @@ export function Footer() {
           <a href="#features" className="transition-colors hover:text-volt-600">
             Features
           </a>
-          <a href="#brands" className="transition-colors hover:text-volt-600">
-            For brands
+          <a href="#agencies" className="transition-colors hover:text-volt-600">
+            For agencies
           </a>
           <a href="#faq" className="transition-colors hover:text-volt-600">
             FAQ

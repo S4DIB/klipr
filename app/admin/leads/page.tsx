@@ -20,7 +20,7 @@ function fmtWhen(iso: string): string {
 }
 
 function detailOf(l: Lead): string {
-  if (l.role === "brand") {
+  if (l.role === "agency") {
     return [l.company, l.designation].filter(Boolean).join(" · ") || "—";
   }
   const pages = (l.pages ?? []).map((p) => `${p.link} (${p.niche})`).join(", ");
@@ -31,7 +31,7 @@ function detailOf(l: Lead): string {
 export default async function LeadsPage() {
   const leads = await listLeads();
   const clippers = leads.filter((l) => l.role === "clipper").length;
-  const brands = leads.filter((l) => l.role === "brand").length;
+  const agencies = leads.filter((l) => l.role === "agency").length;
   const todayKey = new Date().toISOString().slice(0, 10);
   const today = leads.filter((l) => l.at.slice(0, 10) === todayKey).length;
 
@@ -61,7 +61,7 @@ export default async function LeadsPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         <Stat label="Total leads" value={String(leads.length)} accent={leads.length > 0} />
         <Stat label="Clippers" value={String(clippers)} />
-        <Stat label="Brands" value={String(brands)} />
+        <Stat label="Agencies" value={String(agencies)} />
         <Stat label="Today" value={String(today)} />
       </div>
 
@@ -89,7 +89,7 @@ export default async function LeadsPage() {
                     <Td>
                       <span
                         className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                          l.role === "brand"
+                          l.role === "agency"
                             ? "bg-volt-500/10 text-volt-600"
                             : "bg-ok/10 text-ok"
                         }`}

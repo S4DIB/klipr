@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
-import { listCampaignsByBrand } from "@/lib/db";
+import { listCampaignsByAgency } from "@/lib/db";
 import type { CampaignStatus } from "@/lib/db/types";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Campaigns" };
 type FilterKey = "all" | "pending" | "active" | "completed" | "rejected";
 
 /**
- * Brand-facing status buckets. "Pending" = still with the Klipr team (awaiting
+ * Agency-facing status buckets. "Pending" = still with the Klipr team (awaiting
  * approval / funding); "Active" = approved and running; "Completed" = finished;
  * "Rejected" = declined or cancelled.
  */
@@ -28,16 +28,16 @@ const FILTERS: { key: FilterKey; label: string; match: (s: CampaignStatus) => bo
   { key: "rejected", label: "Rejected", match: (s) => s === "cancelled" },
 ];
 
-export default async function BrandCampaignsPage({
+export default async function AgencyCampaignsPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
-  const user = await requireRole("brand");
+  const user = await requireRole("agency");
   const { status } = await searchParams;
   const current = (FILTERS.find((f) => f.key === status)?.key ?? "all") as FilterKey;
 
-  const all = (await listCampaignsByBrand(user.id)).sort((a, b) =>
+  const all = (await listCampaignsByAgency(user.id)).sort((a, b) =>
     b.createdAt.localeCompare(a.createdAt),
   );
   const matcher = FILTERS.find((f) => f.key === current)!.match;
@@ -47,7 +47,7 @@ export default async function BrandCampaignsPage({
   ) as Record<FilterKey, number>;
 
   const hrefFor = (key: FilterKey) =>
-    key === "all" ? "/brand/campaigns" : `/brand/campaigns?status=${key}`;
+    key === "all" ? "/agency/campaigns" : `/agency/campaigns?status=${key}`;
 
   return (
     <div className="flex flex-col gap-5">
@@ -83,7 +83,7 @@ export default async function BrandCampaignsPage({
             action={
               current === "all" ? (
                 <Button
-                  href="/brand/campaigns/new"
+                  href="/agency/campaigns/new"
                   variant="primary"
                   className="h-11 px-6 text-[14px]"
                 >
@@ -96,7 +96,7 @@ export default async function BrandCampaignsPage({
       ) : (
         <div className="flex flex-col gap-2.5">
           {list.map((c) => (
-            <Link key={c.id} href={`/brand/campaigns/${c.id}`} className="block">
+            <Link key={c.id} href={`/agency/campaigns/${c.id}`} className="block">
               <GlassPanel
                 interactive
                 className="flex flex-wrap items-center justify-between gap-4 p-4"

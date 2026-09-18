@@ -13,7 +13,7 @@ import { HeaderSearch } from "@/components/app/header-search";
 import { MobileNavStrip } from "@/components/app/mobile-nav-strip";
 import type { TierName } from "@/components/app/tier-badge";
 
-type ShellRole = "clipper" | "agency" | "brand" | "admin";
+type ShellRole = "clipper" | "network" | "agency" | "admin";
 
 const RAIL: Record<ShellRole, RailItem[]> = {
   clipper: [
@@ -25,7 +25,7 @@ const RAIL: Record<ShellRole, RailItem[]> = {
     { href: "/connections", label: "Connected accounts", icon: "users" },
     { href: "/profile", label: "Profile", icon: "profile" },
   ],
-  agency: [
+  network: [
     { href: "/dashboard", label: "Dashboard", icon: "home" },
     { href: "/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/clips", label: "Clips", icon: "graph" },
@@ -33,13 +33,13 @@ const RAIL: Record<ShellRole, RailItem[]> = {
     { href: "/connections", label: "Network", icon: "users" },
     { href: "/profile", label: "Profile", icon: "profile" },
   ],
-  brand: [
-    { href: "/brand", label: "Overview", icon: "chart" },
-    { href: "/brand/campaigns/new", label: "New campaign", icon: "add" },
-    { href: "/brand/campaigns", label: "Campaigns", icon: "megaphone" },
-    { href: "/brand/billing", label: "Billing", icon: "bkash" },
-    { href: "/brand/settings", label: "Settings", icon: "gear" },
-    { href: "/brand/profile", label: "Profile", icon: "profile" },
+  agency: [
+    { href: "/agency", label: "Overview", icon: "chart" },
+    { href: "/agency/campaigns/new", label: "New campaign", icon: "add" },
+    { href: "/agency/campaigns", label: "Campaigns", icon: "megaphone" },
+    { href: "/agency/billing", label: "Billing", icon: "bkash" },
+    { href: "/agency/settings", label: "Settings", icon: "gear" },
+    { href: "/agency/profile", label: "Profile", icon: "profile" },
   ],
   admin: [
     { href: "/admin", label: "Ops home", icon: "home" },
@@ -63,19 +63,19 @@ const TABS: Record<ShellRole, TabItem[]> = {
     { href: "/clips", label: "Clips", icon: "graph" },
     { href: "/profile", label: "Profile", icon: "profile" },
   ],
-  agency: [
+  network: [
     { href: "/dashboard", label: "Dash", icon: "home" },
     { href: "/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/campaigns", label: "Submit", icon: "upload", center: true },
     { href: "/connections", label: "Network", icon: "users" },
     { href: "/profile", label: "Profile", icon: "profile" },
   ],
-  brand: [
-    { href: "/brand", label: "Overview", icon: "chart" },
-    { href: "/brand/campaigns", label: "Campaigns", icon: "megaphone" },
-    { href: "/brand/campaigns/new", label: "New", icon: "upload", center: true },
-    { href: "/brand/billing", label: "Billing", icon: "bkash" },
-    { href: "/brand/profile", label: "Profile", icon: "profile" },
+  agency: [
+    { href: "/agency", label: "Overview", icon: "chart" },
+    { href: "/agency/campaigns", label: "Campaigns", icon: "megaphone" },
+    { href: "/agency/campaigns/new", label: "New", icon: "upload", center: true },
+    { href: "/agency/billing", label: "Billing", icon: "bkash" },
+    { href: "/agency/profile", label: "Profile", icon: "profile" },
   ],
   admin: [],
 };
@@ -86,11 +86,11 @@ const TITLES: Record<ShellRole, PageTitle[]> = {
     ...RAIL.clipper.map(({ href, label }) => ({ href, label })),
     { href: "/settings", label: "Settings" },
   ],
-  agency: [
-    ...RAIL.agency.map(({ href, label }) => ({ href, label })),
+  network: [
+    ...RAIL.network.map(({ href, label }) => ({ href, label })),
     { href: "/settings", label: "Settings" },
   ],
-  brand: [...RAIL.brand.map(({ href, label }) => ({ href, label }))],
+  agency: [...RAIL.agency.map(({ href, label }) => ({ href, label }))],
   admin: RAIL.admin.map(({ href, label }) => ({ href, label })),
 };
 
@@ -181,30 +181,30 @@ export function AppShell({
   role: ShellRole;
   displayName: string;
   avatarUrl?: string;
-  /** Clipper/agency only. Rendered under the name in the sidebar. */
+  /** Clipper/network only. Rendered under the name in the sidebar. */
   tier?: TierName;
-  /** Clipper/agency lifetime XP, rendered beside the tier. */
+  /** Clipper/network lifetime XP, rendered beside the tier. */
   xpTotal?: number;
-  /** Clipper/agency available balance, shown in the header. */
+  /** Clipper/network available balance, shown in the header. */
   availablePoisha?: number;
   /** The signed-in user's notices, newest first. Powers the header bell. */
   notifications?: Notification[];
   children: ReactNode;
 }) {
   const unread = (notifications ?? []).filter((n) => !n.readAt);
-  const homeHref = role === "brand" ? "/brand" : role === "admin" ? "/admin" : "/dashboard";
+  const homeHref = role === "agency" ? "/agency" : role === "admin" ? "/admin" : "/dashboard";
   // admin has no settings surface — its account menus offer "Sign out" only
   const settingsHref =
-    role === "brand" ? "/brand/settings" : role === "admin" ? undefined : "/settings";
-  const showSearch = role === "clipper" || role === "agency";
+    role === "agency" ? "/agency/settings" : role === "admin" ? undefined : "/settings";
+  const showSearch = role === "clipper" || role === "network";
   const cta =
-    role === "brand"
-      ? { href: "/brand/campaigns/new", label: "New campaign" }
+    role === "agency"
+      ? { href: "/agency/campaigns/new", label: "New campaign" }
       : role === "admin"
         ? null
         : { href: "/campaigns", label: "Browse campaigns" };
   const initial = (displayName || "K").trim().charAt(0).toUpperCase();
-  // sidebar identity subtitle: "Beginner · 92 XP" for clippers/agencies, role otherwise
+  // sidebar identity subtitle: "Beginner · 92 XP" for clippers/networks, role otherwise
   const identityLine = tier
     ? `${tier.charAt(0).toUpperCase()}${tier.slice(1)} · ${(xpTotal ?? 0).toLocaleString("en-US")} XP`
     : `${role.charAt(0).toUpperCase()}${role.slice(1)}`;
@@ -319,7 +319,7 @@ export function AppShell({
             <PageHeading titles={TITLES[role]} dateLabel={dhakaToday()} />
             <div className="flex items-center gap-2.5">
               {showSearch ? (
-                <HeaderSearch placeholder="Search campaigns, brands, clips" />
+                <HeaderSearch placeholder="Search campaigns, agencies, clips" />
               ) : null}
               <details className="group relative">
                 <summary

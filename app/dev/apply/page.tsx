@@ -11,8 +11,8 @@ export const metadata: Metadata = { title: "Apply preview (dev)" };
 
 /**
  * DEV-ONLY harness for the /apply flow — the front door for accounts without
- * marketplace access. Shows the Clipper / Agency / Brand tabs (Brand is the
- * self-serve signup). Returns 404 whenever Supabase is configured (production).
+ * marketplace access. Shows the Clipper application (invite-only); the dormant
+ * network tab stays hidden. Returns 404 whenever Supabase is configured (production).
  */
 export default function DevApplyPreviewPage() {
   if (hasSupabase) notFound();
@@ -30,8 +30,8 @@ export default function DevApplyPreviewPage() {
           <h1 className="title mt-2 text-[22px] text-text-hi">See the /apply flow</h1>
           <p className="mt-2 text-[13.5px] leading-relaxed text-text-mid">
             Signs you in as a throwaway account with no access and drops you on{" "}
-            <b>/apply</b>, where the <b>Clipper · Agency · Brand</b> tabs live. Brand
-            is the self-serve signup; clipper/agency are invite-only. Re-run to reset.
+            <b>/apply</b>, where the <b>Clipper</b> application lives. Agency is the
+            self-serve signup; clippers are invite-only. Re-run to reset.
           </p>
           <form action={startApplyPreview} className="mt-6">
             <Button type="submit" className="w-full">

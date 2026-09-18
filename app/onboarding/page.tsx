@@ -19,11 +19,11 @@ import { backTo } from "./actions";
 export const metadata: Metadata = { title: "Set up" };
 
 const CLIPPER_STEPS = ["Profile", "About you", "Connect", "Payout"];
-const BRAND_STEPS = ["Business", "Details", "Finish"];
+const AGENCY_STEPS = ["Business", "Details", "Finish"];
 
 /**
  * Post-approval onboarding inside one centred Royal Violet card. Role-aware:
- * clippers/agencies get the 4-step flow, brands get the 3-step business setup.
+ * clippers/networks get the 4-step flow, agencies get the 3-step business setup.
  * Progress persists in Profile.onboardingStep.
  */
 export default async function OnboardingPage() {
@@ -33,16 +33,16 @@ export default async function OnboardingPage() {
   if (user.access !== "active") redirect(routeFor(user));
   if (user.profileCompleted) redirect(routeFor(user));
 
-  const isBrand = user.role === "brand";
-  const steps = isBrand ? BRAND_STEPS : CLIPPER_STEPS;
+  const isAgency = user.role === "agency";
+  const steps = isAgency ? AGENCY_STEPS : CLIPPER_STEPS;
   const step = Math.min(user.onboardingStep, steps.length - 1);
   const name = user.displayName?.trim() || "";
 
-  // clipper/agency-only data
+  // clipper/network-only data
   let leadPhone: string | undefined;
   let languages: string[] = [];
   let connectPages: ConnectPage[] = [];
-  if (!isBrand) {
+  if (!isAgency) {
     const [lead, vettedPages, accounts] = await Promise.all([
       getLeadByEmail(user.email),
       listVettedPagesForProfile(user.id),
@@ -87,7 +87,7 @@ export default async function OnboardingPage() {
           <Stepper current={step} labels={steps} />
 
           <div className="mt-7">
-            {isBrand ? (
+            {isAgency ? (
               <>
                 {step === 0 && (
                   <BusinessStep

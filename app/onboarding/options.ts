@@ -1,5 +1,5 @@
-/** Shared select options for onboarding (clipper about-step + brand details)
- * and the brand settings edit form. */
+/** Shared select options for onboarding (clipper about-step + agency details)
+ * and the agency settings edit form. */
 
 export const INDUSTRIES = [
   "Beauty & Personal Care",

@@ -665,7 +665,7 @@ body {
   --overlay-scrim: rgba(28, 10, 46, 0.55);
 }
 
-/* App surfaces only (AppShell, admin, brand, apply): the design's dark ink
+/* App surfaces only (AppShell, admin, agency, apply): the design's dark ink
    text ramp. Scoped so the landing's legacy ivory --ink-700/800/900 tokens
    keep their meaning outside the product app. */
 .klipr-app {

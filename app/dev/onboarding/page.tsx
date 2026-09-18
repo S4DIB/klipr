@@ -41,21 +41,16 @@ export default function DevOnboardingPreviewPage() {
                 As a Clipper <ArrowEast />
               </Button>
             </form>
+            {/* the dormant "network" role has no button — it shares the clipper flow */}
             <form action={startOnboardingPreview}>
               <input type="hidden" name="role" value="agency" />
               <Button type="submit" variant="secondary" className="w-full">
                 As an Agency <ArrowEast />
               </Button>
             </form>
-            <form action={startOnboardingPreview}>
-              <input type="hidden" name="role" value="brand" />
-              <Button type="submit" variant="secondary" className="w-full">
-                As a Brand <ArrowEast />
-              </Button>
-            </form>
           </div>
           <p className="mt-2.5 text-[12px] leading-relaxed text-text-low">
-            Agency is <b>identical</b> to clipper (4 steps). Brand gets its own{" "}
+            Clippers get the 4-step flow. Agency gets its own{" "}
             <b>3-step</b> business flow. <b>Admins</b> have no onboarding.
           </p>
 

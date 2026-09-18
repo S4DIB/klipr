@@ -9,8 +9,8 @@ const PREVIEW_EMAIL = "apply-preview@klipr.dev";
 
 /**
  * DEV ONLY. Seeds a throwaway account with NO marketplace access and drops it on
- * /apply, where the Clipper / Agency / Brand application forms live (brand
- * signup is the self-serve one; clipper/agency are invite-only stubs). Resets on
+ * /apply, where the Clipper application form lives (agency signup is the
+ * self-serve one; clipper is an invite-only stub, network is dormant). Resets on
  * re-entry. 404s whenever Supabase is configured, so it never runs in prod.
  */
 export async function startApplyPreview() {
@@ -37,7 +37,7 @@ export async function startApplyPreview() {
       createdAt: now,
     });
   } else {
-    // Rewind: a brand submit would have flipped role/access/completed.
+    // Rewind: an agency submit would have flipped role/access/completed.
     await updateProfile(profile.id, {
       role: "clipper",
       access: "none",

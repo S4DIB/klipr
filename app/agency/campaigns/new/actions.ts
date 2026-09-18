@@ -13,14 +13,14 @@ import {
   upsertCampaign,
 } from "@/lib/db";
 import {
-  RATE_BRAND_PER_1K,
+  RATE_AGENCY_PER_1K,
   RATE_CLIPPER_PER_1K,
   type Campaign,
   type CampaignStatus,
   type PayoutModel,
   type Platform,
 } from "@/lib/db/types";
-import { brandCostForClipperPayout, takaToPoisha } from "@/lib/money";
+import { agencyCostForClipperPayout, takaToPoisha } from "@/lib/money";
 import { endOfDhakaDay } from "@/lib/format";
 import { normalizeUrl } from "@/lib/url";
 import { resolveCoverPatch } from "@/lib/storage/campaign-cover";
@@ -96,17 +96,17 @@ function parseCampaignForm(
  */
 function payoutFields(d: { payoutModel: PayoutModel; perVideoTaka?: number }) {
   if (d.payoutModel !== "per_video") {
-    return { payoutModel: "views" as const, perVideoClipperPoisha: undefined, perVideoBrandPoisha: undefined };
+    return { payoutModel: "views" as const, perVideoClipperPoisha: undefined, perVideoAgencyPoisha: undefined };
   }
   const perVideoClipperPoisha = takaToPoisha(d.perVideoTaka!);
   return {
     payoutModel: "per_video" as const,
     perVideoClipperPoisha,
-    perVideoBrandPoisha: brandCostForClipperPayout(perVideoClipperPoisha),
+    perVideoAgencyPoisha: agencyCostForClipperPayout(perVideoClipperPoisha),
   };
 }
 
-/** Only the owning brand or a SaaS admin may manage a campaign. */
+/** Only the owning agency or a SaaS admin may manage a campaign. */
 async function authorizeManage(campaign: Campaign) {
   let user;
   try {
@@ -114,7 +114,7 @@ async function authorizeManage(campaign: Campaign) {
   } catch {
     return { ok: false as const, error: "Sign in required." };
   }
-  const isOwner = user.role === "brand" && campaign.brandProfileId === user.id;
+  const isOwner = user.role === "agency" && campaign.agencyProfileId === user.id;
   if (user.role !== "admin" && !isOwner) {
     return { ok: false as const, error: "Not authorized." };
   }
@@ -132,9 +132,9 @@ export async function createCampaign(
 ): Promise<NewCampaignState> {
   let user;
   try {
-    user = await requireRole("brand");
+    user = await requireRole("agency");
   } catch {
-    return { error: "Brand account required." };
+    return { error: "Agency account required." };
   }
 
   const parsed = parseCampaignForm(formData);
@@ -145,9 +145,9 @@ export async function createCampaign(
   const id = newId("cmp");
   await upsertCampaign({
     id,
-    brandProfileId: user.id,
+    agencyProfileId: user.id,
     name: d.name,
-    brandName: user.orgName || user.displayName,
+    agencyName: user.orgName || user.displayName,
     brief: d.brief,
     guidelines: d.guidelines ?? "",
     niche: d.niche,
@@ -157,7 +157,7 @@ export async function createCampaign(
     budgetPoisha: takaToPoisha(d.budgetTaka),
     spentPoisha: 0,
     rateClipperPer1k: RATE_CLIPPER_PER_1K,
-    rateBrandPer1k: RATE_BRAND_PER_1K,
+    rateAgencyPer1k: RATE_AGENCY_PER_1K,
     minQualifyViews: d.minQualifyViews,
     maxPayoutPerClipperPoisha: takaToPoisha(d.maxPerClipperTaka),
     submissionCapBase: d.submissionCapBase,
@@ -172,13 +172,13 @@ export async function createCampaign(
   const cover = await resolveCoverPatch(formData, id);
   if (cover) await updateCampaign(id, cover);
 
-  revalidatePath("/brand");
+  revalidatePath("/agency");
   revalidatePath("/admin/campaigns");
-  redirect(`/brand/campaigns/${id}`);
+  redirect(`/agency/campaigns/${id}`);
 }
 
 /**
- * Edit a campaign that hasn't gone live yet. The owning brand or an admin can
+ * Edit a campaign that hasn't gone live yet. The owning agency or an admin can
  * change any field; financials stay safe because editing is blocked once the
  * campaign is public (clips + escrow are in play by then).
  */
@@ -218,19 +218,19 @@ export async function editCampaign(
     endDate: endIso,
   });
 
-  revalidatePath("/brand");
+  revalidatePath("/agency");
   revalidatePath("/admin/campaigns");
   revalidatePath("/campaigns");
   revalidatePath(`/campaigns/${id}`);
-  revalidatePath(`/brand/campaigns/${id}`);
+  revalidatePath(`/agency/campaigns/${id}`);
   revalidatePath(`/admin/campaigns/${id}`);
-  redirect(auth.user.role === "admin" ? `/admin/campaigns/${id}` : `/brand/campaigns/${id}`);
+  redirect(auth.user.role === "admin" ? `/admin/campaigns/${id}` : `/agency/campaigns/${id}`);
 }
 
 /**
  * Admins delete unconditionally — any campaign, any state, right now. The DB
  * layer cascades submissions / xp / ledger so nothing is orphaned. This also
- * serves as "approve deletion" for a brand's pending request.
+ * serves as "approve deletion" for an agency's pending request.
  */
 export async function adminDeleteCampaign(formData: FormData): Promise<void> {
   try {
@@ -245,10 +245,10 @@ export async function adminDeleteCampaign(formData: FormData): Promise<void> {
   const wasRequested = Boolean(campaign.deletionRequestedAt);
   await deleteCampaign(id);
 
-  // Tell the brand — the campaign row is gone, so this notice stands on its own.
+  // Tell the agency — the campaign row is gone, so this notice stands on its own.
   await createNotification({
     id: newId("ntf"),
-    profileId: campaign.brandProfileId,
+    profileId: campaign.agencyProfileId,
     kind: "campaign_deleted",
     title: "Campaign removed",
     body: wasRequested
@@ -257,40 +257,40 @@ export async function adminDeleteCampaign(formData: FormData): Promise<void> {
     createdAt: new Date().toISOString(),
   });
 
-  revalidatePath("/brand");
+  revalidatePath("/agency");
   revalidatePath("/admin/campaigns");
   redirect("/admin/campaigns");
 }
 
 /**
- * A brand can't delete its own campaign directly — it raises a request that an
+ * An agency can't delete its own campaign directly — it raises a request that an
  * admin approves. This just flags the campaign; the admin portal surfaces it.
  */
 export async function requestCampaignDeletion(formData: FormData): Promise<void> {
   let user;
   try {
-    user = await requireRole("brand");
+    user = await requireRole("agency");
   } catch {
     return;
   }
   const id = String(formData.get("campaignId") ?? "");
   const campaign = await getCampaign(id);
-  if (!campaign || campaign.brandProfileId !== user.id) return;
+  if (!campaign || campaign.agencyProfileId !== user.id) return;
 
   if (!campaign.deletionRequestedAt) {
     await updateCampaign(id, { deletionRequestedAt: new Date().toISOString() });
   }
 
-  revalidatePath("/brand");
-  revalidatePath(`/brand/campaigns/${id}`);
+  revalidatePath("/agency");
+  revalidatePath(`/agency/campaigns/${id}`);
   revalidatePath("/admin/campaigns");
   revalidatePath(`/admin/campaigns/${id}`);
-  redirect(`/brand/campaigns/${id}`);
+  redirect(`/agency/campaigns/${id}`);
 }
 
 /**
  * Clear a pending deletion request without deleting: the admin dismissing it or
- * the brand cancelling their own. Owner or admin only.
+ * the agency cancelling their own. Owner or admin only.
  */
 export async function clearDeletionRequest(formData: FormData): Promise<void> {
   const id = String(formData.get("campaignId") ?? "");
@@ -304,9 +304,9 @@ export async function clearDeletionRequest(formData: FormData): Promise<void> {
     await updateCampaign(id, { deletionRequestedAt: undefined });
   }
 
-  revalidatePath("/brand");
-  revalidatePath(`/brand/campaigns/${id}`);
+  revalidatePath("/agency");
+  revalidatePath(`/agency/campaigns/${id}`);
   revalidatePath("/admin/campaigns");
   revalidatePath(`/admin/campaigns/${id}`);
-  redirect(auth.user.role === "admin" ? "/admin/campaigns" : `/brand/campaigns/${id}`);
+  redirect(auth.user.role === "admin" ? "/admin/campaigns" : `/agency/campaigns/${id}`);
 }

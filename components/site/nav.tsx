@@ -10,7 +10,7 @@ const links = [
   { label: "Watch", href: "#demo" },
   { label: "How it works", href: "#how" },
   { label: "Features", href: "#features" },
-  { label: "For brands", href: "#brands" },
+  { label: "For agencies", href: "#agencies" },
   { label: "FAQ", href: "#faq" },
 ];
 

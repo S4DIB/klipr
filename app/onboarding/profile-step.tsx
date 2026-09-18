@@ -39,7 +39,7 @@ export function ProfileStep({
         Make your profile
       </h1>
       <p className="mt-1.5 text-[13.5px] leading-relaxed text-white">
-        This is how brands and the leaderboard will see you.
+        This is how agencies and the leaderboard will see you.
       </p>
 
       <div className="mt-5">

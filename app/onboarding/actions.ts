@@ -14,7 +14,7 @@ import {
   upsertConnectedAccount,
 } from "@/lib/db";
 import { platformFromUrl, handleFromUrl } from "@/lib/platforms";
-import { uploadBrandLogo } from "@/lib/storage/brand-logo";
+import { uploadAgencyLogo } from "@/lib/storage/agency-logo";
 
 /* ── Steps: 0 profile · 1 about · 2 connect (skippable) · 3 payout ── */
 
@@ -195,7 +195,7 @@ export async function continueToPayout(): Promise<void> {
   revalidatePath("/onboarding");
 }
 
-/** Back one step (shared by clipper + brand). Forward save actions re-advance
+/** Back one step (shared by clipper + agency). Forward save actions re-advance
  *  via Math.max, so re-walking is safe. */
 export async function backTo(formData: FormData): Promise<void> {
   const user = await requireUser();
@@ -224,18 +224,18 @@ export async function saveBkash(
   redirect("/dashboard");
 }
 
-/* ── Brand onboarding: 0 business · 1 details · 2 finish ── */
+/* ── Agency onboarding: 0 business · 1 details · 2 finish ── */
 
 const WEBSITE_RE = /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(\/\S*)?$/i;
 
-export type BrandProfileState = { error?: string; field?: "orgName" | "website" };
+export type AgencyProfileState = { error?: string; field?: "orgName" | "website" };
 
-/** Brand step 0 → 1. Business name + validated website. */
+/** Agency step 0 → 1. Business name + validated website. */
 export async function saveBusinessProfile(
-  _prev: BrandProfileState,
+  _prev: AgencyProfileState,
   formData: FormData,
-): Promise<BrandProfileState> {
-  const user = await requireRole("brand");
+): Promise<AgencyProfileState> {
+  const user = await requireRole("agency");
   const orgName = String(formData.get("orgName") ?? "").trim();
   const raw = String(formData.get("website") ?? "").trim();
 
@@ -248,7 +248,7 @@ export async function saveBusinessProfile(
   // Optional logo → Supabase Storage. Failures/stub-mode keep the existing logo.
   const logo = formData.get("logo");
   const logoUrl =
-    logo instanceof File && logo.size > 0 ? await uploadBrandLogo(logo, user.id) : null;
+    logo instanceof File && logo.size > 0 ? await uploadAgencyLogo(logo, user.id) : null;
 
   await updateProfile(user.id, {
     orgName,
@@ -260,14 +260,14 @@ export async function saveBusinessProfile(
   return {};
 }
 
-export type BrandDetailsState = { error?: string };
+export type AgencyDetailsState = { error?: string };
 
-/** Brand step 1 → 2. Industry, country, estimated monthly spend. */
+/** Agency step 1 → 2. Industry, country, estimated monthly spend. */
 export async function saveCompanyDetails(
-  _prev: BrandDetailsState,
+  _prev: AgencyDetailsState,
   formData: FormData,
-): Promise<BrandDetailsState> {
-  const user = await requireRole("brand");
+): Promise<AgencyDetailsState> {
+  const user = await requireRole("agency");
   const industry = String(formData.get("industry") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
   const monthlySpend = String(formData.get("monthlySpend") ?? "").trim();
@@ -286,14 +286,14 @@ export async function saveCompanyDetails(
   return {};
 }
 
-export type BrandFinishState = { error?: string };
+export type AgencyFinishState = { error?: string };
 
-/** Brand step 2 → done. Contact name + campaign history; finishes onboarding. */
-export async function finishBrandSetup(
-  _prev: BrandFinishState,
+/** Agency step 2 → done. Contact name + campaign history; finishes onboarding. */
+export async function finishAgencySetup(
+  _prev: AgencyFinishState,
   formData: FormData,
-): Promise<BrandFinishState> {
-  const user = await requireRole("brand");
+): Promise<AgencyFinishState> {
+  const user = await requireRole("agency");
   const firstName = String(formData.get("firstName") ?? "").trim();
   const lastName = String(formData.get("lastName") ?? "").trim();
   const campaignExperience = String(formData.get("campaignExperience") ?? "").trim();
@@ -308,5 +308,5 @@ export async function finishBrandSetup(
     profileCompleted: true,
     onboardingStep: 99,
   });
-  redirect("/brand");
+  redirect("/agency");
 }

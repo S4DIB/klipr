@@ -20,7 +20,7 @@ export async function signInWithGoogle() {
 
   // Dev stub mode (no Supabase): mint/lookup the identity like a first-time
   // Google sign-in (ensureGoogleUser also promotes an approved-waitlist email),
-  // then auto-provision the admin allowlist. Invite-only gate: only staff/brand
+  // then auto-provision the admin allowlist. Invite-only gate: only staff/agency
   // or an approved clipper gets a session. KLIPR_DEV_ADMIN_EMAIL is the stub admin.
   const user = await promoteIfAdmin(await ensureGoogleUser("you@gmail.com", "You"));
   if (!accessAllowed(user)) redirect("/login?error=not_approved");

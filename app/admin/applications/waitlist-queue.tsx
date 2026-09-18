@@ -61,7 +61,7 @@ function RoleBadge({ role }: { role: Lead["role"] }) {
   return (
     <span
       className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] ${
-        role === "brand"
+        role === "agency"
           ? "bg-[rgba(125,4,215,0.1)] text-violet-700"
           : "bg-[rgba(53,5,90,0.06)] text-ink-500"
       }`}
@@ -76,7 +76,7 @@ function LeadMeta({ lead }: { lead: Lead }) {
     <p className="mt-0.5 truncate text-[12.5px] text-ink-500">
       {lead.email}
       {lead.phone ? ` · ${lead.phone}` : ""}
-      {lead.role === "brand"
+      {lead.role === "agency"
         ? [lead.company, lead.designation].filter(Boolean).map((s) => ` · ${s}`).join("")
         : lead.postFrequency
           ? ` · posts ${lead.postFrequency}`
@@ -86,12 +86,12 @@ function LeadMeta({ lead }: { lead: Lead }) {
 }
 
 /**
- * Landing-waitlist applications — clippers and brands awaiting manual vetting.
+ * Landing-waitlist applications — clippers and agencies awaiting manual vetting.
  * Filtered into Pending / Approved / Rejected. Approving pre-clears the email:
- * the first sign-in lands straight in the app (clipper onboarding or brand).
+ * the first sign-in lands straight in the app (clipper onboarding or agency).
  */
 export async function WaitlistQueue({ status = "pending" }: { status?: FilterKey }) {
-  const leads = (await listLeads()).filter((l) => l.role === "clipper" || l.role === "brand");
+  const leads = (await listLeads()).filter((l) => l.role === "clipper" || l.role === "agency");
 
   const pending = leads
     .filter((l) => (l.status ?? "pending") === "pending")

@@ -1,9 +1,9 @@
 /**
  * Money core — ALL amounts are integer poisha (৳ × 100).
- * Per-view amounts are exact integers: clipper 5 poisha, brand 6 poisha per
+ * Per-view amounts are exact integers: clipper 5 poisha, agency 6 poisha per
  * view (i.e. ৳50 / ৳60 per 1,000). No floats anywhere in money math.
  */
-import { RATE_BRAND_PER_1K, RATE_CLIPPER_PER_1K, type PayoutModel } from "./db/types.ts";
+import { RATE_AGENCY_PER_1K, RATE_CLIPPER_PER_1K, type PayoutModel } from "./db/types.ts";
 
 export const POISHA_PER_TAKA = 100;
 
@@ -30,23 +30,23 @@ export function clipperEarningsPoisha(views: number, ratePer1k = RATE_CLIPPER_PE
   return views * perViewPoisha(ratePer1k);
 }
 
-/** Brand cost for a view count at the fixed platform rate. */
-export function brandCostPoisha(views: number, ratePer1k = RATE_BRAND_PER_1K): number {
+/** Agency cost for a view count at the fixed platform rate. */
+export function agencyCostPoisha(views: number, ratePer1k = RATE_AGENCY_PER_1K): number {
   assertViews(views);
   return views * perViewPoisha(ratePer1k);
 }
 
 /**
- * Brand cost for a flat per-video clipper payout, at the platform's fixed
- * margin — the same 5:6 ratio the per-1k rates use (৳50 clipper ⇒ ৳60 brand).
+ * Agency cost for a flat per-video clipper payout, at the platform's fixed
+ * margin — the same 5:6 ratio the per-1k rates use (৳50 clipper ⇒ ৳60 agency).
  * Exact integer poisha: the wizard takes whole taka, so the payout is always a
  * multiple of 100 and ×6/5 never leaves a remainder.
  */
-export function brandCostForClipperPayout(clipperPoisha: number): number {
+export function agencyCostForClipperPayout(clipperPoisha: number): number {
   if (!Number.isInteger(clipperPoisha) || clipperPoisha <= 0) {
     throw new Error(`invalid per-video payout: ${clipperPoisha}`);
   }
-  const cost = (clipperPoisha * RATE_BRAND_PER_1K) / RATE_CLIPPER_PER_1K;
+  const cost = (clipperPoisha * RATE_AGENCY_PER_1K) / RATE_CLIPPER_PER_1K;
   if (!Number.isInteger(cost)) {
     throw new Error(`per-video payout must be a multiple of 5 poisha, got ${clipperPoisha}`);
   }
@@ -65,12 +65,12 @@ export interface SettlementMathInput {
   /** Campaign cap minus what this clipper already earned in it, poisha. */
   clipperCapRemainingPoisha: number;
   rateClipperPer1k: number;
-  rateBrandPer1k: number;
+  rateAgencyPer1k: number;
   /** Omitted ⇒ "views", so existing callers keep their exact behaviour. */
   payoutModel?: PayoutModel;
   /** per_video only — the campaign's snapshotted flat amounts. */
   perVideoClipperPoisha?: number;
-  perVideoBrandPoisha?: number;
+  perVideoAgencyPoisha?: number;
 }
 
 export interface SettlementMath {
@@ -81,7 +81,7 @@ export interface SettlementMath {
   /** Anything earned at all — the ledger + XP gate for BOTH models. */
   paid: boolean;
   clipperEarnPoisha: number;
-  brandCostPoisha: number;
+  agencyCostPoisha: number;
   marginPoisha: number;
   /** True when views < minQualifyViews (settles honestly at ৳0, no XP). */
   belowMinimum: boolean;
@@ -90,17 +90,17 @@ export interface SettlementMath {
 /**
  * The settlement formula (KLIPR-BUILD-PLAN.md §3.4):
  *   payableViews = min(lockedViews,
- *                      floor(remainingEscrow / brandPerView),
+ *                      floor(remainingEscrow / agencyPerView),
  *                      floor(capRemaining / clipperPerView))
  * Below the qualification minimum ⇒ 0 views payable.
- * Floor arithmetic guarantees brandCost ≤ remainingEscrow — the ledger can
+ * Floor arithmetic guarantees agencyCost ≤ remainingEscrow — the ledger can
  * never overdraw an escrow account.
  *
  * Per-video campaigns run the same guards over a flat amount instead: the clip
- * still has to clear minQualifyViews, and it pays only if the full brand cost
+ * still has to clear minQualifyViews, and it pays only if the full agency cost
  * fits in both the remaining escrow and the clipper's remaining cap. A video is
  * atomic — there is no part-paid video — so it's all or nothing, which keeps
- * the same "brandCost ≤ remainingEscrow" invariant.
+ * the same "agencyCost ≤ remainingEscrow" invariant.
  */
 export function settlementMath(input: SettlementMathInput): SettlementMath {
   const {
@@ -109,10 +109,10 @@ export function settlementMath(input: SettlementMathInput): SettlementMath {
     remainingEscrowPoisha,
     clipperCapRemainingPoisha,
     rateClipperPer1k,
-    rateBrandPer1k,
+    rateAgencyPer1k,
     payoutModel = "views",
     perVideoClipperPoisha = 0,
-    perVideoBrandPoisha = 0,
+    perVideoAgencyPoisha = 0,
   } = input;
   assertViews(lockedViews);
 
@@ -122,25 +122,25 @@ export function settlementMath(input: SettlementMathInput): SettlementMath {
     const affordable =
       !belowMinimum &&
       perVideoClipperPoisha > 0 &&
-      perVideoBrandPoisha > 0 &&
-      perVideoBrandPoisha <= Math.max(0, remainingEscrowPoisha) &&
+      perVideoAgencyPoisha > 0 &&
+      perVideoAgencyPoisha <= Math.max(0, remainingEscrowPoisha) &&
       perVideoClipperPoisha <= Math.max(0, clipperCapRemainingPoisha);
 
     const clipperEarn = affordable ? perVideoClipperPoisha : 0;
-    const brandCost = affordable ? perVideoBrandPoisha : 0;
+    const agencyCost = affordable ? perVideoAgencyPoisha : 0;
     return {
       payableViews: 0,
       paidVideos: affordable ? 1 : 0,
       paid: affordable,
       clipperEarnPoisha: clipperEarn,
-      brandCostPoisha: brandCost,
-      marginPoisha: brandCost - clipperEarn,
+      agencyCostPoisha: agencyCost,
+      marginPoisha: agencyCost - clipperEarn,
       belowMinimum,
     };
   }
 
   const clipperPerView = perViewPoisha(rateClipperPer1k);
-  const brandPerView = perViewPoisha(rateBrandPer1k);
+  const agencyPerView = perViewPoisha(rateAgencyPer1k);
 
   const payableViews = belowMinimum
     ? 0
@@ -148,20 +148,20 @@ export function settlementMath(input: SettlementMathInput): SettlementMath {
         0,
         Math.min(
           lockedViews,
-          Math.floor(Math.max(0, remainingEscrowPoisha) / brandPerView),
+          Math.floor(Math.max(0, remainingEscrowPoisha) / agencyPerView),
           Math.floor(Math.max(0, clipperCapRemainingPoisha) / clipperPerView),
         ),
       );
 
   const clipperEarn = payableViews * clipperPerView;
-  const brandCost = payableViews * brandPerView;
+  const agencyCost = payableViews * agencyPerView;
   return {
     payableViews,
     paidVideos: 0,
     paid: payableViews > 0,
     clipperEarnPoisha: clipperEarn,
-    brandCostPoisha: brandCost,
-    marginPoisha: brandCost - clipperEarn,
+    agencyCostPoisha: agencyCost,
+    marginPoisha: agencyCost - clipperEarn,
     belowMinimum,
   };
 }

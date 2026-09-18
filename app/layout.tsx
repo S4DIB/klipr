@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     template: "%s · Klipr",
   },
   description:
-    "Klipr is a content-rewards marketplace. Brands fund campaigns; creators post clips and earn for every verified view. No follower minimums, pay only for results.",
+    "Klipr is a content-rewards marketplace. Agencies fund campaigns; creators post clips and earn for every verified view. No follower minimums, pay only for results.",
   keywords: [
     "content rewards",
     "clipping",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     siteName: "Klipr",
     title: "Klipr · Post clips. Get paid per view.",
     description:
-      "Brands fund campaigns. Creators post clips and earn for every verified view. Pay only for results.",
+      "Agencies fund campaigns. Creators post clips and earn for every verified view. Pay only for results.",
   },
   twitter: {
     card: "summary_large_image",

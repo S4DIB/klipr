@@ -52,12 +52,13 @@ export async function POST(req: Request) {
 
   let lead: Lead;
 
-  if (body.role === "brand") {
+  // "brand" is the pre-rename value — a stale cached landing page may still send it
+  if (body.role === "agency" || body.role === "brand") {
     const company = str(body.company, 100);
     if (!company) return bad("Enter your company name.");
     const designation = str(body.designation, 80);
     if (!designation) return bad("Enter your role.");
-    lead = { role: "brand", name, email, phone, company, designation, source, at };
+    lead = { role: "agency", name, email, phone, company, designation, source, at };
   } else {
     const raw = body.pages;
     if (!Array.isArray(raw) || raw.length < 1) {

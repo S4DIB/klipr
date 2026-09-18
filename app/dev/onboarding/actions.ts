@@ -22,13 +22,13 @@ const PREVIEW_EMAIL = "onboarding-preview@klipr.dev";
 export async function startOnboardingPreview(formData?: FormData) {
   if (hasSupabase) notFound();
 
-  // Clipper/agency share the 4-step flow; brand gets the 3-step business flow.
+  // Clipper/network share the 4-step flow; agency gets the 3-step business flow.
   const roleParam = formData?.get("role");
   const role =
-    roleParam === "agency" ? "agency" : roleParam === "brand" ? "brand" : "clipper";
+    roleParam === "network" ? "network" : roleParam === "agency" ? "agency" : "clipper";
   const email = `${role}-${PREVIEW_EMAIL}`;
   const label =
-    role === "brand" ? "Preview Brand" : role === "agency" ? "Preview Agency" : "Preview Clipper";
+    role === "agency" ? "Preview Agency" : role === "network" ? "Preview Network" : "Preview Clipper";
   const now = new Date().toISOString();
   let profile = await getProfileByEmail(email);
 
@@ -49,7 +49,7 @@ export async function startOnboardingPreview(formData?: FormData) {
       onboardingStep: 0,
       createdAt: now,
     });
-    if (role !== "brand") {
+    if (role !== "agency") {
       const appId = newId("app");
       await createApplication(
       {
@@ -87,7 +87,7 @@ export async function startOnboardingPreview(formData?: FormData) {
     }
   } else {
     // Re-entry: rewind to step 0 AND wipe every onboarding field so each preview
-    // starts blank (clipper + brand fields alike).
+    // starts blank (clipper + agency fields alike).
     await updateProfile(profile.id, {
       role,
       access: "active",

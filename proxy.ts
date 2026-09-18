@@ -79,11 +79,9 @@ export const config = {
     "/leaderboard/:path*",
     "/connections/:path*",
     "/settings/:path*",
-    // Guard the brand console, but NOT the /public/brand/* landing assets
-    // (bolt SVGs, campaign photo) — exclude any path segment with a file
-    // extension so static files under /brand serve without an auth bounce.
-    "/brand",
-    "/brand/((?!.*\\.).*)",
+    // The agency console. (It used to live at /brand, which collided with the
+    // /public/brand/* landing assets; those stay public and unguarded.)
+    "/agency/:path*",
     "/admin/:path*",
     "/onboarding/:path*",
   ],

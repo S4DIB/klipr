@@ -3,15 +3,18 @@
  * KLIPR-BUILD-PLAN.md §3. Everything compiles against this file.
  *
  * Money: ALL amounts are integer poisha (৳ × 100). Per-view amounts are
- * exact integers (clipper 5 poisha, brand 6 poisha) — no floats, ever.
+ * exact integers (clipper 5 poisha, agency 6 poisha) — no floats, ever.
  */
 
-export type Role = "clipper" | "brand" | "agency" | "admin";
+/* "network" is DORMANT — the old clipper-side "agency" role (one operator, many
+ * pages). Kept in code and data, hidden from every screen; nobody new can get
+ * it. "agency" now means the client side that funds campaigns. */
+export type Role = "clipper" | "agency" | "network" | "admin";
 
 /** Canonical lowercase platform ids. */
 export type Platform = "facebook" | "tiktok" | "instagram" | "youtube";
 
-/** Marketplace access for clipper/agency — the gated "apply → vet → let in" model. */
+/** Marketplace access for clipper/network — the gated "apply → vet → let in" model. */
 export type Access = "none" | "waitlisted" | "active" | "declined";
 
 export type Tier = "beginner" | "hustler" | "pro" | "elite";
@@ -19,14 +22,14 @@ export type Tier = "beginner" | "hustler" | "pro" | "elite";
 /**
  * How a campaign pays. "views" is the original model — a per-1,000-verified-
  * views rate. "per_video" pays a flat amount for each accepted video that
- * clears minQualifyViews, so the brand's cost per clip is known up front.
+ * clears minQualifyViews, so the agency's cost per clip is known up front.
  */
 export type PayoutModel = "views" | "per_video";
 
 /** ৳50 per 1,000 verified views — identical at every tier, forever. */
 export const RATE_CLIPPER_PER_1K = 5000; // poisha
 /** ৳60 per 1,000 verified views (campaigns snapshot this; future tiered client rates change the snapshot, never the clipper rate). */
-export const RATE_BRAND_PER_1K = 6000; // poisha
+export const RATE_AGENCY_PER_1K = 6000; // poisha
 
 export interface Profile {
   id: string;
@@ -43,7 +46,7 @@ export interface Profile {
   /** Free-text: languages the clipper posts in (e.g. "Bangla, English"). */
   postLanguages?: string;
   role: Role;
-  /** "active" gates the (app) shell for clipper/agency. Brands/admins: "active". */
+  /** "active" gates the (app) shell for clipper/network. Agencies/admins: "active". */
   access: Access;
   /** Derived from XP thresholds; denormalized for cheap reads. */
   tier: Tier;
@@ -55,15 +58,15 @@ export interface Profile {
   nidStatus: "none" | "submitted" | "verified";
   /** AES-256-GCM ciphertext; service-role read only; minimal PII. */
   nidNumberEnc?: string;
-  /** Brand / agency organisation name. */
+  /** Agency / network organisation name. */
   orgName?: string;
-  /* ── Brand onboarding (collected in the 3-step brand setup) ── */
-  /** Brand logo — public URL in the Supabase `brand-logos` storage bucket. */
+  /* ── Agency onboarding (collected in the 3-step agency setup) ── */
+  /** Agency logo — public URL in the Supabase `brand-logos` storage bucket. */
   logoUrl?: string;
   website?: string;
   industry?: string;
   monthlySpend?: string;
-  /** "not_yet" | "a_few" | "often" — brand's clipping-campaign history. */
+  /** "not_yet" | "a_few" | "often" — agency's clipping-campaign history. */
   campaignExperience?: string;
   leaderboardOptOut: boolean;
   accountStatus: "active" | "blocked";
@@ -76,7 +79,7 @@ export interface Profile {
 export interface Application {
   id: string;
   profileId: string;
-  role: "clipper" | "agency";
+  role: "clipper" | "network";
   /** Posting-habits note from the applicant. */
   note: string;
   status: "submitted" | "approved" | "declined";
@@ -141,9 +144,9 @@ export type CampaignStatus =
 
 export interface Campaign {
   id: string;
-  brandProfileId: string;
+  agencyProfileId: string;
   name: string;
-  brandName: string;
+  agencyName: string;
   brief: string;
   guidelines: string;
   niche: string;
@@ -157,14 +160,14 @@ export interface Campaign {
    * per-1k rates, so editing platform pricing never re-prices a live campaign.
    */
   perVideoClipperPoisha?: number;
-  perVideoBrandPoisha?: number;
+  perVideoAgencyPoisha?: number;
   /** Escrow ceiling. */
   budgetPoisha: number;
-  /** Brand-side accrual, updated at each settlement. */
+  /** Agency-side accrual, updated at each settlement. */
   spentPoisha: number;
   /** Rate snapshots (support future tiered client rates without model change). */
   rateClipperPer1k: number;
-  rateBrandPer1k: number;
+  rateAgencyPer1k: number;
   /** 2,000–4,000 per flows v2 (default 2,000); below ⇒ ৳0 + no XP. */
   minQualifyViews: number;
   maxPayoutPerClipperPoisha: number;
@@ -179,7 +182,7 @@ export interface Campaign {
   endDate: string;
   status: CampaignStatus;
   fundedAt?: string;
-  /** Set when the owning brand asks an admin to delete it; cleared on dismiss. */
+  /** Set when the owning agency asks an admin to delete it; cleared on dismiss. */
   deletionRequestedAt?: string;
   createdAt: string;
 }
@@ -225,7 +228,7 @@ export interface ViewSnapshot {
 export interface XpEvent {
   id: string;
   profileId: string;
-  /** Enables per-page XP in the agency portfolio. */
+  /** Enables per-page XP in the network portfolio. */
   connectedAccountId?: string;
   submissionId?: string;
   campaignId?: string;
@@ -315,5 +318,5 @@ export interface DB {
   /** Sweep overlap-guard keys (`sweep:{bucket}`). */
   sweepLocks: string[];
   /** Stub-store reseed trigger. */
-  version: 4;
+  version: 5;
 }

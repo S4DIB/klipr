@@ -4,9 +4,9 @@ import { useActionState, useState } from "react";
 import { TextField, SelectField } from "@/components/app/field";
 import { Button } from "@/components/ui/button";
 import { COUNTRIES, INDUSTRIES, SPEND } from "@/app/onboarding/options";
-import { updateBrandCompany, type SettingsState } from "./actions";
+import { updateAgencyCompany, type SettingsState } from "./actions";
 
-export interface BrandInfo {
+export interface AgencyInfo {
   orgName: string;
   website?: string;
   industry?: string;
@@ -34,11 +34,11 @@ export function SaveResult({ state }: { state: SettingsState }) {
   return null;
 }
 
-export function CompanyPanel({ brand }: { brand: BrandInfo }) {
-  const [state, action, pending] = useActionState<SettingsState, FormData>(updateBrandCompany, {});
+export function CompanyPanel({ agency }: { agency: AgencyInfo }) {
+  const [state, action, pending] = useActionState<SettingsState, FormData>(updateAgencyCompany, {});
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const initial = (brand.orgName || "K").trim().charAt(0).toUpperCase();
-  const shown = logoPreview ?? brand.logoUrl;
+  const initial = (agency.orgName || "K").trim().charAt(0).toUpperCase();
+  const shown = logoPreview ?? agency.logoUrl;
 
   return (
     <form action={action} className="flex flex-col gap-6">
@@ -77,7 +77,7 @@ export function CompanyPanel({ brand }: { brand: BrandInfo }) {
       </div>
 
       <div className="border-t border-[rgba(53,5,90,0.08)] pt-5">
-        <TextField label="Company name" name="orgName" defaultValue={brand.orgName} required />
+        <TextField label="Company name" name="orgName" defaultValue={agency.orgName} required />
       </div>
 
       <div className="border-t border-[rgba(53,5,90,0.08)] pt-5">
@@ -88,13 +88,13 @@ export function CompanyPanel({ brand }: { brand: BrandInfo }) {
           inputMode="url"
           autoCapitalize="none"
           spellCheck={false}
-          defaultValue={brand.website}
+          defaultValue={agency.website}
           placeholder="yourcompany.com"
         />
       </div>
 
       <div className="grid gap-4 border-t border-[rgba(53,5,90,0.08)] pt-5 sm:grid-cols-2">
-        <SelectField label="Industry" name="industry" defaultValue={brand.industry ?? ""}>
+        <SelectField label="Industry" name="industry" defaultValue={agency.industry ?? ""}>
           <option value="">Select industry</option>
           {INDUSTRIES.map((i) => (
             <option key={i} value={i}>
@@ -102,7 +102,7 @@ export function CompanyPanel({ brand }: { brand: BrandInfo }) {
             </option>
           ))}
         </SelectField>
-        <SelectField label="Country" name="location" defaultValue={brand.location ?? ""}>
+        <SelectField label="Country" name="location" defaultValue={agency.location ?? ""}>
           <option value="">Select country</option>
           {COUNTRIES.map((c) => (
             <option key={c} value={c}>
@@ -116,7 +116,7 @@ export function CompanyPanel({ brand }: { brand: BrandInfo }) {
         <SelectField
           label="Typical monthly spend"
           name="monthlySpend"
-          defaultValue={brand.monthlySpend ?? ""}
+          defaultValue={agency.monthlySpend ?? ""}
         >
           <option value="">Prefer not to say</option>
           {SPEND.map((s) => (

@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
-import { listCampaignsByBrand, listSubmissionsForCampaigns } from "@/lib/db";
+import { listCampaignsByAgency, listSubmissionsForCampaigns } from "@/lib/db";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { CoverControls } from "@/components/app/cover-controls";
-import { CompanyPanel } from "@/app/brand/settings/company-form";
+import { CompanyPanel } from "@/app/agency/settings/company-form";
 import { Button } from "@/components/ui/button";
 import { takaFromPoisha, views as fmtViews } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Brand profile" };
+export const metadata: Metadata = { title: "Agency profile" };
 
-export default async function BrandProfilePage() {
-  const user = await requireRole("brand");
+export default async function AgencyProfilePage() {
+  const user = await requireRole("agency");
 
-  const campaigns = await listCampaignsByBrand(user.id);
+  const campaigns = await listCampaignsByAgency(user.id);
   const subs = await listSubmissionsForCampaigns(campaigns.map((c) => c.id));
 
   // reach counts settled clips at their locked views and live ones at what
-  // they've counted so far — the same rule the brand overview uses
+  // they've counted so far — the same rule the agency overview uses
   const reach = subs.reduce(
     (a, s) =>
       a +
@@ -55,7 +55,7 @@ export default async function BrandProfilePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-col gap-5 sm:max-w-none">
-      {/* brand header — cover · logo · name · stats */}
+      {/* agency header — cover · logo · name · stats */}
       <GlassPanel className="overflow-hidden">
         <div className="field-cover relative h-[112px] sm:h-[148px]">
           <CoverControls coverUrl={user.coverUrl} />
@@ -75,7 +75,7 @@ export default async function BrandProfilePage() {
           {/* spacer row beside the logo — the quiet action lives here */}
           <div className="flex min-h-[44px] items-start justify-end sm:min-h-[52px]">
             <Button
-              href="/brand/settings"
+              href="/agency/settings"
               variant="ghost"
               className="mt-2.5 h-9 px-4 text-[13px] sm:mt-3 sm:h-10 sm:px-5 sm:text-[13.5px]"
             >
@@ -128,11 +128,11 @@ export default async function BrandProfilePage() {
         </div>
       </GlassPanel>
 
-      {/* the only settings that live here: who the brand is. Contact details and
-          closing the account stay on /brand/settings. */}
+      {/* the only settings that live here: who the agency is. Contact details and
+          closing the account stay on /agency/settings. */}
       <div className="rounded-[22px] bg-white p-6 shadow-[0_1px_2px_rgba(31,3,53,0.04)] sm:p-7">
         <CompanyPanel
-          brand={{
+          agency={{
             orgName: user.orgName ?? "",
             website: user.website,
             industry: user.industry,

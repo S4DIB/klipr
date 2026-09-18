@@ -13,12 +13,12 @@ const OK_TYPES = new Set([
 ]);
 
 /**
- * Upload a brand logo to the Supabase `brand-logos` bucket and return its public
+ * Upload an agency logo to the Supabase `brand-logos` bucket and return its public
  * URL. Returns null when there's no real Supabase (stub/dev) or on any
  * validation/upload failure — the caller then just keeps the previous logo.
  * Uses the service-role client, which bypasses storage RLS.
  */
-export async function uploadBrandLogo(file: File, profileId: string): Promise<string | null> {
+export async function uploadAgencyLogo(file: File, profileId: string): Promise<string | null> {
   if (!hasSupabase) return null;
   if (!file || file.size === 0 || file.size > MAX_BYTES) return null;
   if (file.type && !OK_TYPES.has(file.type)) return null;

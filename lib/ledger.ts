@@ -31,7 +31,7 @@ function event(
   return entries;
 }
 
-/** Brand escrow arrives: external −B · escrow:{cmp} +B. */
+/** Agency escrow arrives: external −B · escrow:{cmp} +B. */
 export function buildFundingEvent(campaignId: string, budgetPoisha: number): LedgerDraft[] {
   if (!Number.isInteger(budgetPoisha) || budgetPoisha <= 0) {
     throw new Error(`invalid funding amount: ${budgetPoisha}`);
@@ -43,7 +43,7 @@ export function buildFundingEvent(campaignId: string, budgetPoisha: number): Led
 }
 
 /**
- * A submission settles: escrow −brandCost · clipper +earn · margin +spread.
+ * A submission settles: escrow −agencyCost · clipper +earn · margin +spread.
  * eventId `settle:{submissionId}` — re-running a sweep is a no-op.
  * Returns [] for a ৳0 settlement (below minimum / caps) — nothing to book.
  * Gated on `paid`, not on views: a per-video settlement pays a flat amount and
@@ -61,7 +61,7 @@ export function buildSettlementEvent(args: {
   return event(`settle:${submissionId}`, "settlement", [
     {
       account: escrowAccount(campaignId),
-      amountPoisha: -math.brandCostPoisha,
+      amountPoisha: -math.agencyCostPoisha,
       campaignId, submissionId, profileId, memo,
     },
     {
@@ -94,7 +94,7 @@ export function buildPayoutEvent(args: {
   ]);
 }
 
-/** Unspent escrow returns to the brand: escrow −R · external +R. */
+/** Unspent escrow returns to the agency: escrow −R · external +R. */
 export function buildRefundEvent(campaignId: string, remainderPoisha: number): LedgerDraft[] {
   if (!Number.isInteger(remainderPoisha) || remainderPoisha <= 0) {
     throw new Error(`invalid refund amount: ${remainderPoisha}`);

@@ -85,7 +85,7 @@ way in for a clipper:
 3. They **sign in with Google using that same email** → they're let in and
    promoted to active automatically. Any other email is bounced to
    `/login?error=not_approved` with a "join the waitlist" link — no account is
-   created. (Admins and brands are provisioned by you, not self-serve.)
+   created. (Admins and agencies are provisioned by you, not self-serve.)
 
 There is no self-serve "apply" form anymore. To let someone in, approve their
 waitlist lead first.

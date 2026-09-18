@@ -93,10 +93,10 @@ export const updateConnectedAccount = (
 /* ── Campaigns ── */
 export const listCampaigns = (status?: CampaignStatus): Promise<Campaign[]> =>
   hasSupabase ? remote.listCampaigns(status) : Promise.resolve(local.listCampaigns(status));
-export const listCampaignsByBrand = (brandProfileId: string): Promise<Campaign[]> =>
+export const listCampaignsByAgency = (agencyProfileId: string): Promise<Campaign[]> =>
   hasSupabase
-    ? remote.listCampaignsByBrand(brandProfileId)
-    : Promise.resolve(local.listCampaignsByBrand(brandProfileId));
+    ? remote.listCampaignsByAgency(agencyProfileId)
+    : Promise.resolve(local.listCampaignsByAgency(agencyProfileId));
 export const getCampaign = (id: string): Promise<Campaign | undefined> =>
   hasSupabase ? remote.getCampaign(id) : Promise.resolve(local.getCampaign(id));
 export const getCampaignsByIds = (ids: string[]): Promise<Campaign[]> =>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
-import { listCampaignsByBrand, listLedger } from "@/lib/db";
+import { listCampaignsByAgency, listLedger } from "@/lib/db";
 import { escrowAccount } from "@/lib/ledger";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { DataRow } from "@/components/app/data-row";
@@ -17,9 +17,9 @@ const LABELS: Record<string, string> = {
 };
 
 /** The escrow ledger, campaign by campaign. Every taka accounted for. */
-export default async function BrandBillingPage() {
-  const user = await requireRole("brand");
-  const campaigns = await listCampaignsByBrand(user.id);
+export default async function AgencyBillingPage() {
+  const user = await requireRole("agency");
+  const campaigns = await listCampaignsByAgency(user.id);
 
   const sections = await Promise.all(
     campaigns.map(async (c) => ({

@@ -60,7 +60,7 @@ export default async function AdminClipsPage() {
                 </div>
                 <p className="mt-2 text-[14.5px] font-medium text-text-hi">
                   {campaign?.name ?? "Campaign"}
-                  {campaign?.brandName ? ` · ${campaign.brandName}` : ""}
+                  {campaign?.agencyName ? ` · ${campaign.agencyName}` : ""}
                 </p>
                 <p className="mt-0.5 text-[12.5px] text-text-mid">
                   {profile?.displayName ?? "Unknown"} · {account?.handle ?? "?"} ·{" "}

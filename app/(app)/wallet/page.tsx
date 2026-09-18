@@ -49,7 +49,7 @@ export default async function WalletPage() {
   await Promise.all(
     [...new Set(ledgerRows.map((e) => e.campaignId).filter(Boolean))].map(async (cid) => {
       const c = await getCampaign(cid!);
-      if (c) campaignNames.set(cid!, c.brandName);
+      if (c) campaignNames.set(cid!, c.agencyName);
     }),
   );
 

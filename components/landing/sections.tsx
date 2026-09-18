@@ -210,14 +210,14 @@ export function Features() {
         })}
       </div>
 
-      <NextCue href="#brands" label="Running a brand? This next part's for you." />
+      <NextCue href="#agencies" label="Running an agency? This next part's for you." />
     </section>
   );
 }
 
-/* Chapter 04 — for brands (spec §6). Clients are half the waitlist, so they get
- * a real section, not a strip. Pink Carnation accents; CTA opens the BRAND form. */
-export function ForBrands() {
+/* Chapter 04 — for agencies (spec §6). Clients are half the waitlist, so they get
+ * a real section, not a strip. Pink Carnation accents; CTA opens the AGENCY form. */
+export function ForAgencies() {
   const steps = [
     {
       n: "01",
@@ -232,11 +232,11 @@ export function ForBrands() {
     {
       n: "03",
       t: "Pay per verified view",
-      d: "৳60 per 1,000 verified views. No agency fee. No creative fee.",
+      d: "৳60 per 1,000 verified views. No setup fee. No creative fee.",
     },
   ];
   return (
-    <section id="brands" className="shell py-16 md:py-24">
+    <section id="agencies" className="shell py-16 md:py-24">
       <Header
         title="Your content, distributed everywhere."
         sub="You have content. We get it posted by real pages, to their own audiences, all at once. One upload turns into dozens of posts, reaching people who've never heard of you."
@@ -263,7 +263,7 @@ export function ForBrands() {
             worked best.
           </p>
           <a
-            href="#waitlist-brand"
+            href="#waitlist-agency"
             className="group inline-flex h-12 items-center gap-2 rounded-full bg-volt-500 px-6 text-[14px] font-semibold tracking-tight text-white shadow-[0_3px_8px_-2px_rgba(125,4,215,0.35)] transition-all duration-200 hover:bg-violet-700 hover:shadow-[0_6px_16px_-4px_rgba(125,4,215,0.42)] active:scale-[0.98]"
           >
             Get early access

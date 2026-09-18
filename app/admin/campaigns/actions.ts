@@ -28,7 +28,7 @@ export async function cancelCampaign(formData: FormData): Promise<void> {
     await updateCampaign(id, { status: "completed" });
   }
   revalidatePath("/admin/campaigns");
-  revalidatePath("/brand");
+  revalidatePath("/agency");
   revalidatePath("/campaigns");
 }
 
@@ -44,7 +44,7 @@ export async function approveCampaign(formData: FormData): Promise<void> {
   revalidatePath("/admin/campaigns");
   revalidatePath(`/admin/campaigns/${id}`);
   revalidatePath("/campaigns");
-  revalidatePath("/brand");
+  revalidatePath("/agency");
 }
 
 /** Reject a pending campaign → cancelled. */
@@ -58,11 +58,11 @@ export async function rejectCampaign(formData: FormData): Promise<void> {
   }
   revalidatePath("/admin/campaigns");
   revalidatePath(`/admin/campaigns/${id}`);
-  revalidatePath("/brand");
+  revalidatePath("/agency");
 }
 
 /**
- * Mark the brand's money as received — the SEPARATE funding step (detail page).
+ * Mark the agency's money as received — the SEPARATE funding step (detail page).
  * Writes the escrow/funding ledger entry so clippers can be paid for this
  * campaign. Independent of public approval; only runs once.
  */
@@ -77,5 +77,5 @@ export async function markCampaignFunded(formData: FormData): Promise<void> {
   }
   revalidatePath("/admin/campaigns");
   revalidatePath(`/admin/campaigns/${id}`);
-  revalidatePath("/brand");
+  revalidatePath("/agency");
 }

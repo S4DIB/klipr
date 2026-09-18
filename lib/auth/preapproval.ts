@@ -57,17 +57,17 @@ export async function promoteIfPreapproved(profile: Profile): Promise<Profile> {
   const lead = await getLeadByEmail(profile.email);
   if (!lead || lead.status !== "approved") return profile;
 
-  // Approved BRAND → active brand; the 3-step brand onboarding runs next. A
+  // Approved AGENCY → active agency; the 3-step agency onboarding runs next. A
   // fresh Google sign-in is a "clipper" by default, so this also flips the role.
-  if (lead.role === "brand") {
+  if (lead.role === "agency") {
     return (
       (await updateProfile(profile.id, {
-        role: "brand",
+        role: "agency",
         access: "active",
         orgName: lead.company ?? profile.orgName,
         profileCompleted: false,
         onboardingStep: 0,
-      })) ?? { ...profile, role: "brand", access: "active", profileCompleted: false }
+      })) ?? { ...profile, role: "agency", access: "active", profileCompleted: false }
     );
   }
 
