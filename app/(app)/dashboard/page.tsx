@@ -3,12 +3,15 @@ import type { Metadata } from "next";
 import { requireActiveClipper } from "@/lib/auth/guards";
 import {
   getCampaign,
+  getCampaignsByIds,
   ledgerBalance,
+  listCampaignInvites,
   listConnectedAccounts,
   listPayoutBatches,
   listSnapshots,
   listSubmissions,
 } from "@/lib/db";
+import { acceptsSubmissions } from "@/lib/campaign-rules";
 import { Sparkline } from "@/components/ui/sparkline";
 import { StatusChip } from "@/components/app/status-chip";
 import { clipperAccount } from "@/lib/ledger";
@@ -22,7 +25,7 @@ import {
   IconUpload,
   IconWallet,
 } from "@/components/icons";
-import { views as fmtViews } from "@/lib/format";
+import { takaFromPoisha, views as fmtViews } from "@/lib/format";
 import { PLATFORMS } from "@/lib/platforms";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -65,12 +68,25 @@ const QUICK_ACTIONS = [
 export default async function DashboardPage() {
   const user = await requireActiveClipper();
 
-  const [balance, batches, subs, accounts] = await Promise.all([
+  const [balance, batches, subs, accounts, invites] = await Promise.all([
     ledgerBalance(clipperAccount(user.id)),
     listPayoutBatches({ profileId: user.id }),
     listSubmissions({ profileId: user.id }),
     listConnectedAccounts(user.id),
+    listCampaignInvites({ clipperProfileId: user.id }),
   ]);
+
+  // open invitations: the campaign still takes clips and you haven't posted one yet
+  const nowIso = new Date().toISOString();
+  const inviteCampaigns = invites.length
+    ? await getCampaignsByIds(invites.map((i) => i.campaignId))
+    : [];
+  const postedTo = new Set(subs.filter((s) => s.status !== "rejected").map((s) => s.campaignId));
+  const openInvites = invites.flatMap((invite) => {
+    const campaign = inviteCampaigns.find((c) => c.id === invite.campaignId);
+    if (!campaign || !acceptsSubmissions(campaign, nowIso) || postedTo.has(campaign.id)) return [];
+    return [{ invite, campaign }];
+  });
   const held = batches
     .filter((b) => b.status === "queued" || b.status === "blocked_nid" || b.status === "processing")
     .reduce((a, b) => a + b.amountPoisha, 0);
@@ -117,7 +133,7 @@ export default async function DashboardPage() {
   const recent = [...subs]
     .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
     .slice(0, 6);
-  const now = Date.now();
+  const now = new Date().getTime();
   const analytics = await Promise.all(
     recent.map(async (s) => {
       const snaps = await listSnapshots(s.id);
@@ -160,6 +176,46 @@ export default async function DashboardPage() {
 
       {/* getting-started checklist — new accounts only, hides when complete */}
       <SetupChecklist steps={setupSteps} />
+
+      {/* invitations — agencies who hand-picked you for a live brief */}
+      {openInvites.length > 0 ? (
+        <section>
+          <h2 className="text-[20px] font-extrabold tracking-[-0.02em] text-ink-900">
+            Invitations
+          </h2>
+          <p className="text-[13px] text-ink-500">Agencies who want you on their campaign</p>
+          <div className="mt-3.5 flex flex-col gap-2.5">
+            {openInvites.map(({ invite, campaign }) => (
+              <Link key={invite.id} href={`/campaigns/${campaign.id}`} className="block">
+                <GlassPanel
+                  interactive
+                  className="flex flex-wrap items-center justify-between gap-3 border border-[rgba(125,4,215,0.18)] p-4"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-bold text-ink-900">
+                      {campaign.agencyName} invited you
+                    </p>
+                    <p className="mt-0.5 truncate text-[13px] text-ink-600">
+                      {campaign.name} ·{" "}
+                      {campaign.payoutModel === "per_video"
+                        ? `${takaFromPoisha(campaign.perVideoClipperPoisha ?? 0)} per video`
+                        : `${takaFromPoisha(campaign.rateClipperPer1k)} / 1,000 views`}
+                    </p>
+                    {invite.message ? (
+                      <p className="mt-1 text-[12.5px] italic leading-snug text-ink-500">
+                        &ldquo;{invite.message}&rdquo;
+                      </p>
+                    ) : null}
+                  </div>
+                  <span className="shrink-0 text-[13px] font-bold text-violet-600">
+                    View campaign &rarr;
+                  </span>
+                </GlassPanel>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* quick actions */}
       <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">

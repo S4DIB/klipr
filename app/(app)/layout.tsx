@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth/session";
 import { routeFor } from "@/lib/auth/guards";
-import { ledgerBalance, listPayoutBatches } from "@/lib/db";
+import { ledgerBalance, listPayoutBatches, listUnreadNotifications } from "@/lib/db";
 import { clipperAccount } from "@/lib/ledger";
 import { AppShell } from "@/components/app/app-shell";
 
@@ -21,10 +21,12 @@ export default async function AppLayout({
   if (user.access !== "active") redirect(routeFor(user));
   if (!user.profileCompleted) redirect("/onboarding");
 
-  // available balance for the header pill (real ledger, minus queued payouts)
-  const [balance, batches] = await Promise.all([
+  // available balance for the header pill (real ledger, minus queued payouts),
+  // plus the unread notices that power the bell (campaign invites land here)
+  const [balance, batches, notifications] = await Promise.all([
     ledgerBalance(clipperAccount(user.id)),
     listPayoutBatches({ profileId: user.id }),
+    listUnreadNotifications(user.id),
   ]);
   const held = batches
     .filter((b) => b.status === "queued" || b.status === "blocked_nid" || b.status === "processing")
@@ -39,6 +41,7 @@ export default async function AppLayout({
       tier={user.tier}
       xpTotal={user.xpTotal}
       availablePoisha={availablePoisha}
+      notifications={notifications}
     >
       {children}
     </AppShell>

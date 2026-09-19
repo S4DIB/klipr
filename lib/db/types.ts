@@ -294,11 +294,30 @@ export interface Notification {
   id: string;
   /** Recipient profile. */
   profileId: string;
-  kind: "campaign_deleted" | "general";
+  kind: "campaign_deleted" | "campaign_invite" | "general";
   title: string;
   body: string;
+  /** In-app link the notice opens (e.g. the campaign an invite is for). */
+  href?: string;
   /** Set once the recipient has seen/dismissed it. */
   readAt?: string;
+  createdAt: string;
+}
+
+/**
+ * An agency's invitation to one clipper for one live campaign. A nudge, not a
+ * handshake: there is no accept/decline — taking part means submitting a
+ * clip, so "accepted" is derived from the submissions table. Unique per
+ * (campaign, clipper); the app never re-invites.
+ */
+export interface CampaignInvite {
+  id: string;
+  campaignId: string;
+  /** Sender — denormalised so the daily rate limit is one indexed count. */
+  agencyProfileId: string;
+  clipperProfileId: string;
+  /** Optional personal note, shown in the clipper's notification. */
+  message?: string;
   createdAt: string;
 }
 
@@ -315,6 +334,7 @@ export interface DB {
   payoutBatches: PayoutBatch[];
   fraudFlags: FraudFlag[];
   notifications: Notification[];
+  campaignInvites: CampaignInvite[];
   /** Sweep overlap-guard keys (`sweep:{bucket}`). */
   sweepLocks: string[];
   /** Stub-store reseed trigger. */

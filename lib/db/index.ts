@@ -10,6 +10,7 @@ import type {
   Application,
   ApplicationPage,
   Campaign,
+  CampaignInvite,
   CampaignStatus,
   ConnectedAccount,
   FraudFlag,
@@ -72,6 +73,12 @@ export const listVettedPagesForProfile = (profileId: string): Promise<Applicatio
   hasSupabase
     ? remote.listVettedPagesForProfile(profileId)
     : Promise.resolve(local.listVettedPagesForProfile(profileId));
+export const listVettedPagesForProfiles = (
+  profileIds: string[],
+): Promise<Record<string, ApplicationPage[]>> =>
+  hasSupabase
+    ? remote.listVettedPagesForProfiles(profileIds)
+    : Promise.resolve(local.listVettedPagesForProfiles(profileIds));
 
 /* ── Connected accounts ── */
 export const listConnectedAccounts = (profileId?: string): Promise<ConnectedAccount[]> =>
@@ -119,6 +126,10 @@ export const listSubmissionsForCampaigns = (campaignIds: string[]): Promise<Subm
   hasSupabase
     ? remote.listSubmissionsForCampaigns(campaignIds)
     : Promise.resolve(local.listSubmissionsForCampaigns(campaignIds));
+export const listSubmissionsForProfiles = (profileIds: string[]): Promise<Submission[]> =>
+  hasSupabase
+    ? remote.listSubmissionsForProfiles(profileIds)
+    : Promise.resolve(local.listSubmissionsForProfiles(profileIds));
 export const getSubmission = (id: string): Promise<Submission | undefined> =>
   hasSupabase ? remote.getSubmission(id) : Promise.resolve(local.getSubmission(id));
 export const getSubmissionByUrl = (postUrl: string): Promise<Submission | undefined> =>
@@ -216,6 +227,27 @@ export const markAllNotificationsRead = (profileId: string): Promise<void> =>
   hasSupabase
     ? remote.markAllNotificationsRead(profileId)
     : Promise.resolve(local.markAllNotificationsRead(profileId));
+
+/* ── Campaign invites ── */
+export const createCampaignInvite = (inv: CampaignInvite): Promise<CampaignInvite> =>
+  hasSupabase ? remote.createCampaignInvite(inv) : Promise.resolve(local.createCampaignInvite(inv));
+export const listCampaignInvites = (filter?: {
+  campaignId?: string;
+  agencyProfileId?: string;
+  clipperProfileId?: string;
+}): Promise<CampaignInvite[]> =>
+  hasSupabase ? remote.listCampaignInvites(filter) : Promise.resolve(local.listCampaignInvites(filter));
+export const findCampaignInvite = (
+  campaignId: string,
+  clipperProfileId: string,
+): Promise<CampaignInvite | undefined> =>
+  hasSupabase
+    ? remote.findCampaignInvite(campaignId, clipperProfileId)
+    : Promise.resolve(local.findCampaignInvite(campaignId, clipperProfileId));
+export const countCampaignInvitesSince = (agencyProfileId: string, sinceIso: string): Promise<number> =>
+  hasSupabase
+    ? remote.countCampaignInvitesSince(agencyProfileId, sinceIso)
+    : Promise.resolve(local.countCampaignInvitesSince(agencyProfileId, sinceIso));
 
 /* ── Leaderboard + sweep lock ── */
 export const leaderboard = (limit?: number) =>

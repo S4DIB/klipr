@@ -37,6 +37,7 @@ const RAIL: Record<ShellRole, RailItem[]> = {
     { href: "/agency", label: "Overview", icon: "chart" },
     { href: "/agency/campaigns/new", label: "New campaign", icon: "add" },
     { href: "/agency/campaigns", label: "Campaigns", icon: "megaphone" },
+    { href: "/agency/clippers", label: "Find clippers", icon: "users" },
     { href: "/agency/billing", label: "Billing", icon: "bkash" },
     { href: "/agency/settings", label: "Settings", icon: "gear" },
     { href: "/agency/profile", label: "Profile", icon: "profile" },
@@ -74,8 +75,8 @@ const TABS: Record<ShellRole, TabItem[]> = {
     { href: "/agency", label: "Overview", icon: "chart" },
     { href: "/agency/campaigns", label: "Campaigns", icon: "megaphone" },
     { href: "/agency/campaigns/new", label: "New", icon: "upload", center: true },
+    { href: "/agency/clippers", label: "Clippers", icon: "users" },
     { href: "/agency/billing", label: "Billing", icon: "bkash" },
-    { href: "/agency/profile", label: "Profile", icon: "profile" },
   ],
   admin: [],
 };
@@ -107,12 +108,15 @@ function AvatarFill({ avatarUrl, initial }: { avatarUrl?: string; initial: strin
 function AccountMenu({
   displayName,
   role,
+  profileHref,
   settingsHref,
   initial,
   avatarUrl,
 }: {
   displayName: string;
   role: ShellRole;
+  /** Roles whose profile isn't on the mobile tab bar reach it from here. */
+  profileHref?: string;
   settingsHref?: string;
   initial: string;
   avatarUrl?: string;
@@ -131,6 +135,14 @@ function AccountMenu({
           {role}
         </p>
         <div className="hairline my-1" />
+        {profileHref ? (
+          <Link
+            href={profileHref}
+            className="block rounded-[10px] px-3 py-2 text-[13.5px] text-text-mid transition-colors hover:bg-[rgba(53,5,90,0.05)] hover:text-text-hi"
+          >
+            Profile
+          </Link>
+        ) : null}
         {settingsHref ? (
           <Link
             href={settingsHref}
@@ -196,6 +208,8 @@ export function AppShell({
   // admin has no settings surface — its account menus offer "Sign out" only
   const settingsHref =
     role === "agency" ? "/agency/settings" : role === "admin" ? undefined : "/settings";
+  // agency's Profile left the mobile tab bar to make room for Find clippers
+  const profileHref = role === "agency" ? "/agency/profile" : undefined;
   const showSearch = role === "clipper" || role === "network";
   const cta =
     role === "agency"
@@ -242,6 +256,7 @@ export function AppShell({
             <AccountMenu
               displayName={displayName}
               role={role}
+              profileHref={profileHref}
               settingsHref={settingsHref}
               initial={initial}
               avatarUrl={avatarUrl}
@@ -289,6 +304,14 @@ export function AppShell({
                 <IconChevronRight size={14} strokeWidth={1.4} className="shrink-0 text-ink-400" />
               </summary>
               <div className="glass-strong absolute inset-x-0 bottom-[calc(100%+8px)] z-50 rounded-[--radius-control] p-2">
+                {profileHref ? (
+                  <Link
+                    href={profileHref}
+                    className="block rounded-[10px] px-3 py-2 text-[13.5px] text-text-mid transition-colors hover:bg-[rgba(53,5,90,0.05)] hover:text-text-hi"
+                  >
+                    Profile
+                  </Link>
+                ) : null}
                 {settingsHref ? (
                   <Link
                     href={settingsHref}
@@ -359,13 +382,29 @@ export function AppShell({
                     </div>
                   ) : (
                     <ul className="mt-3 flex max-h-[360px] flex-col gap-2 overflow-y-auto">
-                      {unread.map((n) => (
-                        <li key={n.id} className="rounded-[14px] bg-[rgba(53,5,90,0.04)] p-3">
-                          <p className="text-[13px] font-bold text-ink-900">{n.title}</p>
-                          <p className="mt-0.5 text-[12.5px] leading-snug text-ink-600">{n.body}</p>
-                          <p className="mt-1.5 text-[11px] text-ink-400">{dhakaDate(n.createdAt)}</p>
-                        </li>
-                      ))}
+                      {unread.map((n) => {
+                        const inner = (
+                          <>
+                            <p className="text-[13px] font-bold text-ink-900">{n.title}</p>
+                            <p className="mt-0.5 text-[12.5px] leading-snug text-ink-600">{n.body}</p>
+                            <p className="mt-1.5 text-[11px] text-ink-400">{dhakaDate(n.createdAt)}</p>
+                          </>
+                        );
+                        return (
+                          <li key={n.id}>
+                            {n.href ? (
+                              <Link
+                                href={n.href}
+                                className="block rounded-[14px] bg-[rgba(53,5,90,0.04)] p-3 transition-colors hover:bg-[rgba(125,4,215,0.08)]"
+                              >
+                                {inner}
+                              </Link>
+                            ) : (
+                              <div className="rounded-[14px] bg-[rgba(53,5,90,0.04)] p-3">{inner}</div>
+                            )}
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
                 </div>

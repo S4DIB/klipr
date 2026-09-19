@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireActiveClipper } from "@/lib/auth/guards";
-import { getCampaign, listConnectedAccounts, listSubmissions } from "@/lib/db";
+import { findCampaignInvite, getCampaign, listConnectedAccounts, listSubmissions } from "@/lib/db";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { CampaignCover } from "@/components/app/campaign-cover";
 import { StatusChip } from "@/components/app/status-chip";
@@ -10,7 +10,7 @@ import { SubmitSheet } from "@/components/app/submit-sheet";
 import { Button } from "@/components/ui/button";
 import { IconCheck, IconChevronLeft, IconClock } from "@/components/icons";
 import { PLATFORMS } from "@/lib/platforms";
-import { takaFromPoisha, views as fmtViews } from "@/lib/format";
+import { dhakaDate, takaFromPoisha, views as fmtViews } from "@/lib/format";
 import { remainingBudgetPoisha } from "@/lib/campaign-rules";
 import { submissionCap } from "@/lib/xp";
 
@@ -28,9 +28,10 @@ export default async function CampaignDetailPage({
 
   const now = new Date().toISOString();
 
-  const [accounts, mySubs] = await Promise.all([
+  const [accounts, mySubs, invite] = await Promise.all([
     listConnectedAccounts(user.id),
     listSubmissions({ campaignId: id, profileId: user.id }),
+    findCampaignInvite(id, user.id),
   ]);
   const eligibleAccounts = accounts
     .filter((a) => a.status === "active" && campaign.allowedPlatforms.includes(a.platform))
@@ -152,6 +153,21 @@ export default async function CampaignDetailPage({
         </div>
 
         <div className="flex flex-col gap-[14px]">
+      {/* the agency asked for you by name */}
+      {invite ? (
+        <GlassPanel className="border border-[rgba(125,4,215,0.2)] bg-[rgba(125,4,215,0.05)] p-4">
+          <p className="text-[13px] font-bold text-violet-700">
+            {campaign.agencyName} invited you to this campaign
+          </p>
+          {invite.message ? (
+            <p className="mt-1 text-[12.5px] italic leading-relaxed text-ink-600">
+              &ldquo;{invite.message}&rdquo;
+            </p>
+          ) : null}
+          <p className="mt-1 text-[11.5px] text-ink-500">Invited {dhakaDate(invite.createdAt)}</p>
+        </GlassPanel>
+      ) : null}
+
       {/* actions */}
       {accepting ? (
         <>
