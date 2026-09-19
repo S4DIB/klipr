@@ -2,10 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
-import { getCampaign, listSubmissions } from "@/lib/db";
+import { getCampaign, getProfilesByIds, listCampaignInvites, listSubmissions } from "@/lib/db";
+import { inviteStatus } from "@/lib/clippers/invite-rules";
+import { acceptsSubmissions } from "@/lib/campaign-rules";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatTile } from "@/components/app/stat-tile";
 import { StatusChip } from "@/components/app/status-chip";
+import { TierBadge } from "@/components/app/tier-badge";
 import { RequestDeletionButton } from "@/components/app/delete-campaign-button";
 import { BudgetBar } from "@/components/ui/budget-bar";
 import { PLATFORMS } from "@/lib/platforms";
@@ -25,8 +28,16 @@ export default async function AgencyCampaignPage({
   const campaign = await getCampaign(id);
   if (!campaign || campaign.agencyProfileId !== user.id) notFound();
 
-  // aggregate performance. Clipper identities stay private
-  const subs = await listSubmissions({ campaignId: id });
+  // aggregate performance. Clipper identities stay private — except the ones
+  // this agency invited by name, which are listed with their invite status.
+  const [subs, invites] = await Promise.all([
+    listSubmissions({ campaignId: id }),
+    listCampaignInvites({ campaignId: id }),
+  ]);
+  const invitees = invites.length
+    ? await getProfilesByIds(invites.map((i) => i.clipperProfileId))
+    : [];
+  const accepting = acceptsSubmissions(campaign, new Date().toISOString());
   const settled = subs.filter((s) => s.status === "settled");
   const live = subs.filter((s) => s.status === "tracking" || s.status === "held");
   const settledViews = settled.reduce((a, s) => a + (s.lockedViews ?? 0), 0);
@@ -168,6 +179,63 @@ export default async function AgencyCampaignPage({
               </li>
             ))}
           </ol>
+        )}
+      </GlassPanel>
+
+      <GlassPanel className="p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="eyebrow">Invited clippers</p>
+          {accepting ? (
+            <Link
+              href="/agency/clippers"
+              className="text-[12.5px] font-semibold text-volt-500 transition-colors hover:text-volt-400"
+            >
+              Find clippers &rarr;
+            </Link>
+          ) : null}
+        </div>
+        {invites.length === 0 ? (
+          <p className="mt-3 text-[13.5px] text-text-mid">
+            {accepting
+              ? "Hand-pick clippers for this brief from the directory. They get a notification with a link straight here."
+              : "No invites were sent for this campaign."}
+          </p>
+        ) : (
+          <ul className="mt-4 divide-y divide-[rgba(53,5,90,0.06)]">
+            {invites.map((inv) => {
+              const p = invitees.find((x) => x.id === inv.clipperProfileId);
+              const status = inviteStatus(inv, subs);
+              const name = p?.displayName ?? "Clipper";
+              return (
+                <li key={inv.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                  <Link
+                    href={`/agency/clippers/${inv.clipperProfileId}`}
+                    className="flex min-w-0 flex-1 items-center gap-3"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-volt-600 font-mono text-[13px] text-yellow">
+                      {p?.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
+                      ) : (
+                        name.trim().charAt(0).toUpperCase()
+                      )}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[14px] font-semibold text-text-hi">{name}</span>
+                      <span className="block text-[11.5px] text-text-low">
+                        Invited {dhakaDate(inv.createdAt)}
+                      </span>
+                    </span>
+                  </Link>
+                  {p ? <TierBadge tier={p.tier} size="sm" /> : null}
+                  <StatusChip
+                    status={status === "submitted" ? "tracking" : "pending"}
+                    label={status === "submitted" ? "Submitted" : "Invited"}
+                  />
+                </li>
+              );
+            })}
+          </ul>
         )}
       </GlassPanel>
     </div>

@@ -11,6 +11,7 @@ import type {
   Application,
   ApplicationPage,
   Campaign,
+  CampaignInvite,
   CampaignStatus,
   ConnectedAccount,
   FraudFlag,
@@ -314,6 +315,26 @@ export async function listVettedPagesForProfile(profileId: string): Promise<Appl
     .from("application_pages").select("*").in("application_id", ids).eq("vet_status", "approved");
   return (data ?? []).map(toApplicationPage);
 }
+/** Vetted pages for many profiles in two queries — the clipper directory's niche source. */
+export async function listVettedPagesForProfiles(
+  profileIds: string[],
+): Promise<Record<string, ApplicationPage[]>> {
+  if (!profileIds.length) return {};
+  const { data: apps } = await admin()
+    .from("applications").select("id, profile_id").in("profile_id", profileIds);
+  const appOwner = new Map<string, string>();
+  for (const a of apps ?? []) appOwner.set(a.id, a.profile_id);
+  if (!appOwner.size) return {};
+  const { data } = await admin()
+    .from("application_pages").select("*")
+    .in("application_id", [...appOwner.keys()]).eq("vet_status", "approved");
+  const out: Record<string, ApplicationPage[]> = {};
+  for (const r of data ?? []) {
+    const owner = appOwner.get(r.application_id);
+    if (owner) (out[owner] ??= []).push(toApplicationPage(r));
+  }
+  return out;
+}
 
 /* ── Connected accounts ── */
 export async function listConnectedAccounts(profileId?: string): Promise<ConnectedAccount[]> {
@@ -406,6 +427,12 @@ export async function listSubmissions(filter?: {
 export async function listSubmissionsForCampaigns(campaignIds: string[]): Promise<Submission[]> {
   if (!campaignIds.length) return [];
   const { data } = await admin().from("submissions").select("*").in("campaign_id", campaignIds);
+  return (data ?? []).map(toSubmission);
+}
+/** All submissions by a set of clippers in ONE query (the directory's stats source). */
+export async function listSubmissionsForProfiles(profileIds: string[]): Promise<Submission[]> {
+  if (!profileIds.length) return [];
+  const { data } = await admin().from("submissions").select("*").in("profile_id", profileIds);
   return (data ?? []).map(toSubmission);
 }
 export async function getSubmission(id: string): Promise<Submission | undefined> {
@@ -590,16 +617,17 @@ const toNotification = (r: {
   kind: Notification["kind"];
   title: string;
   body: string;
+  href?: string | null;
   read_at: string | null;
   created_at: string;
 }): Notification => ({
   id: r.id, profileId: r.profile_id, kind: r.kind, title: r.title, body: r.body,
-  readAt: r.read_at ?? undefined, createdAt: r.created_at,
+  href: r.href ?? undefined, readAt: r.read_at ?? undefined, createdAt: r.created_at,
 });
 export async function createNotification(n: Notification): Promise<Notification> {
   const { error } = await admin().from("notifications").insert({
     id: n.id, profile_id: n.profileId, kind: n.kind, title: n.title, body: n.body,
-    read_at: n.readAt ?? null, created_at: n.createdAt,
+    href: n.href ?? null, read_at: n.readAt ?? null, created_at: n.createdAt,
   });
   if (error) throw error;
   return n;
@@ -629,6 +657,64 @@ export async function markAllNotificationsRead(profileId: string): Promise<void>
     .from("notifications").update({ read_at: new Date().toISOString() })
     .eq("profile_id", profileId).is("read_at", null);
   if (error) throw error;
+}
+
+/* ── Campaign invites ── */
+const toCampaignInvite = (r: {
+  id: string;
+  campaign_id: string;
+  agency_profile_id: string;
+  clipper_profile_id: string;
+  message: string | null;
+  created_at: string;
+}): CampaignInvite => ({
+  id: r.id, campaignId: r.campaign_id, agencyProfileId: r.agency_profile_id,
+  clipperProfileId: r.clipper_profile_id, message: r.message ?? undefined, createdAt: r.created_at,
+});
+/** Idempotent on the (campaign, clipper) unique key: a racing duplicate is a no-op. */
+export async function createCampaignInvite(inv: CampaignInvite): Promise<CampaignInvite> {
+  const { error } = await admin().from("campaign_invites").insert({
+    id: inv.id, campaign_id: inv.campaignId, agency_profile_id: inv.agencyProfileId,
+    clipper_profile_id: inv.clipperProfileId, message: inv.message ?? null, created_at: inv.createdAt,
+  });
+  if (error) {
+    if ((error as { code?: string }).code === "23505") {
+      return (await findCampaignInvite(inv.campaignId, inv.clipperProfileId)) ?? inv;
+    }
+    throw error;
+  }
+  return inv;
+}
+export async function listCampaignInvites(filter?: {
+  campaignId?: string;
+  agencyProfileId?: string;
+  clipperProfileId?: string;
+}): Promise<CampaignInvite[]> {
+  let q = admin().from("campaign_invites").select("*").order("created_at", { ascending: false });
+  if (filter?.campaignId) q = q.eq("campaign_id", filter.campaignId);
+  if (filter?.agencyProfileId) q = q.eq("agency_profile_id", filter.agencyProfileId);
+  if (filter?.clipperProfileId) q = q.eq("clipper_profile_id", filter.clipperProfileId);
+  const { data } = await q;
+  return (data ?? []).map(toCampaignInvite);
+}
+export async function findCampaignInvite(
+  campaignId: string,
+  clipperProfileId: string,
+): Promise<CampaignInvite | undefined> {
+  const { data } = await admin()
+    .from("campaign_invites").select("*")
+    .eq("campaign_id", campaignId).eq("clipper_profile_id", clipperProfileId).maybeSingle();
+  return data ? toCampaignInvite(data) : undefined;
+}
+/** Invites an agency has sent since `sinceIso` — one indexed count, no rows shipped. */
+export async function countCampaignInvitesSince(
+  agencyProfileId: string,
+  sinceIso: string,
+): Promise<number> {
+  const { count } = await admin()
+    .from("campaign_invites").select("id", { count: "exact", head: true })
+    .eq("agency_profile_id", agencyProfileId).gte("created_at", sinceIso);
+  return count ?? 0;
 }
 
 /* ── Leaderboard ── */

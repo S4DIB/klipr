@@ -34,9 +34,18 @@ export function XIcon({ className }: { className?: string }) {
   );
 }
 
+export function FacebookIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M13.6 21v-7.3h2.5l.4-2.9h-2.9V9c0-.8.3-1.4 1.5-1.4h1.5V5.1c-.3 0-1.2-.1-2.2-.1-2.3 0-3.8 1.4-3.8 3.9v2H8v2.9h2.6V21h3Z" />
+    </svg>
+  );
+}
+
 export const PLATFORMS = {
   TikTok: TikTokIcon,
   Instagram: InstagramIcon,
   YouTube: YouTubeIcon,
+  Facebook: FacebookIcon,
   X: XIcon,
 } as const;

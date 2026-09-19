@@ -23,6 +23,7 @@ import type {
   PayoutBatch,
   FraudFlag,
   Notification,
+  CampaignInvite,
   CampaignStatus,
   SubmissionStatus,
 } from "./types.ts";
@@ -56,6 +57,7 @@ function seed(): DB {
     payoutBatches: [],
     fraudFlags: [],
     notifications: [],
+    campaignInvites: [],
     sweepLocks: [],
     version: 5,
   };
@@ -72,6 +74,7 @@ function load(): DB {
       const parsed = JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) as DB;
       if (parsed.version === 5) {
         parsed.notifications ??= []; // additive field on an existing v5 store
+        parsed.campaignInvites ??= []; // additive field on an existing v5 store
         g.__klipr_db = parsed;
         return g.__klipr_db;
       }
@@ -173,6 +176,20 @@ export function listVettedPagesForProfile(profileId: string): ApplicationPage[] 
   const appIds = new Set(db.applications.filter((a) => a.profileId === profileId).map((a) => a.id));
   return db.applicationPages.filter((p) => appIds.has(p.applicationId) && p.vetStatus === "approved");
 }
+/** Vetted pages for many profiles in one pass — the clipper directory's niche source. */
+export function listVettedPagesForProfiles(profileIds: string[]): Record<string, ApplicationPage[]> {
+  const db = load();
+  const want = new Set(profileIds);
+  const appOwner = new Map<string, string>();
+  for (const a of db.applications) if (want.has(a.profileId)) appOwner.set(a.id, a.profileId);
+  const out: Record<string, ApplicationPage[]> = {};
+  for (const p of db.applicationPages) {
+    const owner = appOwner.get(p.applicationId);
+    if (!owner || p.vetStatus !== "approved") continue;
+    (out[owner] ??= []).push(p);
+  }
+  return out;
+}
 
 /* ── Connected accounts ───────────────────────────────── */
 export function listConnectedAccounts(profileId?: string): ConnectedAccount[] {
@@ -270,6 +287,11 @@ export function listSubmissions(filter?: {
 export function listSubmissionsForCampaigns(campaignIds: string[]): Submission[] {
   const set = new Set(campaignIds);
   return load().submissions.filter((s) => set.has(s.campaignId));
+}
+/** All submissions by a set of clippers in ONE pass (the directory's stats source). */
+export function listSubmissionsForProfiles(profileIds: string[]): Submission[] {
+  const set = new Set(profileIds);
+  return load().submissions.filter((s) => set.has(s.profileId));
 }
 export function getSubmission(id: string): Submission | undefined {
   return load().submissions.find((s) => s.id === id);
@@ -453,6 +475,44 @@ export function markAllNotificationsRead(profileId: string): void {
     }
   }
   if (changed) save();
+}
+
+/* ── Campaign invites ─────────────────────────────────── */
+/** Idempotent on (campaignId, clipperProfileId): a repeat returns the existing row. */
+export function createCampaignInvite(inv: CampaignInvite): CampaignInvite {
+  const db = load();
+  const existing = db.campaignInvites.find(
+    (i) => i.campaignId === inv.campaignId && i.clipperProfileId === inv.clipperProfileId,
+  );
+  if (existing) return existing;
+  db.campaignInvites.push(inv);
+  save();
+  return inv;
+}
+export function listCampaignInvites(filter?: {
+  campaignId?: string;
+  agencyProfileId?: string;
+  clipperProfileId?: string;
+}): CampaignInvite[] {
+  let rows = load().campaignInvites;
+  if (filter?.campaignId) rows = rows.filter((i) => i.campaignId === filter.campaignId);
+  if (filter?.agencyProfileId) rows = rows.filter((i) => i.agencyProfileId === filter.agencyProfileId);
+  if (filter?.clipperProfileId) rows = rows.filter((i) => i.clipperProfileId === filter.clipperProfileId);
+  return [...rows].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+export function findCampaignInvite(
+  campaignId: string,
+  clipperProfileId: string,
+): CampaignInvite | undefined {
+  return load().campaignInvites.find(
+    (i) => i.campaignId === campaignId && i.clipperProfileId === clipperProfileId,
+  );
+}
+/** Invites an agency has sent since `sinceIso` — the rate-limit counter. */
+export function countCampaignInvitesSince(agencyProfileId: string, sinceIso: string): number {
+  return load().campaignInvites.filter(
+    (i) => i.agencyProfileId === agencyProfileId && i.createdAt >= sinceIso,
+  ).length;
 }
 
 /* ── Leaderboard ──────────────────────────────────────── */
