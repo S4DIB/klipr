@@ -7,6 +7,7 @@ import {
   clipperEarningsPoisha,
   agencyCostPoisha,
   agencyCostForClipperPayout,
+  retainerInstallmentPoisha,
   settlementMath,
 } from "./money.ts";
 
@@ -154,11 +155,137 @@ test("per-video: the clipper cap blocks a video it can't fully cover", () => {
   assert.equal(capped.clipperEarnPoisha, 0);
 });
 
-test("agencyCost never exceeds the escrow in either model", () => {
-  for (const escrow of [0, 1, 59_999, 60_000, 4_000_000]) {
-    for (const model of ["views", "per_video"] as const) {
+/* ── retainer payout model ────────────────────────────── */
+
+test("retainer installments split the fee evenly and sum exactly to it", () => {
+  // ৳10,000 over 3 videos: 333,334 + 333,333 + 333,333 poisha = 1,000,000
+  assert.equal(retainerInstallmentPoisha(1_000_000, 3, 1), 333_334);
+  assert.equal(retainerInstallmentPoisha(1_000_000, 3, 2), 333_333);
+  assert.equal(retainerInstallmentPoisha(1_000_000, 3, 3), 333_333);
+  // past the last video there is nothing left
+  assert.equal(retainerInstallmentPoisha(1_000_000, 3, 4), 0);
+
+  for (const total of [50_000, 1_000_000, 1_234_567, 99_999_999]) {
+    for (const n of [1, 2, 3, 7, 10, 30]) {
+      const parts = Array.from({ length: n }, (_, i) => retainerInstallmentPoisha(total, n, i + 1));
+      assert.equal(parts.reduce((a, b) => a + b, 0), total, `${total} / ${n} sums exactly`);
+      assert.ok(Math.max(...parts) - Math.min(...parts) <= 1, `${total} / ${n} is even`);
+    }
+  }
+
+  assert.throws(() => retainerInstallmentPoisha(1_000_000, 0, 1));
+  assert.throws(() => retainerInstallmentPoisha(-1, 3, 1));
+  assert.throws(() => retainerInstallmentPoisha(1_000_000, 3, 0));
+});
+
+const retainer = {
+  ...base,
+  payoutModel: "retainer" as const,
+  retainerClipperPoisha: 1_000_000, // ৳10,000 per clipper
+  retainerAgencyPoisha: 1_200_000, // ৳12,000 the agency pays
+  retainerVideos: 3,
+  clipperCapRemainingPoisha: 1_000_000, // the campaign's cap IS the fee
+};
+
+test("retainer: each accepted video pays its installment, whatever the views", () => {
+  const first = settlementMath({ ...retainer, lockedViews: 4200, paidVideosPrior: 0 });
+  assert.equal(first.paid, true);
+  assert.equal(first.paidVideos, 1);
+  assert.equal(first.payableViews, 0);
+  assert.equal(first.clipperEarnPoisha, 333_334);
+  assert.equal(first.agencyCostPoisha, 400_000);
+  assert.equal(first.marginPoisha, 66_666);
+
+  const viral = settlementMath({ ...retainer, lockedViews: 4_200_000, paidVideosPrior: 0 });
+  assert.equal(viral.clipperEarnPoisha, 333_334);
+
+  const second = settlementMath({
+    ...retainer,
+    lockedViews: 2000,
+    paidVideosPrior: 1,
+    clipperCapRemainingPoisha: 1_000_000 - 333_334,
+  });
+  assert.equal(second.clipperEarnPoisha, 333_333);
+  assert.equal(second.agencyCostPoisha, 400_000);
+});
+
+test("retainer: three installments land exactly on both snapshotted fees", () => {
+  let capLeft = retainer.retainerClipperPoisha;
+  let escrowLeft = retainer.retainerAgencyPoisha;
+  let earned = 0;
+  let cost = 0;
+  for (let k = 0; k < 3; k++) {
+    const m = settlementMath({
+      ...retainer,
+      lockedViews: 3000,
+      paidVideosPrior: k,
+      clipperCapRemainingPoisha: capLeft,
+      remainingEscrowPoisha: escrowLeft,
+    });
+    assert.equal(m.paid, true);
+    earned += m.clipperEarnPoisha;
+    cost += m.agencyCostPoisha;
+    capLeft -= m.clipperEarnPoisha;
+    escrowLeft -= m.agencyCostPoisha;
+  }
+  assert.equal(earned, 1_000_000);
+  assert.equal(cost, 1_200_000);
+  assert.equal(capLeft, 0);
+  assert.equal(escrowLeft, 0);
+});
+
+test("retainer: below the view minimum settles at ৳0 and does not use up a video", () => {
+  const m = settlementMath({ ...retainer, lockedViews: 1999, paidVideosPrior: 0 });
+  assert.equal(m.belowMinimum, true);
+  assert.equal(m.paid, false);
+  assert.equal(m.paidVideos, 0);
+  assert.equal(m.clipperEarnPoisha, 0);
+  assert.equal(m.agencyCostPoisha, 0);
+});
+
+test("retainer: once the video count is delivered, extra clips pay nothing", () => {
+  const m = settlementMath({ ...retainer, lockedViews: 9000, paidVideosPrior: 3 });
+  assert.equal(m.paid, false);
+  assert.equal(m.clipperEarnPoisha, 0);
+});
+
+test("retainer: an installment is atomic — escrow or cap short by a poisha pays nothing", () => {
+  const escrowShort = settlementMath({
+    ...retainer,
+    lockedViews: 4200,
+    paidVideosPrior: 0,
+    remainingEscrowPoisha: 399_999,
+  });
+  assert.equal(escrowShort.paid, false);
+  const capShort = settlementMath({
+    ...retainer,
+    lockedViews: 4200,
+    paidVideosPrior: 0,
+    clipperCapRemainingPoisha: 333_333,
+  });
+  assert.equal(capShort.paid, false);
+  const exact = settlementMath({
+    ...retainer,
+    lockedViews: 4200,
+    paidVideosPrior: 0,
+    remainingEscrowPoisha: 400_000,
+  });
+  assert.equal(exact.paid, true);
+});
+
+test("retainer: a malformed campaign (no fee or video count) never pays", () => {
+  const noVideos = settlementMath({ ...retainer, lockedViews: 4200, retainerVideos: 0 });
+  assert.equal(noVideos.paid, false);
+  const noFee = settlementMath({ ...retainer, lockedViews: 4200, retainerClipperPoisha: 0 });
+  assert.equal(noFee.paid, false);
+});
+
+test("agencyCost never exceeds the escrow in any model", () => {
+  for (const escrow of [0, 1, 59_999, 60_000, 399_999, 400_000, 4_000_000]) {
+    for (const model of ["views", "per_video", "retainer"] as const) {
       const m = settlementMath({
         ...perVideo,
+        ...retainer,
         payoutModel: model,
         lockedViews: 42_000,
         remainingEscrowPoisha: escrow,

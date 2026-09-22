@@ -9,6 +9,7 @@ import { IconVerified } from "@/components/icons";
 import { TikTokIcon, InstagramIcon, YouTubeIcon } from "@/components/ui/platform-icons";
 import { PLATFORMS } from "@/lib/platforms";
 import { takaFromPoisha } from "@/lib/format";
+import { isInviteOnly } from "@/lib/campaign-rules";
 import { cn } from "@/lib/cn";
 import type { Platform } from "@/lib/db/types";
 
@@ -46,7 +47,8 @@ function timeAgo(iso: string): string {
 /**
  * The marketplace — a clean "discover" feed of live campaigns. Every clip
  * earns the same fixed rate; cards lead with the agency and the per-1M
- * headline. Every active campaign is open to all tiers.
+ * headline. Every active open campaign is open to all tiers; retainers are
+ * invite-only and reach a clipper through their invitations instead.
  */
 export default async function CampaignsPage({
   searchParams,
@@ -61,8 +63,9 @@ export default async function CampaignsPage({
 
   const campaigns = (await listCampaigns("active")).filter(
     (c) =>
-      !needle ||
-      [c.name, c.agencyName, c.niche].some((s) => s.toLowerCase().includes(needle)),
+      !isInviteOnly(c) &&
+      (!needle ||
+        [c.name, c.agencyName, c.niche].some((s) => s.toLowerCase().includes(needle))),
   );
   campaigns.sort((a, b) => {
     if (sort === "budget") return b.budgetPoisha - b.spentPoisha - (a.budgetPoisha - a.spentPoisha);

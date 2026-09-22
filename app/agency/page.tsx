@@ -140,7 +140,7 @@ export default async function AgencyOverviewPage() {
                 <span>Campaign</span>
                 <span>Status</span>
                 <span>Budget</span>
-                <span>Cost / 1k</span>
+                <span>Your rate</span>
                 <span>Views</span>
               </div>
               {campaigns.map((c, i) => {
@@ -202,11 +202,24 @@ export default async function AgencyOverviewPage() {
                         funded ? "text-ink-900" : "text-ink-400",
                       )}
                     >
-                      {funded
-                        ? c.payoutModel === "per_video"
-                          ? takaFromPoisha(c.perVideoAgencyPoisha ?? 0)
-                          : takaFromPoisha(c.rateAgencyPer1k)
-                        : "—"}
+                      {funded ? (
+                        <>
+                          {c.payoutModel === "retainer"
+                            ? takaFromPoisha(c.retainerAgencyPoisha ?? 0)
+                            : c.payoutModel === "per_video"
+                              ? takaFromPoisha(c.perVideoAgencyPoisha ?? 0)
+                              : takaFromPoisha(c.rateAgencyPer1k)}
+                          <span className="text-[11px] text-ink-400">
+                            {c.payoutModel === "retainer"
+                              ? " / clipper"
+                              : c.payoutModel === "per_video"
+                                ? " / video"
+                                : " / 1k"}
+                          </span>
+                        </>
+                      ) : (
+                        "—"
+                      )}
                     </span>
                     <span
                       className={cn(

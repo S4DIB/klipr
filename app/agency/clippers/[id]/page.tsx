@@ -41,7 +41,12 @@ export default async function AgencyClipperPage({
   const invitedIds = new Set(myInvites.map((i) => i.campaignId));
   const invitable = live
     .filter((c) => !invitedIds.has(c.id))
-    .map((c) => ({ id: c.id, name: c.name, endsLabel: dhakaDate(c.endDate) }));
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      endsLabel: dhakaDate(c.endDate),
+      tag: c.payoutModel === "retainer" ? "retainer" : undefined,
+    }));
   // their clips on MY campaigns decide each invite's status; nothing else is shown
   const theirSubs = myInvites.length ? await listSubmissions({ profileId: id }) : [];
   const campaignName = new Map(myCampaigns.map((c) => [c.id, c.name]));

@@ -8,6 +8,7 @@ import { NICHES, PLATFORMS, PLATFORM_ORDER } from "@/lib/platforms";
 import { cn } from "@/lib/cn";
 import { poishaToTaka } from "@/lib/money";
 import { dhakaDateInput } from "@/lib/format";
+import { RETAINER_MAX_SLOTS, RETAINER_MAX_VIDEOS } from "@/lib/campaign-rules";
 import { CoverPicker } from "./cover-picker";
 import { createCampaign, editCampaign, type NewCampaignState } from "./actions";
 import type { Campaign, PayoutModel, Platform } from "@/lib/db/types";
@@ -74,6 +75,11 @@ export function CampaignForm({
   const [perVideo, setPerVideo] = useState(
     campaign?.perVideoClipperPoisha ? String(poishaToTaka(campaign.perVideoClipperPoisha)) : "500",
   );
+  const [retainerTaka, setRetainerTaka] = useState(
+    campaign?.retainerClipperPoisha ? String(poishaToTaka(campaign.retainerClipperPoisha)) : "10000",
+  );
+  const [retainerVideos, setRetainerVideos] = useState(String(campaign?.retainerVideos ?? 10));
+  const [retainerSlots, setRetainerSlots] = useState(String(campaign?.retainerSlots ?? 5));
   const [brief, setBrief] = useState(campaign?.brief ?? "");
   const [guidelines, setGuidelines] = useState(campaign?.guidelines ?? "");
   const [sourceUrl, setSourceUrl] = useState(campaign?.sourceUrl ?? "");
@@ -89,9 +95,19 @@ export function CampaignForm({
   const budgetNum = Number(budget) || 0;
   const perVideoNum = Number(perVideo) || 0;
   const byVideo = payoutModel === "per_video";
+  const byRetainer = payoutModel === "retainer";
   // agency cost carries the platform's fixed 5:6 margin, same as the per-1k rates
   const perVideoCost = perVideoNum * 1.2;
+  const retainerNum = Number(retainerTaka) || 0;
+  const videosNum = Number(retainerVideos) || 0;
+  const slotsNum = Number(retainerSlots) || 0;
+  const retainerCost = retainerNum * 1.2;
+  // a retainer's escrow is derived: every slot fully delivered, nothing more
+  const retainerBudget = retainerCost * slotsNum;
+  const installment = videosNum > 0 ? retainerNum / videosNum : 0;
+  const escrowNum = byRetainer ? retainerBudget : budgetNum;
   const taka = (n: number) => `৳${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  const digits = (v: string) => v.replace(/\D/g, "");
 
   /** Pill toggle styling shared by the platform + min-view choices. */
   const pill = (on: boolean, extra?: string) =>
@@ -191,6 +207,7 @@ export function CampaignForm({
                   [
                     { key: "views" as const, label: "Per views", line: "৳50 / 1,000 verified views" },
                     { key: "per_video" as const, label: "Per video", line: "A flat fee per accepted video" },
+                    { key: "retainer" as const, label: "Retainer", line: "A fixed fee per clipper, invite-only" },
                   ]
                 ).map((m) => (
                   <button
@@ -214,9 +231,11 @@ export function CampaignForm({
               </div>
               <input type="hidden" name="payoutModel" value={payoutModel} />
               <p className="mt-2 text-[11.5px] text-white">
-                {byVideo
-                  ? "Every video that clears the qualification minimum earns the same flat fee, however far it travels."
-                  : "Clippers earn on every verified view their clip brings in."}
+                {byRetainer
+                  ? "Hire a set number of clippers on the same fixed fee for a set number of videos, paid out per accepted video. Retainers never appear in the marketplace — you invite clippers from Find clippers once it's live."
+                  : byVideo
+                    ? "Every video that clears the qualification minimum earns the same flat fee, however far it travels."
+                    : "Clippers earn on every verified view their clip brings in."}
               </p>
             </div>
 
@@ -243,40 +262,111 @@ export function CampaignForm({
               </div>
             ) : null}
 
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <div className="flex-1">
-                <VLabel>Budget (ceiling)</VLabel>
-                <input
-                  name="budgetTaka"
-                  inputMode="numeric"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value.replace(/\D/g, ""))}
-                  className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
-                />
-                <p className="mt-1.5 text-[11.5px] text-white">
-                  {budgetNum < 5000
-                    ? "min ৳5,000"
-                    : byVideo
-                      ? perVideoCost > 0
-                        ? `≈ ${Math.floor(budgetNum / perVideoCost).toLocaleString("en-US")} paid videos`
-                        : "set a per-video fee"
-                      : `≈ ${Math.floor((budgetNum / 60) * 1000).toLocaleString("en-US")} verified views`}
-                </p>
-              </div>
-              <div className="flex-1">
-                <VReadout label="You pay · fixed">
-                  {byVideo ? (
-                    <>
-                      <span className="font-mono text-white">{taka(perVideoCost)}</span> / accepted video
-                    </>
-                  ) : (
-                    <>
-                      <span className="font-mono text-white">৳60</span> / 1,000 verified views
-                    </>
-                  )}
+            {byRetainer ? (
+              <>
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <div className="flex-1">
+                    <VLabel>Clipper earns · retainer (৳)</VLabel>
+                    <input
+                      name="retainerTaka"
+                      inputMode="numeric"
+                      value={retainerTaka}
+                      onChange={(e) => setRetainerTaka(digits(e.target.value))}
+                      className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
+                    />
+                    <p className="mt-1.5 text-[11.5px] text-white">
+                      {retainerNum < 500
+                        ? "min ৳500 per clipper"
+                        : videosNum > 0
+                          ? `≈ ${taka(installment)} per accepted video`
+                          : "set how many videos"}
+                    </p>
+                  </div>
+                  <div className="flex-1">
+                    <VLabel>Videos per clipper</VLabel>
+                    <input
+                      name="retainerVideos"
+                      inputMode="numeric"
+                      value={retainerVideos}
+                      onChange={(e) => setRetainerVideos(digits(e.target.value))}
+                      className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
+                    />
+                    <p className="mt-1.5 text-[11.5px] text-white">
+                      {videosNum < 1 || videosNum > RETAINER_MAX_VIDEOS
+                        ? `1 to ${RETAINER_MAX_VIDEOS}`
+                        : "Each must clear the qualification minimum to count."}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <div className="flex-1">
+                    <VLabel>Clippers on retainer</VLabel>
+                    <input
+                      name="retainerSlots"
+                      inputMode="numeric"
+                      value={retainerSlots}
+                      onChange={(e) => setRetainerSlots(digits(e.target.value))}
+                      className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
+                    />
+                    <p className="mt-1.5 text-[11.5px] text-white">
+                      {slotsNum < 1 || slotsNum > RETAINER_MAX_SLOTS
+                        ? `1 to ${RETAINER_MAX_SLOTS}`
+                        : "You'll invite them by name once the campaign is live."}
+                    </p>
+                  </div>
+                  <div className="flex-1">
+                    <VReadout label="You pay · per clipper">
+                      <span className="font-mono text-white">{taka(retainerCost)}</span> for{" "}
+                      {videosNum || "—"} videos
+                    </VReadout>
+                  </div>
+                </div>
+                <VReadout label="Escrow · every slot delivered in full">
+                  <span className="font-mono text-white">{taka(retainerBudget)}</span>
+                  <span className="text-white/70">
+                    {" "}
+                    · {slotsNum || "—"} × {taka(retainerCost)} · unspent escrow is refunded
+                  </span>
                 </VReadout>
+              </>
+            ) : null}
+
+            {!byRetainer ? (
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="flex-1">
+                  <VLabel>Budget (ceiling)</VLabel>
+                  <input
+                    name="budgetTaka"
+                    inputMode="numeric"
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value.replace(/\D/g, ""))}
+                    className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
+                  />
+                  <p className="mt-1.5 text-[11.5px] text-white">
+                    {budgetNum < 5000
+                      ? "min ৳5,000"
+                      : byVideo
+                        ? perVideoCost > 0
+                          ? `≈ ${Math.floor(budgetNum / perVideoCost).toLocaleString("en-US")} paid videos`
+                          : "set a per-video fee"
+                        : `≈ ${Math.floor((budgetNum / 60) * 1000).toLocaleString("en-US")} verified views`}
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <VReadout label="You pay · fixed">
+                    {byVideo ? (
+                      <>
+                        <span className="font-mono text-white">{taka(perVideoCost)}</span> / accepted video
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-mono text-white">৳60</span> / 1,000 verified views
+                      </>
+                    )}
+                  </VReadout>
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div>
               <VLabel>Qualification minimum</VLabel>
@@ -293,7 +383,9 @@ export function CampaignForm({
                   </button>
                 ))}
                 <span className="text-[11.5px] text-white">
-                  Clips below this settle at ৳0 and earn no XP.
+                  {byRetainer
+                    ? "Videos below this don't count toward the retainer and earn no XP."
+                    : "Clips below this settle at ৳0 and earn no XP."}
                 </span>
               </div>
               <input type="hidden" name="minQualifyViews" value={minViews} />
@@ -315,33 +407,35 @@ export function CampaignForm({
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <div className="flex-1">
-                <VLabel>Max per clipper (৳)</VLabel>
-                <input
-                  name="maxPerClipperTaka"
-                  inputMode="numeric"
-                  value={maxPerClipper}
-                  onChange={(e) => setMaxPerClipper(e.target.value.replace(/\D/g, ""))}
-                  className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
-                />
+            {!byRetainer ? (
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="flex-1">
+                  <VLabel>Max per clipper (৳)</VLabel>
+                  <input
+                    name="maxPerClipperTaka"
+                    inputMode="numeric"
+                    value={maxPerClipper}
+                    onChange={(e) => setMaxPerClipper(e.target.value.replace(/\D/g, ""))}
+                    className={cn(control, "font-mono [font-variant-numeric:tabular-nums]")}
+                  />
+                </div>
+                <div className="flex-1">
+                  <VLabel>Submissions per clipper</VLabel>
+                  <select
+                    name="submissionCapBase"
+                    value={subCap}
+                    onChange={(e) => setSubCap(e.target.value)}
+                    className={cn(control, "appearance-none [&>option]:text-[#1c0a2e]")}
+                  >
+                    {[1, 2, 3, 5].map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div className="flex-1">
-                <VLabel>Submissions per clipper</VLabel>
-                <select
-                  name="submissionCapBase"
-                  value={subCap}
-                  onChange={(e) => setSubCap(e.target.value)}
-                  className={cn(control, "appearance-none [&>option]:text-[#1c0a2e]")}
-                >
-                  {[1, 2, 3, 5].map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            ) : null}
           </div>
 
           {/* step 3. Creative & review */}
@@ -397,15 +491,19 @@ export function CampaignForm({
               </span>
               <div className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3.5 text-[13px] text-white sm:grid-cols-2">
                 <div className="flex justify-between">
-                  <span className="text-white">Budget</span>
+                  <span className="text-white">{byRetainer ? "Escrow" : "Budget"}</span>
                   <span className="font-mono [font-variant-numeric:tabular-nums]">
-                    ৳{budgetNum.toLocaleString("en-US")}
+                    {taka(escrowNum)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white">Rate</span>
                   <span className="font-mono">
-                    {byVideo ? `${taka(perVideoCost)} / video` : "৳60 / 1k"}
+                    {byRetainer
+                      ? `${taka(retainerCost)} × ${slotsNum || "—"} clippers · ${videosNum || "—"} videos each`
+                      : byVideo
+                        ? `${taka(perVideoCost)} / video`
+                        : "৳60 / 1k"}
                   </span>
                 </div>
                 <div className="flex justify-between">

@@ -57,6 +57,27 @@ function assertViews(views: number) {
   if (!Number.isInteger(views) || views < 0) throw new Error(`invalid view count: ${views}`);
 }
 
+/**
+ * Installment `k` (1-based) of a retainer split evenly across `videos`
+ * accepted videos, in integer poisha. The remainder of the division goes one
+ * poisha at a time to the earliest installments, so the `videos` installments
+ * sum to exactly `totalPoisha` and no two differ by more than one poisha.
+ * Past the last video there is nothing left to pay: k > videos ⇒ 0.
+ */
+export function retainerInstallmentPoisha(totalPoisha: number, videos: number, k: number): number {
+  if (!Number.isInteger(totalPoisha) || totalPoisha < 0) {
+    throw new Error(`invalid retainer amount: ${totalPoisha}`);
+  }
+  if (!Number.isInteger(videos) || videos <= 0) {
+    throw new Error(`invalid retainer video count: ${videos}`);
+  }
+  if (!Number.isInteger(k) || k < 1) throw new Error(`invalid installment index: ${k}`);
+  if (k > videos) return 0;
+  const base = Math.floor(totalPoisha / videos);
+  const extra = totalPoisha % videos;
+  return base + (k <= extra ? 1 : 0);
+}
+
 export interface SettlementMathInput {
   lockedViews: number;
   minQualifyViews: number;
@@ -71,12 +92,21 @@ export interface SettlementMathInput {
   /** per_video only — the campaign's snapshotted flat amounts. */
   perVideoClipperPoisha?: number;
   perVideoAgencyPoisha?: number;
+  /** retainer only — the campaign's snapshotted fee per clipper and its video count. */
+  retainerClipperPoisha?: number;
+  retainerAgencyPoisha?: number;
+  retainerVideos?: number;
+  /**
+   * retainer only — accepted videos this clipper has already been paid for in
+   * this campaign. The clip being settled is installment (paidVideosPrior + 1).
+   */
+  paidVideosPrior?: number;
 }
 
 export interface SettlementMath {
-  /** views model: the views actually paid for. per_video: always 0. */
+  /** views model: the views actually paid for. per_video / retainer: always 0. */
   payableViews: number;
-  /** per_video: 1 when the video was paid for, else 0. views model: always 0. */
+  /** per_video / retainer: 1 when the video was paid for, else 0. views model: always 0. */
   paidVideos: number;
   /** Anything earned at all — the ledger + XP gate for BOTH models. */
   paid: boolean;
@@ -101,6 +131,13 @@ export interface SettlementMath {
  * fits in both the remaining escrow and the clipper's remaining cap. A video is
  * atomic — there is no part-paid video — so it's all or nothing, which keeps
  * the same "agencyCost ≤ remainingEscrow" invariant.
+ *
+ * Retainer campaigns pay the clipper's fee in `retainerVideos` equal
+ * installments, one per accepted video (see retainerInstallmentPoisha), with
+ * the agency's fee split the same way so both sides land exactly on their
+ * snapshotted totals. Each installment is as atomic as a per-video payout and
+ * runs the same escrow + cap guards; once the video count is reached, further
+ * clips settle at ৳0.
  */
 export function settlementMath(input: SettlementMathInput): SettlementMath {
   const {
@@ -113,10 +150,47 @@ export function settlementMath(input: SettlementMathInput): SettlementMath {
     payoutModel = "views",
     perVideoClipperPoisha = 0,
     perVideoAgencyPoisha = 0,
+    retainerClipperPoisha = 0,
+    retainerAgencyPoisha = 0,
+    retainerVideos = 0,
+    paidVideosPrior = 0,
   } = input;
   assertViews(lockedViews);
 
   const belowMinimum = lockedViews < minQualifyViews;
+
+  if (payoutModel === "retainer") {
+    const k = Math.max(0, paidVideosPrior) + 1;
+    const wellFormed =
+      retainerVideos > 0 &&
+      Number.isInteger(retainerVideos) &&
+      retainerClipperPoisha > 0 &&
+      retainerAgencyPoisha > 0;
+    const clipperShare = wellFormed
+      ? retainerInstallmentPoisha(retainerClipperPoisha, retainerVideos, k)
+      : 0;
+    const agencyShare = wellFormed
+      ? retainerInstallmentPoisha(retainerAgencyPoisha, retainerVideos, k)
+      : 0;
+    const affordable =
+      !belowMinimum &&
+      clipperShare > 0 &&
+      agencyShare > 0 &&
+      agencyShare <= Math.max(0, remainingEscrowPoisha) &&
+      clipperShare <= Math.max(0, clipperCapRemainingPoisha);
+
+    const clipperEarn = affordable ? clipperShare : 0;
+    const agencyCost = affordable ? agencyShare : 0;
+    return {
+      payableViews: 0,
+      paidVideos: affordable ? 1 : 0,
+      paid: affordable,
+      clipperEarnPoisha: clipperEarn,
+      agencyCostPoisha: agencyCost,
+      marginPoisha: agencyCost - clipperEarn,
+      belowMinimum,
+    };
+  }
 
   if (payoutModel === "per_video") {
     const affordable =

@@ -193,13 +193,16 @@ export default async function DashboardPage() {
                 >
                   <div className="min-w-0">
                     <p className="text-[14px] font-bold text-ink-900">
-                      {campaign.agencyName} invited you
+                      {campaign.agencyName}{" "}
+                      {campaign.payoutModel === "retainer" ? "offered you a retainer" : "invited you"}
                     </p>
                     <p className="mt-0.5 truncate text-[13px] text-ink-600">
                       {campaign.name} ·{" "}
-                      {campaign.payoutModel === "per_video"
-                        ? `${takaFromPoisha(campaign.perVideoClipperPoisha ?? 0)} per video`
-                        : `${takaFromPoisha(campaign.rateClipperPer1k)} / 1,000 views`}
+                      {campaign.payoutModel === "retainer"
+                        ? `${takaFromPoisha(campaign.retainerClipperPoisha ?? 0)} for ${campaign.retainerVideos ?? 0} videos`
+                        : campaign.payoutModel === "per_video"
+                          ? `${takaFromPoisha(campaign.perVideoClipperPoisha ?? 0)} per video`
+                          : `${takaFromPoisha(campaign.rateClipperPer1k)} / 1,000 views`}
                     </p>
                     {invite.message ? (
                       <p className="mt-1 text-[12.5px] italic leading-snug text-ink-500">

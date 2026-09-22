@@ -75,9 +75,11 @@ export default async function AdminClipsPage() {
                 </p>
                 <p className="mt-2 font-mono text-[11.5px] text-text-low">
                   {campaign
-                    ? campaign.payoutModel === "per_video"
-                      ? `${takaFromPoisha(campaign.perVideoClipperPoisha ?? 0)} / video`
-                      : `${takaFromPoisha(campaign.rateClipperPer1k)} / 1,000 views`
+                    ? campaign.payoutModel === "retainer"
+                      ? `${takaFromPoisha(campaign.retainerClipperPoisha ?? 0)} retainer / ${campaign.retainerVideos ?? 0} videos`
+                      : campaign.payoutModel === "per_video"
+                        ? `${takaFromPoisha(campaign.perVideoClipperPoisha ?? 0)} / video`
+                        : `${takaFromPoisha(campaign.rateClipperPer1k)} / 1,000 views`
                     : "—"}{" "}
                   · min {campaign?.minQualifyViews.toLocaleString("en-US") ?? "—"} to qualify
                 </p>

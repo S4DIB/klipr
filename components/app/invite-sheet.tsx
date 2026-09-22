@@ -14,6 +14,8 @@ export interface InvitableCampaign {
   name: string;
   /** "ends Oct 4, 2026" — rendered beside the name so the pick is informed. */
   endsLabel: string;
+  /** Short model tag beside the name, e.g. "retainer" — an invite there is an offer. */
+  tag?: string;
 }
 
 /**
@@ -104,6 +106,11 @@ export function InviteSheet({
                   <span className="flex-1 truncate text-[13.5px] font-semibold text-ink-900">
                     {single.name}
                   </span>
+                  {single.tag ? (
+                    <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10.5px] font-bold text-violet-700">
+                      {single.tag}
+                    </span>
+                  ) : null}
                   <span className="shrink-0 text-[11px] text-ink-500">ends {single.endsLabel}</span>
                 </div>
               </div>
@@ -114,7 +121,8 @@ export function InviteSheet({
                 </option>
                 {campaigns.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} · ends {c.endsLabel}
+                    {c.name}
+                    {c.tag ? ` · ${c.tag}` : ""} · ends {c.endsLabel}
                   </option>
                 ))}
               </SelectField>

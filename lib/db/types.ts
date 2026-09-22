@@ -23,8 +23,12 @@ export type Tier = "beginner" | "hustler" | "pro" | "elite";
  * How a campaign pays. "views" is the original model — a per-1,000-verified-
  * views rate. "per_video" pays a flat amount for each accepted video that
  * clears minQualifyViews, so the agency's cost per clip is known up front.
+ * "retainer" hires clippers on a fixed fee: each clipper the agency brings on
+ * earns the same amount for delivering a set number of accepted videos, paid
+ * out in equal installments per video. Retainers are invite-only — they never
+ * appear in the marketplace; the agency hand-picks clippers from the directory.
  */
-export type PayoutModel = "views" | "per_video";
+export type PayoutModel = "views" | "per_video" | "retainer";
 
 /** ৳50 per 1,000 verified views — identical at every tier, forever. */
 export const RATE_CLIPPER_PER_1K = 5000; // poisha
@@ -161,6 +165,19 @@ export interface Campaign {
    */
   perVideoClipperPoisha?: number;
   perVideoAgencyPoisha?: number;
+  /**
+   * retainer only — the fixed fee one clipper earns for the whole campaign and
+   * what the agency pays for it (same 5:6 margin), snapshotted like the rates.
+   * Paid as `retainerVideos` equal installments, one per accepted video;
+   * maxPayoutPerClipperPoisha mirrors the clipper fee and submissionCapBase
+   * mirrors the video count (the cap does not scale by tier on a retainer).
+   */
+  retainerClipperPoisha?: number;
+  retainerAgencyPoisha?: number;
+  /** retainer only — accepted videos each clipper delivers for the fee. */
+  retainerVideos?: number;
+  /** retainer only — how many clippers the agency is hiring; budget = slots × agency fee. */
+  retainerSlots?: number;
   /** Escrow ceiling. */
   budgetPoisha: number;
   /** Agency-side accrual, updated at each settlement. */

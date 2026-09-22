@@ -124,14 +124,22 @@ export default async function AdminCampaignDetail({
           />
           <Row
             label="Payout model"
-            value={c.payoutModel === "per_video" ? "Per video" : "Per views"}
+            value={
+              c.payoutModel === "retainer"
+                ? "Retainer · invite-only"
+                : c.payoutModel === "per_video"
+                  ? "Per video"
+                  : "Per views"
+            }
           />
           <Row
             label="Clipper rate"
             value={
-              c.payoutModel === "per_video"
-                ? `${takaFromPoisha(c.perVideoClipperPoisha ?? 0)} / accepted video`
-                : `${takaFromPoisha(c.rateClipperPer1k)} / 1k views`
+              c.payoutModel === "retainer"
+                ? `${takaFromPoisha(c.retainerClipperPoisha ?? 0)} / clipper · ${c.retainerVideos ?? 0} videos · ${c.retainerSlots ?? 0} slots`
+                : c.payoutModel === "per_video"
+                  ? `${takaFromPoisha(c.perVideoClipperPoisha ?? 0)} / accepted video`
+                  : `${takaFromPoisha(c.rateClipperPer1k)} / 1k views`
             }
           />
           <Row label="Starts" value={dhakaDate(c.startDate)} />

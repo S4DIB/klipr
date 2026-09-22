@@ -11,8 +11,7 @@ import { Button } from "@/components/ui/button";
 import { IconCheck, IconChevronLeft, IconClock } from "@/components/icons";
 import { PLATFORMS } from "@/lib/platforms";
 import { dhakaDate, takaFromPoisha, views as fmtViews } from "@/lib/format";
-import { remainingBudgetPoisha } from "@/lib/campaign-rules";
-import { submissionCap } from "@/lib/xp";
+import { isInviteOnly, remainingBudgetPoisha, submissionCapFor } from "@/lib/campaign-rules";
 
 export const metadata: Metadata = { title: "Campaign" };
 
@@ -37,8 +36,23 @@ export default async function CampaignDetailPage({
     .filter((a) => a.status === "active" && campaign.allowedPlatforms.includes(a.platform))
     .map((a) => ({ id: a.id, platform: a.platform, handle: a.handle, proof: a.proof }));
 
-  const capTotal = submissionCap(campaign.submissionCapBase, user.tier);
+  // a retainer is a private hire: only the clippers the agency invited (or who
+  // already posted to it) can open the brief
+  const retainer = isInviteOnly(campaign);
+  if (retainer && !invite && mySubs.length === 0) notFound();
+
+  const capTotal = submissionCapFor(campaign, user.tier);
   const capUsed = mySubs.filter((s) => s.status !== "rejected").length;
+  // retainer progress: the fee arrives one installment per accepted video
+  const retainerFee = campaign.retainerClipperPoisha ?? 0;
+  const retainerVideos = campaign.retainerVideos ?? capTotal;
+  const paidVideos = mySubs.filter(
+    (s) => s.status === "settled" && (s.earnedPoisha ?? 0) > 0,
+  ).length;
+  const liveVideos = mySubs.filter(
+    (s) => s.status === "pending" || s.status === "tracking" || s.status === "held",
+  ).length;
+  const earnedHere = mySubs.reduce((a, s) => a + (s.earnedPoisha ?? 0), 0);
   const accepting = campaign.status === "active" && campaign.endDate > now;
   const urlHint = PLATFORMS[campaign.allowedPlatforms[0] ?? "youtube"].urlHint;
   const remaining = remainingBudgetPoisha(campaign);
@@ -85,8 +99,18 @@ export default async function CampaignDetailPage({
           ))}
         </div>
         <p className="mt-3.5 rounded-[12px] bg-[rgba(0,0,0,0.18)] px-3 py-2.5 text-[12.5px] leading-[1.5] text-[rgba(255,255,244,0.7)]">
-          Budget is a ceiling. Earnings settle first-come, first-served at each clip&rsquo;s window
-          end.
+          {retainer ? (
+            <>
+              You&rsquo;re on a retainer: <b className="text-ivory">{takaFromPoisha(retainerFee)}</b>{" "}
+              for {retainerVideos} accepted videos, paid one installment per video at each
+              clip&rsquo;s window end.
+            </>
+          ) : (
+            <>
+              Budget is a ceiling. Earnings settle first-come, first-served at each clip&rsquo;s
+              window end.
+            </>
+          )}
         </p>
       </GlassPanel>
 
@@ -94,12 +118,18 @@ export default async function CampaignDetailPage({
       <GlassPanel className="flex justify-between p-4">
         <div>
           <p className="font-mono text-[18px] font-semibold text-ink-900 [font-variant-numeric:tabular-nums]">
-            {campaign.payoutModel === "per_video"
-              ? takaFromPoisha(campaign.perVideoClipperPoisha ?? 0)
-              : takaFromPoisha(campaign.rateClipperPer1k)}
+            {retainer
+              ? takaFromPoisha(retainerFee)
+              : campaign.payoutModel === "per_video"
+                ? takaFromPoisha(campaign.perVideoClipperPoisha ?? 0)
+                : takaFromPoisha(campaign.rateClipperPer1k)}
           </p>
           <p className="text-[11px] text-ink-500">
-            {campaign.payoutModel === "per_video" ? "per accepted video" : "per 1,000 views"}
+            {retainer
+              ? `retainer · ${retainerVideos} videos`
+              : campaign.payoutModel === "per_video"
+                ? "per accepted video"
+                : "per 1,000 views"}
           </p>
         </div>
         <div className="w-px bg-[rgba(53,5,90,0.1)]" />
@@ -118,20 +148,48 @@ export default async function CampaignDetailPage({
         </div>
       </GlassPanel>
 
-      {/* budget remaining */}
-      <GlassPanel className="p-4">
-        <span className="eyebrow">Budget remaining</span>
-        <div className="glass-well mt-2.5 h-3.5 overflow-hidden rounded-full">
-          <div
-            className="h-full bg-[linear-gradient(90deg,var(--mint),var(--yellow))]"
-            style={{ width: `${spentPct}%` }}
-          />
-        </div>
-        <div className="mt-1.5 flex justify-between font-mono text-[12px] text-ink-500 [font-variant-numeric:tabular-nums]">
-          <span className="font-semibold text-ink-900">{takaFromPoisha(remaining)} left</span>
-          <span>of {takaFromPoisha(campaign.budgetPoisha)}</span>
-        </div>
-      </GlassPanel>
+      {retainer ? (
+        /* your retainer — installments paid so far, not the campaign's escrow */
+        <GlassPanel className="p-4">
+          <span className="eyebrow">Your retainer</span>
+          <div className="glass-well mt-2.5 h-3.5 overflow-hidden rounded-full">
+            <div
+              className="h-full bg-[linear-gradient(90deg,var(--mint),var(--yellow))]"
+              style={{
+                width: `${retainerVideos > 0 ? Math.min(100, Math.round((paidVideos / retainerVideos) * 100)) : 0}%`,
+              }}
+            />
+          </div>
+          <div className="mt-1.5 flex justify-between font-mono text-[12px] text-ink-500 [font-variant-numeric:tabular-nums]">
+            <span className="font-semibold text-ink-900">
+              {paidVideos}/{retainerVideos} videos paid
+            </span>
+            <span>
+              {takaFromPoisha(earnedHere)} of {takaFromPoisha(retainerFee)}
+            </span>
+          </div>
+          {liveVideos > 0 ? (
+            <p className="mt-2 text-[12px] text-ink-500">
+              {liveVideos} more {liveVideos === 1 ? "clip is" : "clips are"} tracking now.
+            </p>
+          ) : null}
+        </GlassPanel>
+      ) : (
+        /* budget remaining */
+        <GlassPanel className="p-4">
+          <span className="eyebrow">Budget remaining</span>
+          <div className="glass-well mt-2.5 h-3.5 overflow-hidden rounded-full">
+            <div
+              className="h-full bg-[linear-gradient(90deg,var(--mint),var(--yellow))]"
+              style={{ width: `${spentPct}%` }}
+            />
+          </div>
+          <div className="mt-1.5 flex justify-between font-mono text-[12px] text-ink-500 [font-variant-numeric:tabular-nums]">
+            <span className="font-semibold text-ink-900">{takaFromPoisha(remaining)} left</span>
+            <span>of {takaFromPoisha(campaign.budgetPoisha)}</span>
+          </div>
+        </GlassPanel>
+      )}
 
       {/* the brief */}
       <GlassPanel className="p-4">
@@ -157,7 +215,8 @@ export default async function CampaignDetailPage({
       {invite ? (
         <GlassPanel className="border border-[rgba(125,4,215,0.2)] bg-[rgba(125,4,215,0.05)] p-4">
           <p className="text-[13px] font-bold text-violet-700">
-            {campaign.agencyName} invited you to this campaign
+            {campaign.agencyName}{" "}
+            {retainer ? "offered you this retainer" : "invited you to this campaign"}
           </p>
           {invite.message ? (
             <p className="mt-1 text-[12.5px] italic leading-relaxed text-ink-600">
@@ -187,7 +246,9 @@ export default async function CampaignDetailPage({
             />
           </div>
           <p className="text-center text-[12px] text-ink-400">
-            {capUsed}/{capTotal} submissions used at your tier
+            {retainer
+              ? `${capUsed}/${capTotal} retainer videos submitted`
+              : `${capUsed}/${capTotal} submissions used at your tier`}
           </p>
         </>
       ) : (
