@@ -18,6 +18,7 @@ import {
   inviteBlock,
   inviteWindowStart,
 } from "@/lib/clippers/invite-rules";
+import { takaFromPoisha } from "@/lib/format";
 
 const schema = z.object({
   clipperId: z.string().trim().min(1, "Pick a clipper."),
@@ -84,14 +85,23 @@ export async function inviteClipper(_prev: InviteState, formData: FormData): Pro
   });
 
   const agencyName = user.orgName || user.displayName;
+  // a retainer invite IS the offer — lead with the fee and the deliverable
+  const retainer =
+    campaign.payoutModel === "retainer"
+      ? `${takaFromPoisha(campaign.retainerClipperPoisha ?? 0)} for ${campaign.retainerVideos ?? 0} videos`
+      : null;
   await createNotification({
     id: newId("ntf"),
     profileId: clipperId,
     kind: "campaign_invite",
-    title: `${agencyName} invited you to a campaign`,
-    body: message
-      ? `“${campaign.name}” — ${message}`
-      : `You've been invited to clip for “${campaign.name}”. Open the campaign to grab the clip and submit.`,
+    title: retainer
+      ? `${agencyName} offered you a retainer`
+      : `${agencyName} invited you to a campaign`,
+    body: retainer
+      ? `“${campaign.name}” — ${retainer}.${message ? ` ${message}` : " Open the campaign to grab the clip and start posting."}`
+      : message
+        ? `“${campaign.name}” — ${message}`
+        : `You've been invited to clip for “${campaign.name}”. Open the campaign to grab the clip and submit.`,
     href: `/campaigns/${campaignId}`,
     createdAt: now,
   });

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guards";
 import { getCampaign, getProfilesByIds, listCampaignInvites, listSubmissions } from "@/lib/db";
 import { inviteStatus } from "@/lib/clippers/invite-rules";
-import { acceptsSubmissions } from "@/lib/campaign-rules";
+import { acceptsSubmissions, isInviteOnly } from "@/lib/campaign-rules";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatTile } from "@/components/app/stat-tile";
 import { StatusChip } from "@/components/app/status-chip";
@@ -38,6 +38,9 @@ export default async function AgencyCampaignPage({
     ? await getProfilesByIds(invites.map((i) => i.clipperProfileId))
     : [];
   const accepting = acceptsSubmissions(campaign, new Date().toISOString());
+  // retainers are private hires: the roster below IS the campaign's audience
+  const retainer = isInviteOnly(campaign);
+  const slots = campaign.retainerSlots ?? 0;
   const settled = subs.filter((s) => s.status === "settled");
   const live = subs.filter((s) => s.status === "tracking" || s.status === "held");
   const settledViews = settled.reduce((a, s) => a + (s.lockedViews ?? 0), 0);
@@ -107,10 +110,9 @@ export default async function AgencyCampaignPage({
           <p className="eyebrow text-[rgba(255,255,244,0.55)]">Fund the escrow to go live</p>
           <p className="data-xl mt-2 text-ivory">{takaFromPoisha(campaign.budgetPoisha)}</p>
           <p className="mt-3 max-w-lg text-[13.5px] leading-relaxed text-[rgba(255,255,244,0.75)]">
-            Transfer the budget to Klipr (bank or bKash, details arrive by
-            email). The moment our team confirms it, the campaign appears in
-            the marketplace and vetted pages start posting. Unspent budget is
-            refunded when the campaign completes.
+            {retainer
+              ? `Transfer the escrow to Klipr (bank or bKash, details arrive by email) — ${slots} clipper${slots === 1 ? "" : "s"} × ${takaFromPoisha(campaign.retainerAgencyPoisha ?? 0)}. The moment our team confirms it, the retainer goes live and you can invite clippers from the directory. Unspent escrow is refunded when the campaign completes.`
+              : "Transfer the budget to Klipr (bank or bKash, details arrive by email). The moment our team confirms it, the campaign appears in the marketplace and vetted pages start posting. Unspent budget is refunded when the campaign completes."}
           </p>
         </GlassPanel>
       )}
@@ -151,8 +153,17 @@ export default async function AgencyCampaignPage({
             min {fmtViews(campaign.minQualifyViews)} views to qualify
           </span>
           <span className="glass-well rounded-full px-3 py-1.5 font-mono text-[11px] text-text-mid">
-            ৳60 / 1,000 verified
+            {retainer
+              ? `${takaFromPoisha(campaign.retainerAgencyPoisha ?? 0)} / clipper · ${campaign.retainerVideos ?? 0} videos · ${slots} slot${slots === 1 ? "" : "s"}`
+              : campaign.payoutModel === "per_video"
+                ? `${takaFromPoisha(campaign.perVideoAgencyPoisha ?? 0)} / accepted video`
+                : "৳60 / 1,000 verified"}
           </span>
+          {retainer ? (
+            <span className="rounded-full bg-violet-100 px-3 py-1.5 text-[11px] font-bold text-violet-700">
+              Invite-only
+            </span>
+          ) : null}
         </div>
       </GlassPanel>
 
@@ -184,7 +195,14 @@ export default async function AgencyCampaignPage({
 
       <GlassPanel className="p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="eyebrow">Invited clippers</p>
+          <p className="eyebrow">
+            {retainer ? "Clippers on retainer" : "Invited clippers"}
+            {retainer ? (
+              <span className="ml-2 font-mono normal-case tracking-normal text-text-low">
+                {invites.length} of {slots} slots invited
+              </span>
+            ) : null}
+          </p>
           {accepting ? (
             <Link
               href="/agency/clippers"
@@ -197,8 +215,12 @@ export default async function AgencyCampaignPage({
         {invites.length === 0 ? (
           <p className="mt-3 text-[13.5px] text-text-mid">
             {accepting
-              ? "Hand-pick clippers for this brief from the directory. They get a notification with a link straight here."
-              : "No invites were sent for this campaign."}
+              ? retainer
+                ? "This retainer is invite-only — only clippers you invite can see it. Pick them from the directory; each gets the offer as a notification with a link straight to the brief."
+                : "Hand-pick clippers for this brief from the directory. They get a notification with a link straight here."
+              : retainer
+                ? "Nobody was invited to this retainer while it was live."
+                : "No invites were sent for this campaign."}
           </p>
         ) : (
           <ul className="mt-4 divide-y divide-[rgba(53,5,90,0.06)]">

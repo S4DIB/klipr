@@ -8,6 +8,7 @@ import {
   getSubmission,
   listFraudFlags,
   listSnapshots,
+  listSubmissions,
 } from "@/lib/db";
 import { GlassPanel } from "@/components/app/glass-panel";
 import { StatusChip } from "@/components/app/status-chip";
@@ -15,7 +16,7 @@ import { Sparkline } from "@/components/ui/sparkline";
 import { IconChevronLeft } from "@/components/icons";
 import { PLATFORMS } from "@/lib/platforms";
 import { takaFromPoisha, dhakaDate, dhakaDateTime } from "@/lib/format";
-import { clipperEarningsPoisha } from "@/lib/money";
+import { clipperEarningsPoisha, retainerInstallmentPoisha } from "@/lib/money";
 import { getAdapter } from "@/lib/verify";
 import { cn } from "@/lib/cn";
 
@@ -68,13 +69,27 @@ export default async function ClipDetailPage({
   // views past that point change the XP, never the money
   const byVideo = campaign?.payoutModel === "per_video";
   const perVideoPoisha = campaign?.perVideoClipperPoisha ?? 0;
+  // retainer campaigns pay the fee in equal installments, one per accepted
+  // video — this clip's share depends on how many are already paid
+  const byRetainer = campaign?.payoutModel === "retainer";
+  const retainerFee = campaign?.retainerClipperPoisha ?? 0;
+  const retainerVideos = campaign?.retainerVideos ?? 0;
+  let retainerShare = 0;
+  if (byRetainer && campaign && retainerVideos > 0) {
+    const paidPrior = (
+      await listSubmissions({ campaignId: campaign.id, profileId: user.id, status: "settled" })
+    ).filter((s) => s.id !== sub.id && (s.earnedPoisha ?? 0) > 0).length;
+    retainerShare = retainerInstallmentPoisha(retainerFee, retainerVideos, paidPrior + 1);
+  }
   const displayViews = settled ? (sub.lockedViews ?? 0) : sub.countedViews;
   const estPoisha = settled
     ? (sub.earnedPoisha ?? 0)
     : displayViews >= minViews
       ? byVideo
         ? perVideoPoisha
-        : clipperEarningsPoisha(displayViews, rate)
+        : byRetainer
+          ? retainerShare
+          : clipperEarningsPoisha(displayViews, rate)
       : 0;
 
   type Step = { label: string; note: string; state: "done" | "active" | "todo" };
@@ -226,14 +241,20 @@ export default async function ClipDetailPage({
               ? `Below the ${minViews.toLocaleString("en-US")}-view minimum, or the budget was already spent. Shown honestly, never silently.`
               : byVideo
                 ? `Flat ${takaFromPoisha(perVideoPoisha)} for one accepted video.`
-                : `${(sub.lockedViews ?? 0).toLocaleString("en-US")} locked views × ${takaFromPoisha(rate)}/1,000.`
+                : byRetainer
+                  ? `One of ${retainerVideos} installments on your ${takaFromPoisha(retainerFee)} retainer.`
+                  : `${(sub.lockedViews ?? 0).toLocaleString("en-US")} locked views × ${takaFromPoisha(rate)}/1,000.`
             : manual
               ? `Verified and settled by our team. Below ${minViews.toLocaleString("en-US")} views a clip settles at ৳0.`
               : displayViews < minViews
                 ? `Qualifies at ${minViews.toLocaleString("en-US")} views. Below that a clip settles at ৳0.`
                 : byVideo
                   ? `Qualified — settles at ${takaFromPoisha(perVideoPoisha)} at window end, if budget remains.`
-                  : "Settles at window end, clamped to remaining budget."}
+                  : byRetainer
+                    ? retainerShare > 0
+                      ? `Qualified — settles at ${takaFromPoisha(retainerShare)} at window end, one of ${retainerVideos} retainer installments.`
+                      : `Your ${retainerVideos}-video retainer is already fully paid, so this clip settles at ৳0.`
+                    : "Settles at window end, clamped to remaining budget."}
         </p>
       </GlassPanel>
         </div>

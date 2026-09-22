@@ -243,6 +243,8 @@ async function settleOne(
     await listSubmissions({ campaignId: sub.campaignId, profileId: sub.profileId, status: "settled" })
   ).filter((s) => s.id !== sub.id);
   const alreadyEarned = minePrior.reduce((a, s) => a + (s.earnedPoisha ?? 0), 0);
+  // retainer: this clip is installment (paid videos so far + 1)
+  const paidVideosPrior = minePrior.filter((s) => (s.earnedPoisha ?? 0) > 0).length;
 
   const math = settlementMath({
     lockedViews,
@@ -252,6 +254,10 @@ async function settleOne(
     payoutModel: campaign.payoutModel,
     perVideoClipperPoisha: campaign.perVideoClipperPoisha,
     perVideoAgencyPoisha: campaign.perVideoAgencyPoisha,
+    retainerClipperPoisha: campaign.retainerClipperPoisha,
+    retainerAgencyPoisha: campaign.retainerAgencyPoisha,
+    retainerVideos: campaign.retainerVideos,
+    paidVideosPrior,
     rateClipperPer1k: campaign.rateClipperPer1k,
     rateAgencyPer1k: campaign.rateAgencyPer1k,
   });

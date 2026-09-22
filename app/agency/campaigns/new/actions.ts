@@ -17,7 +17,6 @@ import {
   RATE_CLIPPER_PER_1K,
   type Campaign,
   type CampaignStatus,
-  type PayoutModel,
   type Platform,
 } from "@/lib/db/types";
 import { agencyCostForClipperPayout, takaToPoisha } from "@/lib/money";
@@ -25,8 +24,10 @@ import { endOfDhakaDay } from "@/lib/format";
 import { normalizeUrl } from "@/lib/url";
 import { resolveCoverPatch } from "@/lib/storage/campaign-cover";
 import { NICHES } from "@/lib/platforms";
+import { RETAINER_MAX_SLOTS, RETAINER_MAX_VIDEOS } from "@/lib/campaign-rules";
 
-const schema = z.object({
+/** Fields every campaign shares, whatever it pays. */
+const baseSchema = z.object({
   name: z.string().trim().min(3, "Give the campaign a clear name").max(80),
   niche: z.enum(NICHES),
   brief: z.string().trim().min(10, "Write a short brief: what should clippers post?").max(1200),
@@ -35,15 +36,52 @@ const schema = z.object({
     (v) => (typeof v === "string" ? normalizeUrl(v) : v),
     z.string().url("Link the exact clip file clippers will post"),
   ),
-  payoutModel: z.enum(["views", "per_video"]),
-  /** per_video only — what a clipper earns for one accepted video. */
-  perVideoTaka: z.coerce.number().int().min(50, "At least ৳50 per video").max(1_000_000).optional(),
-  budgetTaka: z.coerce.number().int().min(5_000, "Minimum budget is ৳5,000").max(10_000_000),
   minQualifyViews: z.coerce.number().int().min(2_000).max(4_000),
-  maxPerClipperTaka: z.coerce.number().int().min(500, "At least ৳500 per clipper").max(1_000_000),
-  submissionCapBase: z.coerce.number().int().min(1).max(10),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pick an end date"),
 });
+
+/** Open (marketplace) campaigns set their own ceiling and per-clipper limits. */
+const openFields = {
+  budgetTaka: z.coerce.number().int().min(5_000, "Minimum budget is ৳5,000").max(10_000_000),
+  maxPerClipperTaka: z.coerce.number().int().min(500, "At least ৳500 per clipper").max(1_000_000),
+  submissionCapBase: z.coerce.number().int().min(1).max(10),
+};
+
+/**
+ * The money fields, by payout model. A retainer derives its ceiling and
+ * per-clipper limits from the fee, video count and slots, so it takes none of
+ * the open-campaign fields.
+ */
+const modelSchema = z.discriminatedUnion("payoutModel", [
+  z.object({ payoutModel: z.literal("views"), ...openFields }),
+  z.object({
+    payoutModel: z.literal("per_video"),
+    /** what a clipper earns for one accepted video */
+    perVideoTaka: z.coerce.number().int().min(50, "At least ৳50 per video").max(1_000_000),
+    ...openFields,
+  }),
+  z.object({
+    payoutModel: z.literal("retainer"),
+    /** what one clipper earns for the whole campaign */
+    retainerTaka: z.coerce
+      .number()
+      .int()
+      .min(500, "At least ৳500 per clipper on retainer")
+      .max(1_000_000),
+    retainerVideos: z.coerce
+      .number()
+      .int()
+      .min(1, "Set how many videos each clipper delivers")
+      .max(RETAINER_MAX_VIDEOS, `At most ${RETAINER_MAX_VIDEOS} videos per clipper`),
+    retainerSlots: z.coerce
+      .number()
+      .int()
+      .min(1, "Set how many clippers you're hiring")
+      .max(RETAINER_MAX_SLOTS, `At most ${RETAINER_MAX_SLOTS} clippers on one retainer`),
+  }),
+]);
+type ModelData = z.infer<typeof modelSchema>;
+type CampaignFormData = z.infer<typeof baseSchema> & ModelData;
 
 /** Campaigns can only be edited/deleted before they go live to clippers. */
 const EDITABLE_STATUSES: CampaignStatus[] = ["draft", "pending_funding"];
@@ -53,57 +91,110 @@ export type NewCampaignState = { error?: string };
 /** Read + validate the wizard fields shared by create and edit. */
 function parseCampaignForm(
   formData: FormData,
-):
-  | { ok: true; data: z.infer<typeof schema>; platforms: Platform[]; endIso: string }
-  | { ok: false; error: string } {
+): { ok: true; data: CampaignFormData; platforms: Platform[]; endIso: string } | { ok: false; error: string } {
   const platforms = (["tiktok", "youtube", "instagram", "facebook"] as Platform[]).filter(
     (p) => formData.get(`platform_${p}`) === "on",
   );
   if (platforms.length === 0) return { ok: false, error: "Pick at least one platform." };
 
-  const parsed = schema.safeParse({
+  const base = baseSchema.safeParse({
     name: formData.get("name"),
     niche: formData.get("niche"),
-    payoutModel: formData.get("payoutModel") || "views",
-    perVideoTaka: formData.get("perVideoTaka") || undefined,
     brief: formData.get("brief"),
     guidelines: formData.get("guidelines") || undefined,
     sourceUrl: formData.get("sourceUrl"),
-    budgetTaka: formData.get("budgetTaka"),
     minQualifyViews: formData.get("minQualifyViews"),
-    maxPerClipperTaka: formData.get("maxPerClipperTaka"),
-    submissionCapBase: formData.get("submissionCapBase"),
     endDate: formData.get("endDate"),
   });
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
+  if (!base.success) {
+    return { ok: false, error: base.error.issues[0]?.message ?? "Check the form and try again." };
   }
 
-  if (parsed.data.payoutModel === "per_video" && !parsed.data.perVideoTaka) {
-    return { ok: false, error: "Set what one accepted video pays." };
+  // an absent number reads as "" → 0, so each field's own min() message applies
+  const num = (key: string) => formData.get(key) ?? "";
+  const model = modelSchema.safeParse({
+    payoutModel: formData.get("payoutModel") || "views",
+    perVideoTaka: num("perVideoTaka"),
+    budgetTaka: num("budgetTaka"),
+    maxPerClipperTaka: num("maxPerClipperTaka"),
+    submissionCapBase: num("submissionCapBase"),
+    retainerTaka: num("retainerTaka"),
+    retainerVideos: num("retainerVideos"),
+    retainerSlots: num("retainerSlots"),
+  });
+  if (!model.success) {
+    return { ok: false, error: model.error.issues[0]?.message ?? "Check the payout details." };
   }
 
-  const endIso = endOfDhakaDay(parsed.data.endDate);
+  const endIso = endOfDhakaDay(base.data.endDate);
   if (endIso <= new Date().toISOString()) {
     return { ok: false, error: "End date must be in the future." };
   }
-  return { ok: true, data: parsed.data, platforms, endIso };
+  return { ok: true, data: { ...base.data, ...model.data }, platforms, endIso };
 }
 
 /**
- * The payout fields to store. Views campaigns carry no flat amounts; per-video
- * campaigns snapshot both sides of the platform margin at create/edit time.
+ * The money fields to store for a payout model. Views campaigns carry no flat
+ * amounts; per-video campaigns snapshot both sides of the platform margin; a
+ * retainer snapshots the fee both ways and derives the escrow ceiling (slots ×
+ * agency fee), the per-clipper cap (the fee) and the submission cap (the video
+ * count). Every model clears the other models' fields, so an edit that
+ * switches model leaves nothing stale behind.
  */
-function payoutFields(d: { payoutModel: PayoutModel; perVideoTaka?: number }) {
-  if (d.payoutModel !== "per_video") {
-    return { payoutModel: "views" as const, perVideoClipperPoisha: undefined, perVideoAgencyPoisha: undefined };
-  }
-  const perVideoClipperPoisha = takaToPoisha(d.perVideoTaka!);
-  return {
-    payoutModel: "per_video" as const,
-    perVideoClipperPoisha,
-    perVideoAgencyPoisha: agencyCostForClipperPayout(perVideoClipperPoisha),
+function financials(
+  d: ModelData,
+): Pick<
+  Campaign,
+  | "payoutModel"
+  | "perVideoClipperPoisha"
+  | "perVideoAgencyPoisha"
+  | "retainerClipperPoisha"
+  | "retainerAgencyPoisha"
+  | "retainerVideos"
+  | "retainerSlots"
+  | "budgetPoisha"
+  | "maxPayoutPerClipperPoisha"
+  | "submissionCapBase"
+> {
+  const none = {
+    perVideoClipperPoisha: undefined,
+    perVideoAgencyPoisha: undefined,
+    retainerClipperPoisha: undefined,
+    retainerAgencyPoisha: undefined,
+    retainerVideos: undefined,
+    retainerSlots: undefined,
   };
+  if (d.payoutModel === "retainer") {
+    const retainerClipperPoisha = takaToPoisha(d.retainerTaka);
+    const retainerAgencyPoisha = agencyCostForClipperPayout(retainerClipperPoisha);
+    return {
+      ...none,
+      payoutModel: "retainer",
+      retainerClipperPoisha,
+      retainerAgencyPoisha,
+      retainerVideos: d.retainerVideos,
+      retainerSlots: d.retainerSlots,
+      budgetPoisha: retainerAgencyPoisha * d.retainerSlots,
+      maxPayoutPerClipperPoisha: retainerClipperPoisha,
+      submissionCapBase: d.retainerVideos,
+    };
+  }
+  const open = {
+    budgetPoisha: takaToPoisha(d.budgetTaka),
+    maxPayoutPerClipperPoisha: takaToPoisha(d.maxPerClipperTaka),
+    submissionCapBase: d.submissionCapBase,
+  };
+  if (d.payoutModel === "per_video") {
+    const perVideoClipperPoisha = takaToPoisha(d.perVideoTaka);
+    return {
+      ...none,
+      ...open,
+      payoutModel: "per_video",
+      perVideoClipperPoisha,
+      perVideoAgencyPoisha: agencyCostForClipperPayout(perVideoClipperPoisha),
+    };
+  }
+  return { ...none, ...open, payoutModel: "views" };
 }
 
 /** Only the owning agency or a SaaS admin may manage a campaign. */
@@ -122,9 +213,9 @@ async function authorizeManage(campaign: Campaign) {
 }
 
 /**
- * Create → PENDING FUNDING. The rate is fixed (৳60/1,000 verified views) and
- * snapshotted; the campaign only goes live once an admin confirms the escrow
- * arrived.
+ * Create → PENDING FUNDING. The rates are fixed and snapshotted (৳60/1,000
+ * verified views, or the flat / retainer amounts the wizard set); the campaign
+ * only goes live once an admin confirms the escrow arrived.
  */
 export async function createCampaign(
   _prev: NewCampaignState,
@@ -153,14 +244,11 @@ export async function createCampaign(
     niche: d.niche,
     allowedPlatforms: platforms,
     sourceUrl: d.sourceUrl,
-    ...payoutFields(d),
-    budgetPoisha: takaToPoisha(d.budgetTaka),
+    ...financials(d),
     spentPoisha: 0,
     rateClipperPer1k: RATE_CLIPPER_PER_1K,
     rateAgencyPer1k: RATE_AGENCY_PER_1K,
     minQualifyViews: d.minQualifyViews,
-    maxPayoutPerClipperPoisha: takaToPoisha(d.maxPerClipperTaka),
-    submissionCapBase: d.submissionCapBase,
     trackingWindowDays: 7,
     startDate: now.toISOString(),
     endDate: endIso,
@@ -210,11 +298,8 @@ export async function editCampaign(
     niche: d.niche,
     allowedPlatforms: platforms,
     sourceUrl: d.sourceUrl,
-    ...payoutFields(d),
-    budgetPoisha: takaToPoisha(d.budgetTaka),
+    ...financials(d),
     minQualifyViews: d.minQualifyViews,
-    maxPayoutPerClipperPoisha: takaToPoisha(d.maxPerClipperTaka),
-    submissionCapBase: d.submissionCapBase,
     endDate: endIso,
   });
 

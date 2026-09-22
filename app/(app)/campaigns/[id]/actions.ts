@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireActiveClipper } from "@/lib/auth/guards";
 import {
   createSubmission,
+  findCampaignInvite,
   findSubmissionByMedia,
   getCampaign,
   getConnectedAccount,
@@ -13,10 +14,11 @@ import {
 } from "@/lib/db";
 import { getAdapter } from "@/lib/verify";
 import { normalizeUrl } from "@/lib/url";
-import { submissionCap } from "@/lib/xp";
 import {
   acceptsSubmissions,
+  isInviteOnly,
   remainingBudgetPoisha,
+  submissionCapFor,
   submissionWindowEnd,
 } from "@/lib/campaign-rules";
 
@@ -24,7 +26,7 @@ export type SubmitState = { error?: string; ok?: boolean };
 
 /**
  * The submit action. Every check the flows demand, in order:
- * active clipper → campaign accepting → submission cap →
+ * active clipper → campaign accepting → invited (retainers) → submission cap →
  * URL parses → global URL dedup → per-campaign media dedup → account is
  * theirs, right platform, vetted-by-construction → ownership via adapter →
  * baseline snapshot → tracking.
@@ -51,12 +53,22 @@ export async function submitClip(_prev: SubmitState, formData: FormData): Promis
     return { error: "This campaign's budget is fully committed." };
   }
 
-  // per-campaign submission cap, scaled by tier
+  // retainers are private hires — only a clipper the agency invited can post to one
+  if (isInviteOnly(campaign) && !(await findCampaignInvite(campaignId, user.id))) {
+    return { error: "This retainer is invite-only." };
+  }
+
+  // per-campaign submission cap: scaled by tier on open campaigns, the
+  // retainer's fixed video count on a retainer
   const mine = await listSubmissions({ campaignId, profileId: user.id });
   const counted = mine.filter((s) => s.status !== "rejected").length;
-  const cap = submissionCap(campaign.submissionCapBase, user.tier);
+  const cap = submissionCapFor(campaign, user.tier);
   if (counted >= cap) {
-    return { error: `You've reached this campaign's submission cap for your tier (${cap}).` };
+    return {
+      error: isInviteOnly(campaign)
+        ? `You've submitted every video on this retainer (${cap}).`
+        : `You've reached this campaign's submission cap for your tier (${cap}).`,
+    };
   }
 
   const account = await getConnectedAccount(accountId);

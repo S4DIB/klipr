@@ -105,6 +105,11 @@ export default async function AgencyCampaignsPage({
                   <div className="flex flex-wrap items-center gap-2.5">
                     <p className="truncate text-[15px] font-bold text-ink-900">{c.name}</p>
                     <StatusChip status={c.status} />
+                    {c.payoutModel === "retainer" ? (
+                      <span className="rounded-full bg-violet-100 px-2.5 py-0.5 text-[11px] font-bold text-violet-700">
+                        Retainer
+                      </span>
+                    ) : null}
                     {c.deletionRequestedAt ? (
                       <span className="rounded-full bg-danger-bg px-2.5 py-0.5 text-[11px] font-bold text-danger-600">
                         Deletion requested
